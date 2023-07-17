@@ -31,7 +31,7 @@ const EventScreen = ({
     }, []);
 
     const handleRSVP = React.useCallback(() => {
-        Alert.alert("THIS NEEDS TO BE INTEGRATED!!!");
+        // Alert.alert("THIS NEEDS TO BE INTEGRATED!!!");
         if (event.url) {
             Linking.openURL(event.url);
         }
@@ -43,9 +43,11 @@ const EventScreen = ({
                 <EventCard event={event} />
                 {event.content && <RenderHTML html={event.content} style={{ paddingHorizontal: 16 }} />}
             </ScrollView>
-            {/* <View style={styles.buttonContainer}>
-                <Button title="RSVP" variant='solid' onPress={handleRSVP} />
-            </View> */}
+            {event.url && (
+                <View style={styles.buttonContainer}>
+                    <Button title="View Details" variant='solid' onPress={handleRSVP} />
+                </View>
+            )}
         </View>
     );
 }
