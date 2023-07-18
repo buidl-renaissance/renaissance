@@ -17,6 +17,7 @@ import MapView, { Marker, MapMarker, Region, MarkerPressEvent } from 'react-nati
 import { EventCard } from '../Components/EventCard';
 import Icon, { IconTypes } from '../Components/Icon';
 import { HeaderTitleImage } from '../Components/HeaderTitleImage';
+import InstagramLogin from '../Components/InstagramLogin';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -237,6 +238,7 @@ const CalendarScreen = ({
                                 <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold', textAlign: 'left', marginTop: 8 }}>Welcome to the Renaissance City</Text>
                                 <Text style={{ color: 'white', fontSize: 16, textAlign: 'left', marginVertical: 4 }}>Unlock the rich tapestry of food, arts, and events that Detroit has to offer.</Text>
                             </View>
+                            <InstagramLogin />
                         </ImageBackground>
                     )}
                     renderItem={({ item }) => {
