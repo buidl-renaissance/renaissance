@@ -43,7 +43,7 @@ const EventScreen = ({
                 <EventCard event={event} />
                 {event.content && <RenderHTML html={event.content} style={{ paddingHorizontal: 16 }} />}
             </ScrollView>
-            {event.url && (
+            {event.url?.match('http') && (
                 <View style={styles.buttonContainer}>
                     <Button title="View Details" variant='solid' onPress={handleRSVP} />
                 </View>
