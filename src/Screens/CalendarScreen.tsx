@@ -151,8 +151,9 @@ const CalendarScreen = ({ navigation }) => {
   };
 
   const handleToggleDisplay = React.useCallback(() => {
-    setDisplay(display === "map" ? "list" : "map");
-    setRegion(lastRegion);
+    navigation.push('BrowseMap')
+    // setDisplay(display === "map" ? "list" : "map");
+    // setRegion(lastRegion);
   }, [setDisplay, display, lastRegion, region]);
 
   React.useEffect(() => {
@@ -185,13 +186,15 @@ const CalendarScreen = ({ navigation }) => {
     const results = {};
     const uniqueVenues: DAVenue[] = [];
     events.map((event: DAEvent) => {
-      if (!results[event.venue.slug]) {
-        const eventVenue = event.venue;
-        eventVenue.events = [event];
-        results[event.venue.slug] = eventVenue;
-        uniqueVenues.push(eventVenue);
-      } else {
-        results[event.venue.slug].events.push(event);
+      if (event.venue) {
+        if (!results[event.venue.slug]) {
+          const eventVenue = event.venue;
+          eventVenue.events = [event];
+          results[event.venue.slug] = eventVenue;
+          uniqueVenues.push(eventVenue);
+        } else {
+          results[event.venue.slug].events.push(event);
+        }
       }
     });
     // console.log("uniqueVenues: ", uniqueVenues.map(v => v.slug))
@@ -318,7 +321,7 @@ const CalendarScreen = ({ navigation }) => {
                                     </View> */}
             {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
             {/* {username && pub && sig && } */}
-            {/* <View style={{ flex: 1, flexDirection: 'row', marginTop: 8 }}>
+            <View style={{ flex: 1, flexDirection: 'row', marginTop: 8 }}>
                     <TouchableOpacity
                       onPress={handleToggleDisplay}
                       style={{ marginRight: 16, opacity: 1, borderColor: 'white', borderRadius: 20, borderWidth: 1, padding: 8 }}
@@ -350,7 +353,7 @@ const CalendarScreen = ({ navigation }) => {
                         name={"search"}
                       />
                     </TouchableOpacity>
-                  </View> */}
+                  </View>
           </Animated.View>
         </ImageBackground>
       </View>
@@ -394,7 +397,7 @@ const CalendarScreen = ({ navigation }) => {
             return (
               <View>
                 <TouchableOpacity onPress={() => handlePressEvent(item)}>
-                  <View style={{ paddingHorizontal: 16 }}>
+                  <View style={{ paddingHorizontal: 28 }}>
                     <EventCard event={item} />
                   </View>
                 </TouchableOpacity>

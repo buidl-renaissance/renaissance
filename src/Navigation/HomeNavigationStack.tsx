@@ -7,7 +7,8 @@ import CalendarScreen from '../Screens/CalendarScreen';
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
 // import GetStartedScreen from '../Screens/GetStartedScreen';
-// import MapScreen from '../Screens/MapScreen';
+import MapScreen from '../Screens/MapScreen';
+import BrowseMap from '../Screens/BrowseMapScreen';
 // import HomeScreen from '../Screens/HomeScreen';
 import EventScreen from '../Screens/EventScreen';
 // import SplashScreen from '../Screens/SplashScreen';
@@ -19,9 +20,11 @@ type HomeNavigationStackParamList = {
   Calendar: undefined;
   Camera: undefined;
   Collect: undefined;
+  Event: undefined;
   GetStarted: undefined;
   Home: undefined;
-  Event: undefined;
+  Map: undefined;
+  BrowseMap: undefined;
   Splash: undefined;
 };
 
@@ -40,6 +43,26 @@ const HomeNavigationStack = () => {
           headerTintColor: '#000',
         }}
       />
+      <Stack.Screen
+        component={BrowseMap}
+        name="BrowseMap"
+        options={{
+          headerStyle: {
+            backgroundColor: '#d2e4dd',
+          },
+          headerTintColor: '#000',
+        }}
+      />      
+      <Stack.Screen
+        component={MapScreen}
+        name="Map"
+        options={{
+          headerStyle: {
+            backgroundColor: '#d2e4dd',
+          },
+          headerTintColor: '#000',
+        }}
+      />      
       {/* <Stack.Screen
         component={SplashScreen}
         name="Splash"
@@ -63,16 +86,6 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={GetStartedScreen}
         name="GetStarted"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      />
-      <Stack.Screen
-        component={MapScreen}
-        name="Map"
         options={{
           headerStyle: {
             backgroundColor: '#d2e4dd',

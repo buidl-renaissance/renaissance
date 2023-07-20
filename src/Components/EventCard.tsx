@@ -4,6 +4,11 @@ import { decode } from "html-entities";
 import moment from "moment";
 import { formatDay, formatMonth } from "../utils/formatDate";
 
+export interface EventCardOptions {
+  showDate?: boolean;
+  showVenue?: boolean;
+}
+
 export const formatTime = (date) => {
   const now = moment(date);
   const duration = moment.duration(now);
@@ -22,57 +27,71 @@ const organizedByText = (event) => {
   return `Organized by: ${organizers}`;
 };
 
-export const EventCard = ({ event }) => {
+export const EventCard = ({
+  event,
+  options = { showDate: false, showVenue: true },
+}) => {
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={{ padding: 8, flex: 1, flexDirection: "row" }}>
-          <View
-            style={{
-            //   width: 56,
-              width: 8,
-              alignItems: "center",
-              borderColor: event.id === 2673 ? "#3449ff" : "white",
-              borderLeftWidth: 3,
-            }}
-          >
-            {/* <Text
+        <View style={{ paddingVertical: 6, flex: 1, flexDirection: "row" }}>
+          {options?.showDate && (
+            <View
               style={{
-                marginTop: 2,
-                color: "#666",
-                textAlign: "center",
-                textTransform: "uppercase",
+                width: options?.showDate ? 52 : 8,
+                alignItems: "center",
+                borderColor: event.id === 2673 ? "#3449ff" : "white",
+                borderLeftWidth: 3,
               }}
             >
-              {formatMonth(event.start_date)}
-            </Text>
-            <Text
-              style={{
-                marginTop: 2,
-                fontWeight: "bold",
-                fontSize: 22,
-                textAlign: "center",
-              }}
-            >
-              {formatDay(event.start_date)}
-            </Text> */}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.subtitle, { fontSize: 10 }]}>
-              {formatTimeRange(event)}
-            </Text>
-            <Text style={[styles.title, { fontSize: event.id === 2673 ? 18 : 16}]} numberOfLines={2}>
-              {decode(event.title)}
-            </Text>
-            <Text style={styles.subtitle}>{event.venue.title}</Text>
-            {event.organizer?.[0] && (
-              <Text style={styles.subtitle}>{organizedByText(event)}</Text>
-            )}
-            {/* <View style={styles.tagsContainer}>
+              <Text
+                style={{
+                  marginTop: 2,
+                  color: "#666",
+                  textAlign: "center",
+                  textTransform: "uppercase",
+                }}
+              >
+                {formatMonth(event.start_date)}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 2,
+                  fontWeight: "bold",
+                  fontSize: 22,
+                  textAlign: "center",
+                }}
+              >
+                {formatDay(event.start_date)}
+              </Text>
+            </View>
+          )}
+          <View style={{ flex: 1, alignItems: "center", flexDirection: "row" }}>
+            <View>
+              <Text style={[styles.subtitle, { fontSize: 10 }]}>
+                {formatTimeRange(event)}
+              </Text>
+              <Text
+                style={[
+                  styles.title,
+                  { fontSize: event.id === 2673 ? 18 : 16 },
+                ]}
+                numberOfLines={2}
+              >
+                {decode(event.title)}
+              </Text>
+              {event.venue && options?.showVenue && (
+                <Text style={styles.subtitle}>{event.venue.title}</Text>
+              )}
+              {event.organizer?.[0] && (
+                <Text style={styles.subtitle}>{organizedByText(event)}</Text>
+              )}
+              {/* <View style={styles.tagsContainer}>
                         {event?.categories?.map((event) => {
                             return (<Text style={styles.chip}>{event.name}</Text>);
                         })}
                     </View> */}
+            </View>
           </View>
           {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
         </View>
@@ -93,11 +112,12 @@ export const EventCard = ({ event }) => {
               color: "black",
               fontSize: 11,
               textAlign: "left",
-              fontStyle: 'italic',
+              fontStyle: "italic",
               paddingBottom: 8,
             }}
           >
-            Yoga with Soojin Kim, 7:15-8. Sally B's Tacos. Photography Retrospective. Live Art by Robin Speth and Martina Sanroman.
+            Yoga with Soojin Kim, 7:15-8. Sally B's Tacos. Photography
+            Retrospective. Live Art by Robin Speth and Martina Sanroman.
           </Text>
         </View>
       )}
@@ -109,7 +129,7 @@ const styles = StyleSheet.create({
   container: {
     // padding: 4,
     // borderBottomColor: "#bcd0c7",
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
     borderBottomColor: "#eee",
     borderBottomWidth: 1,
   },

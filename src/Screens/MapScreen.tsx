@@ -1,7 +1,7 @@
 // AIzaSyC692zHU7Xt8x6_cfidxZ0Xbzqz9mP8IvI
 
 import * as React from "react";
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 import MapView, { Marker } from "react-native-maps";
 import {
@@ -13,48 +13,54 @@ import {
   Button,
 } from "react-native";
 import { useRef } from "react";
-import { EventCard } from '../Components/EventCard';
+import { EventCard } from "../Components/EventCard";
 
-const DateRangeSelectorBox = ({
+const DateRangeSelectorBox = ({}) => {
+  const handleDateRange = (range: string) => {
+    console.log("SELECT REANGE", range);
+  };
+  return (
+    <View style={styles.dateRangeContainer}>
+      <TouchableOpacity
+        style={styles.dateTab}
+        onPress={() => handleDateRange("this-week")}
+      >
+        <Text>This Week</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.dateTab}
+        onPress={() => handleDateRange("next-week")}
+      >
+        <Text>Next Week</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.dateTab}
+        onPress={() => handleDateRange("select")}
+      >
+        <Text>Select Date</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
-}) => {
-    const handleDateRange = (range: string) => {
-        console.log("SELECT REANGE", range)
-    };
-    return (
-        <View style={styles.dateRangeContainer}>
-            <TouchableOpacity style={styles.dateTab} onPress={() => handleDateRange('this-week')}>
-                <Text>This Week</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dateTab} onPress={() => handleDateRange('next-week')}>
-                <Text>Next Week</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dateTab} onPress={() => handleDateRange('select')}>
-                <Text>Select Date</Text>
-            </TouchableOpacity>
-        </View>
-    )
-}
+const MapScreen = ({ navigation }) => {
+  const [events, setEvents] = React.useState([]);
 
-const MapScreen = ({
-    navigation
-}) => {
+  React.useEffect(() => {
+    (async () => {
+      const eventsRes = await fetch(
+        "https://detroitartdao.com/wp-json/tribe/events/v1/events?per_page=20&featured=true"
+      );
+      const fetchedEvents = await eventsRes.json();
+      setEvents(fetchedEvents.events);
+    })();
+  }, []);
 
-    const [events, setEvents] = React.useState([]);
-
-    React.useEffect(() => {
-        (async () => {
-            const eventsRes = await fetch('https://detroitartdao.com/wp-json/tribe/events/v1/events?per_page=20&featured=true');
-            const fetchedEvents = await eventsRes.json();
-            setEvents(fetchedEvents.events);
-        })();
-    }, []);
-
-    const handlePressEvent = React.useCallback((event) => {
-        navigation.push('Event', {
-            event,
-        });
-    }, []);
+  const handlePressEvent = React.useCallback((event) => {
+    navigation.push("Event", {
+      event,
+    });
+  }, []);
 
   const mapRegions = [
     {
@@ -97,7 +103,7 @@ const MapScreen = ({
   const mapRef = useRef(null);
   const selectLocation = (region) => {
     if (mapRef.current) {
-        mapRef.current?.animateToRegion(region, 1000);
+      mapRef.current?.animateToRegion(region, 1000);
     }
   };
   return (
@@ -113,20 +119,20 @@ const MapScreen = ({
         ))}
       </MapView>
       <View style={styles.mapContainer}>
-         <FlatList
-            data={events}
-            renderItem={({ item }) => {
-                return (
-                    <TouchableOpacity onPress={() => handlePressEvent(item)}>
-                        <EventCard event={item} />
-                    </TouchableOpacity>
-                )
-            }}
+        <FlatList
+          data={events}
+          renderItem={({ item }) => {
+            return (
+              <TouchableOpacity onPress={() => handlePressEvent(item)}>
+                <EventCard event={item} />
+              </TouchableOpacity>
+            );
+          }}
         />
       </View>
     </View>
   );
-}
+};
 
 export default MapScreen;
 
@@ -139,11 +145,11 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     height: Dimensions.get("window").height - 500,
     width: Dimensions.get("window").width,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderTopRightRadius: 16,
     borderTopLeftRadius: 16,
   },
@@ -153,13 +159,13 @@ const styles = StyleSheet.create({
   },
   dateRangeContainer: {
     flex: 1,
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     zIndex: 100,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     // height: Dimensions.get("window").height - 500,
     width: Dimensions.get("window").width,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   map: {
     // flex: 1,
