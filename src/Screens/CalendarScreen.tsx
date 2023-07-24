@@ -167,16 +167,17 @@ const CalendarScreen = ({ navigation }) => {
   React.useEffect(() => {
     const groups = {};
     events.map((event) => {
-      const date = moment(event.start_date).format("MMMM Do");
-      // moment().format("YYYY MM DD") === 
-      // Today, {moment().format("MMMM Do")}
-      if (!groups[date]) {
-        groups[date] = {
-          title: date,
-          data: [],
-        };
+      const start = moment(event.start_date);
+      if (start.isAfter()) {
+        const date = start.format("dddd, MMMM Do");
+        if (!groups[date]) {
+          groups[date] = {
+            title: date,
+            data: [],
+          };
+        }
+        groups[date].data.push(event);
       }
-      groups[date].data.push(event);
     });
     const r = Object.keys(groups);
     setEventsGroup(Object.values(groups) as any);

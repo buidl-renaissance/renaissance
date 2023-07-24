@@ -227,13 +227,13 @@ const BrowseMapScreen = ({ navigation }) => {
         snapToInterval={ITEM_LENGTH}
         snapToAlignment="start"
         scrollEventThrottle={16}
-        onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const index = Math.floor(
-            (e.nativeEvent.contentOffset.x + 80) / ITEM_LENGTH
-          );
-          // console.log("on momementum: ", index, currentCallout, e.nativeEvent.contentOffset.x),
-          updateSelectedCallout(index);
-        }}
+        // onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        //   const index = Math.floor(
+        //     (e.nativeEvent.contentOffset.x + 80) / ITEM_LENGTH
+        //   );
+        //   // console.log("on momementum: ", index, currentCallout, e.nativeEvent.contentOffset.x),
+        //   updateSelectedCallout(index);
+        // }}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
           return Animated.event(
             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
