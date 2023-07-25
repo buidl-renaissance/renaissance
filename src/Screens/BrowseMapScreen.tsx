@@ -3,16 +3,11 @@ import {
   Animated,
   Dimensions,
   FlatList,
-  Image,
-  ImageBackground,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  SectionList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+
 import MapView, {
   Marker,
   MapMarker,
@@ -22,14 +17,7 @@ import MapView, {
 
 import { DAEvent, DAVenue } from "../interfaces";
 
-import QRCode from "react-qr-code";
-
-import { EventCard } from "../Components/EventCard";
-import Icon, { IconTypes } from "../Components/Icon";
-import { HeaderTitleImage } from "../Components/HeaderTitleImage";
-
-import * as ImagePicker from "expo-image-picker";
-import moment from "moment";
+import VenuePopup from "../Components/VenuePopup";
 
 const { height, width } = Dimensions.get("window");
 
@@ -41,6 +29,9 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const BrowseMapScreen = ({ navigation }) => {
   const [events, setEvents] = React.useState([]);
+  const [selectedVenue, setSelectedVenue] = React.useState<DAVenue | null>(
+    null
+  );
 
   const [currentCallout, setCurrentCallout] = React.useState<number | null>(
     null
@@ -86,6 +77,7 @@ const BrowseMapScreen = ({ navigation }) => {
         }
       }
     });
+    console.log("LOAD VENUES");
     // console.log("uniqueVenues: ", uniqueVenues.map(v => v.slug))
     // console.log("uniqueVenues: ", uniqueVenues)
     setVenues(uniqueVenues);
@@ -119,6 +111,7 @@ const BrowseMapScreen = ({ navigation }) => {
       const v = getVenueWithSlug(venues, e.nativeEvent.id);
       // console.log(e.nativeEvent.id, v?.venue)
       if (v) {
+        setSelectedVenue(v);
         const index = venues.indexOf(v);
         // console.log(e.nativeEvent.id, index,  - width + 40)
         setCurrentCallout(index);
@@ -177,10 +170,33 @@ const BrowseMapScreen = ({ navigation }) => {
             }}
             title={venue.venue}
             description={venue.address}
-          />
+          >
+            <View
+              style={{
+                backgroundColor: selectedVenue?.id === venue.id ? "#333" : "#ddd",
+                borderColor: "black",
+                borderWidth: 1,
+                width: 24,
+                height: 24,
+                borderRadius: 12,
+              }}
+            >
+              <Text
+                style={{
+                  color: selectedVenue?.id === venue.id ? "white" : "black",
+                  textAlign: "center",
+                  fontSize: 16,
+                  padding: 2,
+                }}
+              >
+                {venue.events?.length}
+              </Text>
+            </View>
+          </Marker>
         ))}
       </MapView>
-      <FlatList
+      <VenuePopup venue={selectedVenue} />
+      {/* <FlatList
         style={styles.venueContainer}
         ref={venueListRef}
         renderItem={({ item, index }: { item: DAVenue; index: number }) => {
@@ -227,20 +243,20 @@ const BrowseMapScreen = ({ navigation }) => {
         snapToInterval={ITEM_LENGTH}
         snapToAlignment="start"
         scrollEventThrottle={16}
-        // onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        //   const index = Math.floor(
-        //     (e.nativeEvent.contentOffset.x + 80) / ITEM_LENGTH
-        //   );
-        //   // console.log("on momementum: ", index, currentCallout, e.nativeEvent.contentOffset.x),
-        //   updateSelectedCallout(index);
-        // }}
+        onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const index = Math.floor(
+            (e.nativeEvent.contentOffset.x + 80) / ITEM_LENGTH
+          );
+          // console.log("on momementum: ", index, currentCallout, e.nativeEvent.contentOffset.x),
+          updateSelectedCallout(index);
+        }}
         onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
           return Animated.event(
             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
             { useNativeDriver: false }
           );
         }}
-      />
+      /> */}
     </View>
   );
 };

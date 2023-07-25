@@ -38,6 +38,8 @@ export const EventCard = ({
     const end = moment(event.end_date);
     if (start.isBefore() && end.isAfter()) {
       setIsNow(true);
+    } else {
+      setIsNow(false);
     }
   }, [event.start_date, event.end_date, isNow, setIsNow]);
 

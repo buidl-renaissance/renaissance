@@ -3,22 +3,14 @@ import {
   Animated,
   Dimensions,
   FlatList,
-  Image,
+  AppState,
   ImageBackground,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   SectionList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import MapView, {
-  Marker,
-  MapMarker,
-  Region,
-  MarkerPressEvent,
-} from "react-native-maps";
 
 import QRCode from "react-qr-code";
 
@@ -28,6 +20,7 @@ import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
+import EventPopup from "../Components/EventPopup";
 
 const { height, width } = Dimensions.get("window");
 
@@ -67,58 +60,16 @@ interface DAEvent {
   venue: DAVenue;
 }
 
-/**
- * Returns a memoized function that will only call the passed function when it hasn't been called for the wait period
- * @param func The function to be called
- * @param wait Wait period after function hasn't been called for
- * @returns A memoized function that is debounced
- */
-const useDebouncedCallback = (func, wait) => {
-  // Use a ref to store the timeout between renders
-  // and prevent changes to it from causing re-renders
-  const timeout = React.useRef();
-
-  return React.useCallback(
-    (...args) => {
-      const later = () => {
-        clearTimeout(timeout.current);
-        func(...args);
-      };
-
-      clearTimeout(timeout.current);
-      timeout.current = setTimeout(later, wait);
-    },
-    [func, wait]
-  );
-};
-
 const CalendarScreen = ({ navigation }) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
     { data: DAEvent[]; title: string }[]
   >([]);
-  const [display, setDisplay] = React.useState<DisplayType>("list");
-  const [currentCallout, setCurrentCallout] = React.useState<number | null>(
+  const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
-  const [image, setImage] = React.useState<string | null>(null);
 
-  const venueListRef = React.useRef<FlatList>(null);
-  const mapViewRef = React.useRef<MapView>(null);
-  const markerRefs = React.useRef<MapMarker[]>(null);
-  // const carouselRef = React.useRef<typeof Carousel<any>>(null);
-  const scrollX = React.useRef(new Animated.Value(0)).current;
-
-  const [region, setRegion] = React.useState<Region>({
-    latitude: 42.3498284,
-    longitude: -83.0329842,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  const [lastRegion, setLastRegion] = React.useState<Region>(region);
-
-  const [venues, setVenues] = React.useState<DAVenue[]>([]);
-  const [time, setTime] = React.useState<string>('');
+  const [time, setTime] = React.useState<string>("");
 
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
@@ -135,27 +86,25 @@ const CalendarScreen = ({ navigation }) => {
     // ),
   });
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  // const pickImage = async () => {
+  //   // No permissions request is necessary for launching the image library
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     quality: 1,
+  //   });
 
-    console.log(result);
+  //   console.log(result);
 
-    if (!result.cancelled) {
-      setImage(result.uri);
-    }
-  };
+  //   if (!result.cancelled) {
+  //     setImage(result.uri);
+  //   }
+  // };
 
   const handleToggleDisplay = React.useCallback(() => {
-    navigation.push('BrowseMap')
-    // setDisplay(display === "map" ? "list" : "map");
-    // setRegion(lastRegion);
-  }, [setDisplay, display, lastRegion, region]);
+    navigation.push("BrowseMap");
+  }, []);
 
   React.useEffect(() => {
     (async () => {
@@ -175,11 +124,15 @@ const CalendarScreen = ({ navigation }) => {
   // }, [time, setTime]);
 
   React.useEffect(() => {
+    console.log("DID LOAD")
+  });
+
+  React.useEffect(() => {
     const groups = {};
     events.map((event) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
-      if (end.isAfter() && moment(start).add(24, 'hour').isAfter()) {
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const date = start.format("dddd, MMMM Do");
         if (!groups[date]) {
           groups[date] = {
@@ -192,99 +145,23 @@ const CalendarScreen = ({ navigation }) => {
     });
     const r = Object.keys(groups);
     setEventsGroup(Object.values(groups) as any);
-  }, [events]);
-
-  React.useEffect(() => {
-    const results = {};
-    const uniqueVenues: DAVenue[] = [];
-    events.map((event: DAEvent) => {
-      if (event.venue) {
-        if (!results[event.venue.slug]) {
-          const eventVenue = event.venue;
-          eventVenue.events = [event];
-          results[event.venue.slug] = eventVenue;
-          uniqueVenues.push(eventVenue);
-        } else {
-          results[event.venue.slug].events.push(event);
-        }
-      }
-    });
-    // console.log("uniqueVenues: ", uniqueVenues.map(v => v.slug))
-    setVenues(uniqueVenues);
+    console.log("COMPUTE EVENT GROUPS")
   }, [events]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
       event,
     });
+    // setSelectedEvent(event);
   }, []);
 
-  const getItemLayout = (_data: any, index: number) => ({
-    length: ITEM_LENGTH,
-    offset: ITEM_LENGTH * (index - 1),
-    index,
-  });
-
-  const getVenueWithSlug = (venues, slug: string) => {
-    let match: DAVenue | null = null;
-    venues.map((venue) => {
-      if (venue.slug === slug) {
-        match = venue;
-      }
-    });
-    return match;
-  };
-
-  const [username, setUsername] = React.useState("wiredinsamurai");
-  const [pub, setPub] = React.useState("test");
-  const [sig, setSig] = React.useState("test");
-
+  // const [username, setUsername] = React.useState("wiredinsamurai");
+  // const [pub, setPub] = React.useState("test");
+  // const [sig, setSig] = React.useState("test");
   // console.log(username, pub, sig);
-
   // React.useEffect(() => {
   //     username && pug && sig
   // }, []);
-
-  const handleMarkerPress = React.useCallback(
-    (e: MarkerPressEvent) => {
-      const coordinate = e.nativeEvent.coordinate;
-      const v = getVenueWithSlug(venues, e.nativeEvent.id);
-      // console.log(e.nativeEvent.id, v?.venue)
-      if (v) {
-        const index = venues.indexOf(v);
-        // console.log(e.nativeEvent.id, index,  - width + 40)
-        setCurrentCallout(index);
-        venueListRef.current?.scrollToOffset({
-          animated: true,
-          offset: index * ITEM_LENGTH,
-        });
-      }
-      mapViewRef.current?.animateToRegion({
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: lastRegion.latitudeDelta,
-        longitudeDelta: lastRegion.longitudeDelta,
-      });
-    },
-    [venues, lastRegion]
-  );
-
-  // const updateSelectedCallout = useDebouncedCallback((index: number) => {
-  //     if (currentCallout !== index) {
-  //         markerRefs[index].showCallout();
-  //         setCurrentCallout(index);
-  //     }
-  // }, 100); //, [ currentCallout, markerRefs ]);
-  const updateSelectedCallout = React.useCallback(
-    (index: number) => {
-      // console.log("updateSelectedCallout: ", currentCallout !== index)
-      if (currentCallout !== index) {
-        markerRefs[index].showCallout();
-        setCurrentCallout(index);
-      }
-    },
-    [currentCallout, markerRefs]
-  );
 
   const sectionHeader = () => {
     return (
@@ -333,39 +210,60 @@ const CalendarScreen = ({ navigation }) => {
                                     </View> */}
             {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
             {/* {username && pub && sig && } */}
-            <View style={{ flex: 1, flexDirection: 'row', marginTop: 8 }}>
-                    <TouchableOpacity
-                      onPress={handleToggleDisplay}
-                      style={{ marginRight: 16, opacity: 1, borderColor: 'white', borderRadius: 20, borderWidth: 1, padding: 8 }}
-                    >
-                      <Icon
-                        type={IconTypes.Ionicons}
-                        size={20}
-                        color="white"
-                        name={"map-outline"}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{ marginRight: 16, opacity: 1, borderColor: 'white', borderRadius: 20, borderWidth: 1, padding: 8 }}
-                    >
-                      <Icon
-                        type={IconTypes.Entypo}
-                        size={20}
-                        color="white"
-                        name={"chat"}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{ marginRight: 16, opacity: 1, borderColor: 'white', borderRadius: 20, borderWidth: 1, padding: 8 }}
-                    >
-                      <Icon
-                        type={IconTypes.Feather}
-                        size={20}
-                        color="white"
-                        name={"search"}
-                      />
-                    </TouchableOpacity>
-                  </View>
+            <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
+              <TouchableOpacity
+                onPress={handleToggleDisplay}
+                style={{
+                  marginRight: 16,
+                  opacity: 1,
+                  borderColor: "white",
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  padding: 8,
+                }}
+              >
+                <Icon
+                  type={IconTypes.Ionicons}
+                  size={20}
+                  color="white"
+                  name={"map-outline"}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  marginRight: 16,
+                  opacity: 1,
+                  borderColor: "white",
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  padding: 8,
+                }}
+              >
+                <Icon
+                  type={IconTypes.Entypo}
+                  size={20}
+                  color="white"
+                  name={"chat"}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  marginRight: 16,
+                  opacity: 1,
+                  borderColor: "white",
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  padding: 8,
+                }}
+              >
+                <Icon
+                  type={IconTypes.Feather}
+                  size={20}
+                  color="white"
+                  name={"search"}
+                />
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </ImageBackground>
       </View>
@@ -374,137 +272,49 @@ const CalendarScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {display === "list" ? (
-        <SectionList
-          sections={eventsGroup}
-          ListHeaderComponent={sectionHeader()}
-          renderSectionHeader={({ section: { title } }) => (
-            <View
+      <SectionList
+        sections={eventsGroup}
+        ListHeaderComponent={sectionHeader()}
+        renderSectionHeader={({ section: { title } }) => (
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "baseline",
+              marginBottom: 8,
+              marginTop: 22,
+              paddingHorizontal: 28,
+              paddingBottom: 4,
+              backgroundColor: "white",
+            }}
+          >
+            <Text
               style={{
-                flex: 1,
-                flexDirection: "row",
-                alignItems: "baseline",
-                marginBottom: 8,
-                marginTop: 22,
-                paddingHorizontal: 28,
-                paddingBottom: 4,
-                backgroundColor: 'white',
+                color: "black",
+                fontSize: 28,
+                paddingRight: 12,
+                fontWeight: "bold",
+                textAlign: "left",
+                marginTop: 16,
               }}
             >
-              <Text
-                style={{
-                  color: "black",
-                  fontSize: 28,
-                  paddingRight: 12,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                  marginTop: 16,
-                }}
-              >
-                {title}
-              </Text>
-            </View>
-          )}
-          renderItem={({ item }) => {
-            return (
-              <View>
-                <TouchableOpacity onPress={() => handlePressEvent(item)}>
-                  <View style={{ paddingHorizontal: 28 }}>
-                    <EventCard event={item} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            );
-          }}
-        />
-      ) : (
-        <View style={styles.map}>
-          <MapView
-            loadingEnabled={true}
-            style={styles.map}
-            ref={mapViewRef}
-            region={region}
-            mapPadding={{
-              top: 0,
-              bottom: 180,
-              right: 0,
-              left: 0,
-            }}
-            onRegionChange={(region) => {
-              setLastRegion(region);
-            }}
-            onMarkerPress={handleMarkerPress}
-          >
-            {venues.map((venue: DAVenue, index) => (
-              <Marker
-                identifier={venue.slug}
-                ref={(ref) => (markerRefs[index] = ref)}
-                key={venue.slug}
-                coordinate={{
-                  latitude: venue.geo_lat,
-                  longitude: venue.geo_lng,
-                }}
-                title={venue.venue}
-                description={venue.address}
-              />
-            ))}
-          </MapView>
-          <FlatList
-            style={styles.venueContainer}
-            ref={venueListRef}
-            renderItem={({ item, index }: { item: DAVenue; index: number }) => {
-              return (
-                <View style={{ width: ITEM_LENGTH }}>
-                  <Animated.View
-                    style={[
-                      {
-                        height: 220,
-                      },
-                    ]}
-                  >
-                    <View style={styles.cardContainer}>
-                      {/* <EventCard event={item}/> */}
-                      <Text style={styles.title}>{item.venue}</Text>
-                      {item.events?.length && (
-                        <Text>{item.events?.length} upcoming events</Text>
-                      )}
-                    </View>
-                  </Animated.View>
+              {title}
+            </Text>
+          </View>
+        )}
+        renderItem={({ item }) => {
+          return (
+            <View>
+              <TouchableOpacity onPress={() => handlePressEvent(item)}>
+                <View style={{ paddingHorizontal: 28 }}>
+                  <EventCard event={item} />
                 </View>
-              );
-            }}
-            data={venues}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            // keyExtractor={(item) => item.id}
-            keyExtractor={(item) => item.slug}
-            getItemLayout={getItemLayout}
-            bounces={true}
-            bouncesZoom={false}
-            decelerationRate={0}
-            renderToHardwareTextureAndroid
-            contentContainerStyle={styles.flatListContent}
-            snapToInterval={ITEM_LENGTH}
-            snapToAlignment="start"
-            scrollEventThrottle={16}
-            onMomentumScrollEnd={(
-              e: NativeSyntheticEvent<NativeScrollEvent>
-            ) => {
-              const index = Math.floor(
-                (e.nativeEvent.contentOffset.x + 80) / ITEM_LENGTH
-              );
-              // console.log("on momementum: ", index, currentCallout, e.nativeEvent.contentOffset.x),
-              updateSelectedCallout(index);
-            }}
-            onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-              return Animated.event(
-                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                { useNativeDriver: false }
-              );
-            }}
-          />
-        </View>
-      )}
+              </TouchableOpacity>
+            </View>
+          );
+        }}
+      />
+      {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );
 };

@@ -31,7 +31,6 @@ const EventScreen = ({
     }, []);
 
     const handleRSVP = React.useCallback(() => {
-        // Alert.alert("THIS NEEDS TO BE INTEGRATED!!!");
         if (event.url) {
             Linking.openURL(event.url);
         }
@@ -40,7 +39,9 @@ const EventScreen = ({
     return (
         <View style={styles.container}>
             <ScrollView>
-                <EventCard event={event} />
+                <View style={{ padding: 16 }}>
+                    <EventCard event={event} />
+                </View>
                 {event.content && <RenderHTML html={event.content} style={{ paddingHorizontal: 16 }} />}
             </ScrollView>
             {event.url?.match('http') && (

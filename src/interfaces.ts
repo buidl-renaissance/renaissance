@@ -27,5 +27,8 @@ export interface DAVenue {
 }
 
 export interface DAEvent {
+  slug: string;
+  start_date: string | null;
+  end_date: string | null;
   venue: DAVenue;
 }
