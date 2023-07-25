@@ -111,6 +111,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("BrowseMap");
   }, []);
 
+  const handleSearchPress = React.useCallback(() => {
+    navigation.push("Search");
+  }, []);
+
   React.useEffect(() => {
     (async () => {
       const eventsRes = await fetch("https://api.dpop.tech/api/events");
@@ -260,6 +264,7 @@ const CalendarScreen = ({ navigation }) => {
                   borderWidth: 1,
                   padding: 8,
                 }}
+                onPress={handleSearchPress}
               >
                 <Icon
                   type={IconTypes.Feather}

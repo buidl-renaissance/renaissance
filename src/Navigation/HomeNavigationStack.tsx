@@ -11,6 +11,7 @@ import MapScreen from '../Screens/MapScreen';
 import BrowseMap from '../Screens/BrowseMapScreen';
 // import HomeScreen from '../Screens/HomeScreen';
 import EventScreen from '../Screens/EventScreen';
+import SearchScreen from '../Screens/SearchScreen';
 // import SplashScreen from '../Screens/SplashScreen';
 
 
@@ -24,6 +25,7 @@ type HomeNavigationStackParamList = {
   GetStarted: undefined;
   Home: undefined;
   Map: undefined;
+  Search: undefined;
   BrowseMap: undefined;
   Splash: undefined;
 };
@@ -52,10 +54,20 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: '#000',
         }}
-      />      
+      />
       <Stack.Screen
         component={MapScreen}
         name="Map"
+        options={{
+          headerStyle: {
+            backgroundColor: '#d2e4dd',
+          },
+          headerTintColor: '#000',
+        }}
+      />      
+      <Stack.Screen
+        component={SearchScreen}
+        name="Search"
         options={{
           headerStyle: {
             backgroundColor: '#d2e4dd',

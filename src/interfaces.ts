@@ -27,8 +27,10 @@ export interface DAVenue {
 }
 
 export interface DAEvent {
+  categories: string[];
+  end_date: string | null;
   slug: string;
   start_date: string | null;
-  end_date: string | null;
+  title: string;
   venue: DAVenue;
 }
