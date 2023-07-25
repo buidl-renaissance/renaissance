@@ -12,6 +12,7 @@ import { EventCard } from "../Components/EventCard";
 import { RenderHTML } from "../Components/RenderHTML";
 
 import { lightGreen, darkGrey } from "../colors";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const { height, width } = Dimensions.get("window");
 
@@ -21,14 +22,15 @@ const EMPTY_ITEM_LENGTH = (width - ITEM_LENGTH) / 2;
 const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
 
-const VenuePopup = ({ venue }) => {
+const VenuePopup = ({ venue, onClose, onSelectEvent }) => {
   const bottomSheetModalRef = React.useRef<BottomSheetModal>(null);
 
   // variables
   const snapPoints = React.useMemo(() => ["90%", "50%", "35%"], []);
 
   const handleSheetChanges = React.useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
+    // console.log("handleSheetChanges", index);
+    if (index === -1) onClose && onClose();
   }, []);
 
   React.useEffect(() => {
@@ -62,11 +64,15 @@ const VenuePopup = ({ venue }) => {
             <View style={{ marginHorizontal: -4, marginTop: 8 }}>
               {venue.events?.map((event: DAEvent) => {
                 return (
-                  <EventCard
-                    event={event}
+                  <TouchableOpacity
                     key={event.slug}
-                    options={{ showDate: true, showVenue: false }}
-                  />
+                    onPress={() => onSelectEvent(event)}
+                  >
+                    <EventCard
+                      event={event}
+                      options={{ showDate: true, showVenue: false }}
+                    />
+                  </TouchableOpacity>
                 );
               })}
             </View>

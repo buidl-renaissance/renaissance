@@ -15,6 +15,8 @@ import MapView, {
   MarkerPressEvent,
 } from "react-native-maps";
 
+import { HeaderTitleImage } from "../Components/HeaderTitleImage";
+
 import { DAEvent, DAVenue } from "../interfaces";
 
 import VenuePopup from "../Components/VenuePopup";
@@ -53,6 +55,21 @@ const BrowseMapScreen = ({ navigation }) => {
 
   const [venues, setVenues] = React.useState<DAVenue[]>([]);
   const mapRef = React.useRef(null);
+
+  navigation.setOptions({
+    title: 'Map',
+    headerTitle: () => <HeaderTitleImage />,
+    // headerRight: () => (
+    //     <>
+    //         <TouchableOpacity onPress={handleToggleDisplay} style={{ marginRight: 16, opacity: 0 }}>
+    //             <Icon type={IconTypes.Ionicons} size={20} color="black" name={display === 'list' ? 'map-outline' : 'list-outline'} />
+    //         </TouchableOpacity>
+    //         <TouchableOpacity onPress={pickImage} style={{ marginRight: 16, paddingBottom: 12 }}>
+    //             <Icon type={IconTypes.MaterialCommunityIcons} size={24} color="black" name={'plus-box-multiple'} />
+    //         </TouchableOpacity>
+    //     </>
+    // ),
+  });
 
   React.useEffect(() => {
     (async () => {
@@ -141,6 +158,12 @@ const BrowseMapScreen = ({ navigation }) => {
     [currentCallout, markerRefs]
   );
 
+  const onSelectEvent = React.useCallback((event: DAEvent) => {
+    navigation.push("Event", {
+      event,
+    });
+  }, []);
+
   return (
     <View style={styles.map}>
       <MapView
@@ -150,7 +173,8 @@ const BrowseMapScreen = ({ navigation }) => {
         region={region}
         mapPadding={{
           top: 0,
-          bottom: 180,
+          bottom: selectedVenue ? 330 : 0,
+          // bottom: 180,
           right: 0,
           left: 0,
         }}
@@ -195,7 +219,7 @@ const BrowseMapScreen = ({ navigation }) => {
           </Marker>
         ))}
       </MapView>
-      <VenuePopup venue={selectedVenue} />
+      <VenuePopup venue={selectedVenue} onSelectEvent={onSelectEvent} onClose={() => setSelectedVenue(null)} />
       {/* <FlatList
         style={styles.venueContainer}
         ref={venueListRef}

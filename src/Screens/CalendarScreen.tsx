@@ -72,6 +72,7 @@ const CalendarScreen = ({ navigation }) => {
   const [time, setTime] = React.useState<string>("");
 
   navigation.setOptions({
+    title: 'Home',
     headerTitle: () => <HeaderTitleImage />,
     headerShown: false,
     // headerRight: () => (
