@@ -55,23 +55,12 @@ const SearchScreen = ({ navigation, route }) => {
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  const [, updateState] = React.useState();
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-
   const onChangeSearch = (query) => setSearchQuery(query);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
       event,
     });
-    // setSelectedEvent(event);
-  }, []);
-
-  const toggleFilter = React.useCallback((filter) => {
-    const updatedFilters = filters;
-    updatedFilters[filter] = updatedFilters[filter] ? false : true;
-    setFilters(updatedFilters);
-    forceUpdate();
   }, []);
 
   React.useEffect(() => {
@@ -116,7 +105,7 @@ const SearchScreen = ({ navigation, route }) => {
           : true && textMatch;
       })
     );
-  }, [searchQuery, art, music, fitness, tech, networking]);
+  }, [events, searchQuery, art, music, fitness, tech, networking]);
 
   //   filteredEvents.map((event) => {
   //     console.log(event);
