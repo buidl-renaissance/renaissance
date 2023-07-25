@@ -31,6 +31,16 @@ export const EventCard = ({
   event,
   options = { showDate: false, showVenue: true },
 }) => {
+  const [isNow, setIsNow] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    const start = moment(event.start_date);
+    const end = moment(event.end_date);
+    if (start.isBefore() && end.isAfter()) {
+      setIsNow(true);
+    }
+  }, [event.start_date, event.end_date, isNow, setIsNow]);
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -68,9 +78,32 @@ export const EventCard = ({
           )}
           <View style={{ flex: 1, alignItems: "center", flexDirection: "row" }}>
             <View>
-              <Text style={[styles.subtitle, { fontSize: 10 }]}>
-                {formatTimeRange(event)}
-              </Text>
+              <View
+                style={{ flex: 1, alignItems: "center", flexDirection: "row" }}
+              >
+                <Text style={[styles.subtitle, { fontSize: 10 }]}>
+                  {formatTimeRange(event)}
+                </Text>
+                {isNow && (
+                  <Text
+                    style={[
+                      styles.subtitle,
+                      {
+                        fontSize: 8,
+                        backgroundColor: "blue",
+                        color: "white",
+                        borderRadius: 4,
+                        paddingHorizontal: 3,
+                        paddingVertical: 1,
+                        marginLeft: 3,
+                        overflow: "hidden",
+                      },
+                    ]}
+                  >
+                    NOW
+                  </Text>
+                )}
+              </View>
               <Text
                 style={[
                   styles.title,

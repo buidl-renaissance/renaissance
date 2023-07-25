@@ -118,6 +118,7 @@ const CalendarScreen = ({ navigation }) => {
   const [lastRegion, setLastRegion] = React.useState<Region>(region);
 
   const [venues, setVenues] = React.useState<DAVenue[]>([]);
+  const [time, setTime] = React.useState<string>('');
 
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
@@ -164,11 +165,21 @@ const CalendarScreen = ({ navigation }) => {
     })();
   }, []);
 
+  // const tick = () => {
+  //   setTime(moment().format('y-M-D h:m:s'));
+  // }
+
+  // React.useEffect(() => {
+  //   let timerID = setInterval(() => tick(), 1000);
+  //   return () => clearInterval(timerID);
+  // }, [time, setTime]);
+
   React.useEffect(() => {
     const groups = {};
     events.map((event) => {
       const start = moment(event.start_date);
-      if (start.isAfter()) {
+      const end = moment(event.end_date);
+      if (end.isAfter() && moment(start).add(24, 'hour').isAfter()) {
         const date = start.format("dddd, MMMM Do");
         if (!groups[date]) {
           groups[date] = {
@@ -313,7 +324,7 @@ const CalendarScreen = ({ navigation }) => {
               }}
             >
               Unlock the rich tapestry of food, arts, and events that Detroit
-              has to offer.
+              has to offer. {time}
             </Text>
             {/* <View style={{ position: 'relative', height: 120 }}>
                                         <View style={{ borderColor: 'white', borderWidth: 5, position: 'absolute' }}>
@@ -375,8 +386,8 @@ const CalendarScreen = ({ navigation }) => {
                 alignItems: "baseline",
                 marginBottom: 8,
                 marginTop: 22,
-                paddingHorizontal: 32,
-                paddingBottom: 8,
+                paddingHorizontal: 28,
+                paddingBottom: 4,
                 backgroundColor: 'white',
               }}
             >
