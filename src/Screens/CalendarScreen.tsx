@@ -230,7 +230,7 @@ const CalendarScreen = ({ navigation }) => {
                   name={"map-outline"}
                 />
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={{
                   marginRight: 16,
                   opacity: 1,
@@ -246,7 +246,7 @@ const CalendarScreen = ({ navigation }) => {
                   color="white"
                   name={"chat"}
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 style={{
                   marginRight: 16,
