@@ -10,9 +10,13 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 import QRCode from "react-qr-code";
+import * as Updates from "expo-updates";
+
+import { checkForUpdates } from "../utils/checkForUpdate";
 
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
@@ -72,7 +76,7 @@ const CalendarScreen = ({ navigation }) => {
   const [time, setTime] = React.useState<string>("");
 
   navigation.setOptions({
-    title: 'Home',
+    title: "Home",
     headerTitle: () => <HeaderTitleImage />,
     headerShown: false,
     // headerRight: () => (
@@ -125,7 +129,7 @@ const CalendarScreen = ({ navigation }) => {
   // }, [time, setTime]);
 
   React.useEffect(() => {
-    console.log("DID LOAD")
+    console.log("DID LOAD");
   });
 
   React.useEffect(() => {
@@ -146,7 +150,7 @@ const CalendarScreen = ({ navigation }) => {
     });
     const r = Object.keys(groups);
     setEventsGroup(Object.values(groups) as any);
-    console.log("COMPUTE EVENT GROUPS")
+    console.log("COMPUTE EVENT GROUPS");
   }, [events]);
 
   const handlePressEvent = React.useCallback((event) => {
