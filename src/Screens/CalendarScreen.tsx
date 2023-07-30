@@ -26,6 +26,8 @@ import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
 import EventPopup from "../Components/EventPopup";
 
+import { DAEvent, Weather } from "../interfaces";
+
 const { height, width } = Dimensions.get("window");
 
 const SPACING = 8;
@@ -33,36 +35,6 @@ const ITEM_LENGTH = width * 0.9; // Item is a square. Therefore, its height and 
 const EMPTY_ITEM_LENGTH = (width - ITEM_LENGTH) / 2;
 const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
-
-type DisplayType = "list" | "map";
-
-interface DAVenue {
-  id: number; // 583,
-  author: string; // "2",
-  status: string; // "publish",
-  date: string; // "2022-09-18 16:45:53",
-  date_utc: string; // "2022-09-18 16:45:53",
-  modified: string; // "2022-09-18 16:45:53",
-  modified_utc: string; // "2022-09-18 16:45:53",
-  url: string; // "https://detroitartdao.com/venue/detroit-vineyards",
-  venue: string; // "Detroit Vineyards",
-  slug: string; // "detroit-vineyards",
-  address: string; // "1000 Gratiot Ave",
-  city: string; // "Detroit",
-  country: string; // "United States",
-  state: string; // "MI",
-  zip: string; // "48207",
-  stateprovince: string; // "MI",
-  geo_lat: number; // 42.3406527,
-  geo_lng: number; // -83.0401141,
-  show_map: boolean; // true,
-  show_map_link: boolean; // true
-  events?: DAEvent[];
-}
-
-interface DAEvent {
-  venue: DAVenue;
-}
 
 const CalendarScreen = ({ navigation }) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
@@ -73,6 +45,7 @@ const CalendarScreen = ({ navigation }) => {
     null
   );
 
+  const [weather, setWeather] = React.useState<Weather>();
   const [time, setTime] = React.useState<string>("");
 
   navigation.setOptions({
@@ -123,22 +96,19 @@ const CalendarScreen = ({ navigation }) => {
     })();
   }, []);
 
-  // const tick = () => {
-  //   setTime(moment().format('y-M-D h:m:s'));
-  // }
-
-  // React.useEffect(() => {
-  //   let timerID = setInterval(() => tick(), 1000);
-  //   return () => clearInterval(timerID);
-  // }, [time, setTime]);
-
   React.useEffect(() => {
-    console.log("DID LOAD");
-  });
+    (async () => {
+      const weatherRes = await fetch(
+        "https://api.weather.gov/gridpoints/DTX/66,34/forecast/hourly"
+      );
+      const weatherData = await weatherRes.json();
+      setWeather(weatherData);
+    })();
+  }, []);
 
   React.useEffect(() => {
     const groups = {};
-    events.map((event) => {
+    events.map((event: DAEvent) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -212,6 +182,16 @@ const CalendarScreen = ({ navigation }) => {
               Unlock the rich tapestry of food, arts, and events that Detroit
               has to offer. {time}
             </Text>
+            {weather?.properties?.periods?.length && (
+              <View>
+                <Text style={{ color: "white", fontSize: 32 }}>
+                  {weather?.properties?.periods[0].temperature} °F
+                </Text>
+                <Text style={{ color: "white", fontWeight: "bold" }}>
+                  {weather?.properties?.periods[0].shortForecast}
+                </Text>
+              </View>
+            )}
             {/* <View style={{ position: 'relative', height: 120 }}>
                                         <View style={{ borderColor: 'white', borderWidth: 5, position: 'absolute' }}>
                                             <QRCode value={`https://testflight.apple.com/join/UszpHYKN`} size={100} />
@@ -314,12 +294,12 @@ const CalendarScreen = ({ navigation }) => {
         )}
         renderItem={({ item }) => {
           return (
-            <View>
-              <TouchableOpacity onPress={() => handlePressEvent(item)}>
-                <View style={{ paddingHorizontal: 28 }}>
-                  <EventCard event={item} />
-                </View>
-              </TouchableOpacity>
+            <View style={{ paddingHorizontal: 28 }}>
+              <EventCard
+                event={item}
+                options={{ showBookmark: true }}
+                onSelectEvent={() => handlePressEvent(item)}
+              />
             </View>
           );
         }}

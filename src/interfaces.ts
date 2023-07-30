@@ -27,10 +27,61 @@ export interface DAVenue {
 }
 
 export interface DAEvent {
+  id: any;
   categories: string[];
   end_date: string | null;
   slug: string;
   start_date: string | null;
   title: string;
+  featured: boolean;
+  excerpt: string;
   venue: DAVenue;
+}
+
+export interface WeatherPeriod {
+  number: number; // 1,
+  name: string; // "",
+  startTime: string; // "2023-07-29T16:00:00-04:00",
+  endTime: string; // "2023-07-29T17:00:00-04:00",
+  isDaytime: boolean; // true,
+  temperature: number; // 82,
+  temperatureUnit: string; // "F",
+  temperatureTrend: string; // null,
+  probabilityOfPrecipitation: {
+    unitCode: string; // "wmoUnit:percent",
+    value: number; // 3
+  },
+  dewpoint: {
+    unitCode: string; //"wmoUnit:degC",
+    value: number; //18.333333333333332
+  },
+  relativeHumidity: {
+    unitCode: string; // "wmoUnit:percent",
+    value: number; // 56
+  },
+  windSpeed: string; // "12 mph",
+  windDirection: string; // "N",
+  icon: string; // "https://api.weather.gov/icons/land/day/sct,3?size=small",
+  shortForecast: string; // "Mostly Sunny",
+  detailedForecast: string; // ""
+}
+
+export interface WeatherProperties {
+  updated: string;
+  units: string;
+  forecastGenerator: string;
+  generatedAt: string;
+  updateTime: string;
+  validTimes: string;
+  elevation: {
+    unitCode: string;
+    value: number;
+  }
+  periods: WeatherPeriod[];
+}
+
+export interface Weather {
+  properties: WeatherProperties;
+  type: string;
+  geometry: object;
 }

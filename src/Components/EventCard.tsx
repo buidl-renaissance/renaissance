@@ -1,10 +1,16 @@
 import React from "react";
-import { StyleSheet, Image, Text, View } from "react-native";
+import { StyleSheet, Image, Text, TouchableOpacity, View } from "react-native";
 import { decode } from "html-entities";
 import moment from "moment";
 import { formatDay, formatMonth } from "../utils/formatDate";
+import RenderHtml from "react-native-render-html";
+import Icon, { IconTypes } from "../Components/Icon";
+import { DAEvent } from "../interfaces";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export interface EventCardOptions {
+  showBookmark?: boolean;
   showDate?: boolean;
   showVenue?: boolean;
 }
@@ -27,11 +33,19 @@ const organizedByText = (event) => {
   return `Organized by: ${organizers}`;
 };
 
+interface EventCardProps {
+  event: DAEvent;
+  options?: EventCardOptions;
+  onSelectEvent?: () => void;
+}
+
 export const EventCard = ({
   event,
-  options = { showDate: false, showVenue: true },
-}) => {
+  options = { showVenue: true },
+  onSelectEvent,
+}: EventCardProps) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const start = moment(event.start_date);
@@ -43,93 +57,148 @@ export const EventCard = ({
     }
   }, [event.start_date, event.end_date, isNow, setIsNow]);
 
+  React.useEffect(() => {
+    (async () => {
+      const result = await AsyncStorage.getItem(`Bookmark-${event.id}`);
+      if (result) setIsBookmarked(true);
+    })();
+  }, []);
+
+  const handleBookmarkPress = React.useCallback(() => {
+    (async () => {
+      if (isBookmarked) {
+        await AsyncStorage.removeItem(`Bookmark-${event.id}`);
+      } else {
+        await AsyncStorage.setItem(`Bookmark-${event.id}`, '1');
+      }
+    })();
+    setIsBookmarked(!isBookmarked);
+  }, [isBookmarked]);
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={{ paddingVertical: 6, flex: 1, flexDirection: "row" }}>
-          {options?.showDate && (
-            <View
-              style={{
-                width: options?.showDate ? 52 : 8,
-                alignItems: "center",
-                borderColor: event.id === 2673 ? "#3449ff" : "white",
-                borderLeftWidth: 3,
-              }}
-            >
-              <Text
-                style={{
-                  marginTop: 2,
-                  color: "#666",
-                  textAlign: "center",
-                  textTransform: "uppercase",
-                }}
-              >
-                {formatMonth(event.start_date)}
-              </Text>
-              <Text
-                style={{
-                  marginTop: 2,
-                  fontWeight: "bold",
-                  fontSize: 22,
-                  textAlign: "center",
-                }}
-              >
-                {formatDay(event.start_date)}
-              </Text>
-            </View>
-          )}
-          <View style={{ flex: 1, alignItems: "center", flexDirection: "row" }}>
-            <View>
+        <TouchableOpacity
+          style={{
+            paddingVertical: 6,
+            flex: 1,
+            flexDirection: "row",
+            borderColor: event?.featured ? "#3449ff" : "white",
+            borderLeftWidth: 3,
+            paddingLeft: 6,
+            marginLeft: -8,
+          }}
+          onPress={onSelectEvent}
+        >
+          <View>
+            {options?.showDate && (
               <View
-                style={{ flex: 1, alignItems: "center", flexDirection: "row" }}
+                style={{
+                  width: options?.showDate ? 52 : 8,
+                  alignItems: "center",
+                }}
               >
-                <Text style={[styles.subtitle, { fontSize: 10 }]}>
-                  {formatTimeRange(event)}
+                <Text
+                  style={{
+                    marginTop: 2,
+                    color: "#666",
+                    textAlign: "center",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {formatMonth(event.start_date)}
                 </Text>
-                {isNow && (
-                  <Text
-                    style={[
-                      styles.subtitle,
-                      {
-                        fontSize: 8,
-                        backgroundColor: "blue",
-                        color: "white",
-                        borderRadius: 4,
-                        paddingHorizontal: 3,
-                        paddingVertical: 1,
-                        marginLeft: 3,
-                        overflow: "hidden",
-                      },
-                    ]}
-                  >
-                    NOW
-                  </Text>
-                )}
+                <Text
+                  style={{
+                    marginTop: 2,
+                    fontWeight: "bold",
+                    fontSize: 22,
+                    textAlign: "center",
+                  }}
+                >
+                  {formatDay(event.start_date)}
+                </Text>
               </View>
-              <Text
-                style={[
-                  styles.title,
-                  { fontSize: event.id === 2673 ? 18 : 16 },
-                ]}
-                numberOfLines={2}
-              >
-                {decode(event.title)}
-              </Text>
-              {event.venue && options?.showVenue && (
-                <Text style={styles.subtitle}>{event.venue.title}</Text>
-              )}
-              {event.organizer?.[0] && (
-                <Text style={styles.subtitle}>{organizedByText(event)}</Text>
-              )}
-              {/* <View style={styles.tagsContainer}>
-                        {event?.categories?.map((event) => {
-                            return (<Text style={styles.chip}>{event.name}</Text>);
-                        })}
-                    </View> */}
+            )}
+            <View
+              style={{ flex: 1, alignItems: "center", flexDirection: "row" }}
+            >
+              <View>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    flexDirection: "row",
+                  }}
+                >
+                  <Text style={[styles.subtitle, { fontSize: 10 }]}>
+                    {formatTimeRange(event)}
+                  </Text>
+                  {isNow && (
+                    <Text
+                      style={[
+                        styles.subtitle,
+                        {
+                          fontSize: 8,
+                          backgroundColor: "blue",
+                          color: "white",
+                          borderRadius: 4,
+                          paddingHorizontal: 3,
+                          paddingVertical: 1,
+                          marginLeft: 3,
+                          overflow: "hidden",
+                        },
+                      ]}
+                    >
+                      NOW
+                    </Text>
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.title,
+                    { fontSize: event.id === 2673 ? 18 : 16 },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {decode(event.title)}
+                </Text>
+                {event.venue && options?.showVenue && (
+                  <Text style={styles.subtitle}>{event.venue.title}</Text>
+                )}
+                {event.organizer?.[0] && (
+                  <Text style={styles.subtitle}>{organizedByText(event)}</Text>
+                )}
+                {/* <View style={styles.tagsContainer}>
+                          {event?.categories?.map((event) => {
+                              return (<Text style={styles.chip}>{event.name}</Text>);
+                          })}
+                      </View> */}
+              </View>
             </View>
+            {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
           </View>
-          {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
-        </View>
+        </TouchableOpacity>
+        {options.showBookmark && (
+          <TouchableOpacity
+            style={{
+              opacity: 1,
+              borderColor: isBookmarked ? "blue" : "#999",
+              borderRadius: 14,
+              borderWidth: 1,
+              padding: 6,
+              marginLeft: 8,
+            }}
+            onPress={handleBookmarkPress}
+          >
+            <Icon
+              type={IconTypes.Ionicons}
+              size={14}
+              color={isBookmarked ? "blue" : "#999"}
+              name={isBookmarked ? "bookmark-sharp" : "bookmark-outline"}
+            />
+          </TouchableOpacity>
+        )}
         {/* <Image
                 source={require('../../assets/hunt-street-station.png')}
                 style={{
@@ -140,20 +209,13 @@ export const EventCard = ({
                 }}
             /> */}
       </View>
-      {event.id === 2673 && (
-        <View style={{ paddingHorizontal: 16 }}>
-          <Text
-            style={{
-              color: "black",
-              fontSize: 11,
-              textAlign: "left",
-              fontStyle: "italic",
-              paddingBottom: 8,
-            }}
-          >
-            Yoga with Soojin Kim, 7:15-8. Sally B's Tacos. Photography
-            Retrospective. Live Art by Robin Speth and Martina Sanroman.
-          </Text>
+      {event?.excerpt && (
+        <View style={{ marginBottom: 12 }}>
+          <RenderHtml
+            tagsStyles={{ p: { padding: 0, margin: 0 } }}
+            contentWidth={100}
+            source={{ html: `<i>${event?.excerpt}</i>` }}
+          />
         </View>
       )}
     </View>
