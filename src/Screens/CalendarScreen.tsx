@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Animated,
+  Button,
   Dimensions,
   FlatList,
   AppState,
@@ -297,7 +298,7 @@ const CalendarScreen = ({ navigation }) => {
             <View style={{ paddingHorizontal: 28 }}>
               <EventCard
                 event={item}
-                options={{ showBookmark: true }}
+                options={{ showBookmark: true, showVenue: true }}
                 onSelectEvent={() => handlePressEvent(item)}
               />
             </View>

@@ -6,8 +6,8 @@ import { formatDay, formatMonth } from "../utils/formatDate";
 import RenderHtml from "react-native-render-html";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { schedulePushNotification } from "../utils/notifications";
 
 export interface EventCardOptions {
   showBookmark?: boolean;
@@ -69,7 +69,19 @@ export const EventCard = ({
       if (isBookmarked) {
         await AsyncStorage.removeItem(`Bookmark-${event.id}`);
       } else {
-        await AsyncStorage.setItem(`Bookmark-${event.id}`, '1');
+        await AsyncStorage.setItem(`Bookmark-${event.id}`, "1");
+        await schedulePushNotification({
+          content: {
+            title: 'Event Starts in 1 Hour',
+            body: event.title,
+            data: {
+              event,
+            },
+          },
+          trigger: {
+            date: moment(event.start_date).subtract(1, 'hour').toDate(),
+          }
+        });
       }
     })();
     setIsBookmarked(!isBookmarked);
