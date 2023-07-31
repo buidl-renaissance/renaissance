@@ -124,7 +124,7 @@ const MapScreen = ({ navigation }) => {
           renderItem={({ item }) => {
             return (
               <TouchableOpacity onPress={() => handlePressEvent(item)}>
-                <EventCard event={item} />
+                <EventCard event={item} options={{ showBookmark: true, showDate: true }} />
               </TouchableOpacity>
             );
           }}

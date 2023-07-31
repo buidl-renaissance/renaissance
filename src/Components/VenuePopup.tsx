@@ -70,7 +70,11 @@ const VenuePopup = ({ venue, onClose, onSelectEvent }) => {
                   >
                     <EventCard
                       event={event}
-                      options={{ showDate: true, showVenue: false }}
+                      options={{
+                        showDate: true,
+                        showBookmark: true,
+                        showVenue: false,
+                      }}
                     />
                   </TouchableOpacity>
                 );

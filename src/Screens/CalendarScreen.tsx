@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   AppState,
+  TouchableOpacity,
   ImageBackground,
   SectionList,
   StyleSheet,
@@ -12,12 +13,8 @@ import {
   View,
 } from "react-native";
 
-import { TouchableOpacity } from "react-native-gesture-handler";
-
 import QRCode from "react-qr-code";
 import * as Updates from "expo-updates";
-
-import { checkForUpdates } from "../utils/checkForUpdate";
 
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
@@ -87,6 +84,10 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleSearchPress = React.useCallback(() => {
     navigation.push("Search");
+  }, []);
+
+  const handleBookmarkPress = React.useCallback(() => {
+    navigation.push("Bookmarks");
   }, []);
 
   React.useEffect(() => {
@@ -252,6 +253,24 @@ const CalendarScreen = ({ navigation }) => {
                   size={20}
                   color="white"
                   name={"search"}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  marginRight: 16,
+                  opacity: 1,
+                  borderColor: "white",
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  padding: 8,
+                }}
+                onPress={handleBookmarkPress}
+              >
+                <Icon
+                  type={IconTypes.Ionicons}
+                  size={20}
+                  color="white"
+                  name={"bookmark-outline"}
                 />
               </TouchableOpacity>
             </View>

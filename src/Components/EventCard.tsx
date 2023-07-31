@@ -6,8 +6,8 @@ import { formatDay, formatMonth } from "../utils/formatDate";
 import RenderHtml from "react-native-render-html";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { schedulePushNotification } from "../utils/notifications";
+import { getBookmarkStatus, toggleBookmark } from "../utils/bookmarks";
+import { EventRegister } from "react-native-event-listeners";
 
 export interface EventCardOptions {
   showBookmark?: boolean;
@@ -58,31 +58,31 @@ export const EventCard = ({
   }, [event.start_date, event.end_date, isNow, setIsNow]);
 
   React.useEffect(() => {
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (event.id === data.event?.id) {
+        // console.log("DID UPDATE BOOKMARK: ", data.event.id, data.isBookmarked)
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    return () => {
+      if (typeof listener === 'string') EventRegister.removeEventListener(listener);
+    };
+  });
+
+  React.useEffect(() => {
     (async () => {
-      const result = await AsyncStorage.getItem(`Bookmark-${event.id}`);
-      if (result) setIsBookmarked(true);
+      const isBookmarked = await getBookmarkStatus(event);
+      setIsBookmarked(isBookmarked);
     })();
   }, []);
 
   const handleBookmarkPress = React.useCallback(() => {
     (async () => {
-      if (isBookmarked) {
-        await AsyncStorage.removeItem(`Bookmark-${event.id}`);
-      } else {
-        await AsyncStorage.setItem(`Bookmark-${event.id}`, "1");
-        await schedulePushNotification({
-          content: {
-            title: 'Event Starts in 1 Hour',
-            body: event.title,
-            data: {
-              event,
-            },
-          },
-          trigger: {
-            date: moment(event.start_date).subtract(1, 'hour').toDate(),
-          }
-        });
-      }
+      await toggleBookmark(event);
+      EventRegister.emitEvent("BookmarkEvent", {
+        event,
+        isBookmarked: !isBookmarked,
+      });
     })();
     setIsBookmarked(!isBookmarked);
   }, [isBookmarked]);
@@ -102,7 +102,12 @@ export const EventCard = ({
           }}
           onPress={onSelectEvent}
         >
-          <View>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+            }}
+          >
             {options?.showDate && (
               <View
                 style={{
@@ -186,6 +191,15 @@ export const EventCard = ({
                               return (<Text style={styles.chip}>{event.name}</Text>);
                           })}
                       </View> */}
+                {event?.excerpt && (
+                  <View style={{ marginVertical: 4 }}>
+                    <RenderHtml
+                      tagsStyles={{ p: { padding: 0, margin: 0 } }}
+                      contentWidth={100}
+                      source={{ html: `<i>${event?.excerpt}</i>` }}
+                    />
+                  </View>
+                )}
               </View>
             </View>
             {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
@@ -199,7 +213,7 @@ export const EventCard = ({
               borderRadius: 14,
               borderWidth: 1,
               padding: 6,
-              marginLeft: 8,
+              margin: 16,
             }}
             onPress={handleBookmarkPress}
           >
@@ -221,15 +235,6 @@ export const EventCard = ({
                 }}
             /> */}
       </View>
-      {event?.excerpt && (
-        <View style={{ marginBottom: 12 }}>
-          <RenderHtml
-            tagsStyles={{ p: { padding: 0, margin: 0 } }}
-            contentWidth={100}
-            source={{ html: `<i>${event?.excerpt}</i>` }}
-          />
-        </View>
-      )}
     </View>
   );
 };

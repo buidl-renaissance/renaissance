@@ -173,7 +173,7 @@ const SearchScreen = ({ navigation, route }) => {
                 <View>
                   <TouchableOpacity onPress={() => handlePressEvent(item)}>
                     <View style={{ paddingHorizontal: 4 }}>
-                      <EventCard event={item} options={{ showDate: true, showVenue: true }} />
+                      <EventCard event={item} options={{ showDate: true, showBookmark: true, showVenue: true }} />
                     </View>
                   </TouchableOpacity>
                 </View>

@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 // import ArtistScreen from '../Screens/ArtistScreen';
 // import ArtworkScreen from '../Screens/ArtworkScreen';
+import BookmarksScreen from '../Screens/BookmarksScreen';
 import CalendarScreen from '../Screens/CalendarScreen';
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
@@ -18,6 +19,7 @@ import SearchScreen from '../Screens/SearchScreen';
 type HomeNavigationStackParamList = {
   Artist: undefined;
   Artwork: undefined;
+  Bookmarks: undefined;
   Calendar: undefined;
   Camera: undefined;
   Collect: undefined;
@@ -38,6 +40,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CalendarScreen}
         name="Calendar"
+        options={{
+          headerStyle: {
+            backgroundColor: '#d2e4dd',
+          },
+          headerTintColor: '#000',
+        }}
+      />
+      <Stack.Screen
+        component={BookmarksScreen}
+        name="Bookmarks"
         options={{
           headerStyle: {
             backgroundColor: '#d2e4dd',
