@@ -8,6 +8,7 @@ import CalendarScreen from '../Screens/CalendarScreen';
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
 // import GetStartedScreen from '../Screens/GetStartedScreen';
+import ShareScreen from '../Screens/ShareScreen';
 import MapScreen from '../Screens/MapScreen';
 import BrowseMap from '../Screens/BrowseMapScreen';
 // import HomeScreen from '../Screens/HomeScreen';
@@ -26,6 +27,7 @@ type HomeNavigationStackParamList = {
   Event: undefined;
   GetStarted: undefined;
   Home: undefined;
+  Share: undefined;
   Map: undefined;
   Search: undefined;
   BrowseMap: undefined;
@@ -77,6 +79,16 @@ const HomeNavigationStack = () => {
           headerTintColor: '#000',
         }}
       />      
+      <Stack.Screen
+        component={ShareScreen}
+        name="Share"
+        options={{
+          headerStyle: {
+            backgroundColor: '#d2e4dd',
+          },
+          headerTintColor: '#000',
+        }}
+      />
       <Stack.Screen
         component={SearchScreen}
         name="Search"

@@ -13,9 +13,6 @@ import {
   View,
 } from "react-native";
 
-import QRCode from "react-qr-code";
-import * as Updates from "expo-updates";
-
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
@@ -88,6 +85,10 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleBookmarkPress = React.useCallback(() => {
     navigation.push("Bookmarks");
+  }, []);
+
+  const handleSharePress = React.useCallback(() => {
+    navigation.push("Share");
   }, []);
 
   React.useEffect(() => {
@@ -194,11 +195,6 @@ const CalendarScreen = ({ navigation }) => {
                 </Text>
               </View>
             )}
-            {/* <View style={{ position: 'relative', height: 120 }}>
-                                        <View style={{ borderColor: 'white', borderWidth: 5, position: 'absolute' }}>
-                                            <QRCode value={`https://testflight.apple.com/join/UszpHYKN`} size={100} />
-                                        </View>
-                                    </View> */}
             {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
             {/* {username && pub && sig && } */}
             <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
@@ -271,6 +267,24 @@ const CalendarScreen = ({ navigation }) => {
                   size={20}
                   color="white"
                   name={"bookmark-outline"}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  marginRight: 16,
+                  opacity: 1,
+                  borderColor: "white",
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  padding: 8,
+                }}
+                onPress={handleSharePress}
+              >
+                <Icon
+                  type={IconTypes.Ionicons}
+                  size={20}
+                  color="white"
+                  name={"share"}
                 />
               </TouchableOpacity>
             </View>
