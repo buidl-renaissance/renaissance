@@ -1,17 +1,15 @@
 import React from "react";
 import {
-  Animated,
-  Button,
   Dimensions,
   FlatList,
   AppState,
-  TouchableOpacity,
-  ImageBackground,
   SectionList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
+import { HeroBanner } from "../Components/HeroBanner";
 
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
@@ -22,6 +20,7 @@ import moment from "moment";
 import EventPopup from "../Components/EventPopup";
 
 import { DAEvent, Weather } from "../interfaces";
+import { RoundButton } from "../Components/RoundButton";
 
 const { height, width } = Dimensions.get("window");
 
@@ -147,150 +146,42 @@ const CalendarScreen = ({ navigation }) => {
 
   const sectionHeader = () => {
     return (
-      <View>
-        <ImageBackground
-          source={require("../../assets/renaissance.png")}
-          resizeMode="cover"
-        >
-          <Animated.View
-            style={{
-              paddingTop: 220,
-              paddingHorizontal: 32,
-              paddingVertical: 16,
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              borderBottomColor: "gray",
-              borderBottomWidth: 1,
-            }}
-          >
-            <Text
-              style={{
-                color: "white",
-                fontSize: 32,
-                fontWeight: "bold",
-                textAlign: "left",
-                marginTop: 8,
-              }}
-            >
-              Welcome to the Renaissance City
+      <HeroBanner>
+        {weather?.properties?.periods?.length && (
+          <View>
+            <Text style={{ color: "white", fontSize: 32 }}>
+              {weather?.properties?.periods[0].temperature} °F
             </Text>
-            <Text
-              style={{
-                color: "white",
-                fontSize: 16,
-                textAlign: "left",
-                marginVertical: 4,
-                marginBottom: 8,
-              }}
-            >
-              Unlock the rich tapestry of food, arts, and events that Detroit
-              has to offer. {time}
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              {weather?.properties?.periods[0].shortForecast}
             </Text>
-            {weather?.properties?.periods?.length && (
-              <View>
-                <Text style={{ color: "white", fontSize: 32 }}>
-                  {weather?.properties?.periods[0].temperature} °F
-                </Text>
-                <Text style={{ color: "white", fontWeight: "bold" }}>
-                  {weather?.properties?.periods[0].shortForecast}
-                </Text>
-              </View>
-            )}
-            {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
-            {/* {username && pub && sig && } */}
-            <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
-              <TouchableOpacity
-                onPress={handleToggleDisplay}
-                style={{
-                  marginRight: 16,
-                  opacity: 1,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  padding: 8,
-                }}
-              >
-                <Icon
-                  type={IconTypes.Ionicons}
-                  size={20}
-                  color="white"
-                  name={"map-outline"}
-                />
-              </TouchableOpacity>
-              {/* <TouchableOpacity
-                style={{
-                  marginRight: 16,
-                  opacity: 1,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  padding: 8,
-                }}
-              >
-                <Icon
-                  type={IconTypes.Entypo}
-                  size={20}
-                  color="white"
-                  name={"chat"}
-                />
-              </TouchableOpacity> */}
-              <TouchableOpacity
-                style={{
-                  marginRight: 16,
-                  opacity: 1,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  padding: 8,
-                }}
-                onPress={handleSearchPress}
-              >
-                <Icon
-                  type={IconTypes.Feather}
-                  size={20}
-                  color="white"
-                  name={"search"}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  marginRight: 16,
-                  opacity: 1,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  padding: 8,
-                }}
-                onPress={handleBookmarkPress}
-              >
-                <Icon
-                  type={IconTypes.Ionicons}
-                  size={20}
-                  color="white"
-                  name={"bookmark-outline"}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  marginRight: 16,
-                  opacity: 1,
-                  borderColor: "white",
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  padding: 8,
-                }}
-                onPress={handleSharePress}
-              >
-                <Icon
-                  type={IconTypes.Ionicons}
-                  size={20}
-                  color="white"
-                  name={"share"}
-                />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </ImageBackground>
-      </View>
+          </View>
+        )}
+        {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
+        {/* {username && pub && sig && } */}
+        <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
+          <RoundButton
+            onPress={handleToggleDisplay}
+            type={IconTypes.Ionicons}
+            name={"map-outline"}
+          />
+          <RoundButton
+            onPress={handleSearchPress}
+            type={IconTypes.Ionicons}
+            name={"search"}
+          />
+          <RoundButton
+            onPress={handleBookmarkPress}
+            type={IconTypes.Ionicons}
+            name={"bookmark-outline"}
+          />
+          <RoundButton
+            onPress={handleSharePress}
+            type={IconTypes.Ionicons}
+            name={"share"}
+          />
+        </View>
+      </HeroBanner>
     );
   };
 
