@@ -8,6 +8,7 @@ export interface DAVenue {
   modified_utc: string; // "2022-09-18 16:45:53",
   url: string; // "https://detroitartdao.com/venue/detroit-vineyards",
   venue: string; // "Detroit Vineyards",
+  title: string; // "Detroit Vineyards",
   slug: string; // "detroit-vineyards",
   address: string; // "1000 Gratiot Ave",
   city: string; // "Detroit",
@@ -27,6 +28,7 @@ export interface DAVenue {
 }
 
 export interface DAEvent {
+  organizer: any;
   id: any;
   categories: string[];
   end_date: string | null;

@@ -1,5 +1,11 @@
 import React from "react";
-import { TouchableOpacity, ScrollView, StyleSheet, View } from "react-native";
+import {
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Image,
+  View,
+} from "react-native";
 import * as Linking from "expo-linking";
 
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
@@ -43,8 +49,22 @@ const EventScreen = ({ navigation, route }) => {
             options={{ showBookmark: true, showDate: true, showVenue: true }}
           />
         </View>
+        {event.image && (
+          <View>
+            <Image
+              source={{
+                uri: event.image,
+              }}
+              style={{
+                height: 360,
+                width: "100%",
+                resizeMode: "cover",
+              }}
+            />
+          </View>
+        )}
         {event.content && (
-          <RenderHTML html={event.content} style={{ paddingHorizontal: 16 }} />
+          <RenderHTML html={event.content} style={{ padding: 16 }} />
         )}
       </ScrollView>
       {event.url?.match("http") && (
@@ -59,7 +79,7 @@ const EventScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     flexDirection: "column",
     borderColor: "#999",
     borderTopWidth: 1,

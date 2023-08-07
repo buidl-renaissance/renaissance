@@ -181,7 +181,7 @@ export const EventCard = ({
                   {decode(event.title)}
                 </Text>
                 {event.venue && options?.showVenue && (
-                  <Text style={styles.subtitle}>{event.venue.title}</Text>
+                  <Text style={styles.subtitle}>{decode(event.venue.title)}</Text>
                 )}
                 {event.organizer?.[0] && (
                   <Text style={styles.subtitle}>{organizedByText(event)}</Text>

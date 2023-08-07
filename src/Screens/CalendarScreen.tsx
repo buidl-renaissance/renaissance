@@ -90,22 +90,33 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Share");
   }, []);
 
-  React.useEffect(() => {
+  const updateEvents = React.useCallback(() => {
     (async () => {
+      console.log("UPDATE EVENTS!!");
       const eventsRes = await fetch("https://api.dpop.tech/api/events");
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);
     })();
   }, []);
 
-  React.useEffect(() => {
+  const updateWeather = React.useCallback(() => {
     (async () => {
+      console.log("UPDATE WEATHER!!");
       const weatherRes = await fetch(
         "https://api.weather.gov/gridpoints/DTX/66,34/forecast/hourly"
       );
       const weatherData = await weatherRes.json();
       setWeather(weatherData);
     })();
+  }, []);
+
+  React.useEffect(() => {
+    updateEvents();
+    updateWeather();
+    setTimeout(() => {
+      updateEvents();
+      updateWeather();
+    }, 10 * 60 * 1000);
   }, []);
 
   React.useEffect(() => {
