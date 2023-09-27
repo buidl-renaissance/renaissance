@@ -1,15 +1,16 @@
 import React from "react";
 import {
   Dimensions,
-  FlatList,
-  AppState,
+  ScrollView,
   SectionList,
   StyleSheet,
+  Image,
   Text,
   View,
 } from "react-native";
 
 import { HeroBanner } from "../Components/HeroBanner";
+import FilterBubble from "../Components/FilterBubble";
 
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
@@ -32,6 +33,7 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const CalendarScreen = ({ navigation }) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
+  const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
     { data: DAEvent[]; title: string }[]
   >([]);
@@ -41,6 +43,8 @@ const CalendarScreen = ({ navigation }) => {
 
   const [weather, setWeather] = React.useState<Weather>();
   const [time, setTime] = React.useState<string>("");
+
+  const [filter, setFilter] = React.useState<string>("featured");
 
   navigation.setOptions({
     title: "Home",
@@ -120,8 +124,48 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   React.useEffect(() => {
+    setFilteredEvents(
+      events.filter((event: DAEvent) => {
+        if (filter === "featured" && event.featured) {
+          return true;
+        }
+        if (filter === "all") {
+          return true;
+        }
+        if (filter === "art" && event.categories?.includes("Art")) {
+          return true;
+        }
+        if (filter === "tech" && event.categories?.includes("Tech")) {
+          return true;
+        }
+        if (
+          filter === "music" &&
+          (event.categories?.includes("Music") ||
+            event.categories?.includes("TheDetroitILove"))
+        ) {
+          return true;
+        }
+        if (filter === "fitness" && event.categories?.includes("Yoga")) {
+          return true;
+        }
+        if (
+          filter === "networking" &&
+          (event.title.match("Networking") ||
+            event.categories?.includes("Networking"))
+        ) {
+          return true;
+        }
+        return false;
+        // return moment(event.end_date).subtract(1, "week").isAfter()
+        //   ? false
+        //   : true;
+      })
+    );
+  }, [events, filter]);
+
+  React.useEffect(() => {
     const groups = {};
-    events.map((event: DAEvent) => {
+    filteredEvents.map((event: DAEvent) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -138,7 +182,7 @@ const CalendarScreen = ({ navigation }) => {
     const r = Object.keys(groups);
     setEventsGroup(Object.values(groups) as any);
     console.log("COMPUTE EVENT GROUPS");
-  }, [events]);
+  }, [filteredEvents]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -157,42 +201,98 @@ const CalendarScreen = ({ navigation }) => {
 
   const sectionHeader = () => {
     return (
-      <HeroBanner>
-        {weather?.properties?.periods?.length && (
-          <View>
-            <Text style={{ color: "white", fontSize: 32 }}>
-              {weather?.properties?.periods[0].temperature} °F
-            </Text>
-            <Text style={{ color: "white", fontWeight: "bold" }}>
-              {weather?.properties?.periods[0].shortForecast}
-            </Text>
+      <View>
+        <HeroBanner>
+          {weather?.properties?.periods?.length && (
+            <View>
+              <Text style={{ color: "white", fontSize: 32 }}>
+                {weather?.properties?.periods[0].temperature} °F
+              </Text>
+              <Text style={{ color: "white", fontWeight: "bold" }}>
+                {weather?.properties?.periods[0].shortForecast}
+              </Text>
+            </View>
+          )}
+          {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
+          {/* {username && pub && sig && } */}
+          <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
+            <RoundButton
+              onPress={handleToggleDisplay}
+              type={IconTypes.Ionicons}
+              name={"map-outline"}
+            />
+            <RoundButton
+              onPress={handleSearchPress}
+              type={IconTypes.Ionicons}
+              name={"search"}
+            />
+            <RoundButton
+              onPress={handleBookmarkPress}
+              type={IconTypes.Ionicons}
+              name={"bookmark-outline"}
+            />
+            <RoundButton
+              onPress={handleSharePress}
+              type={IconTypes.Ionicons}
+              name={"share"}
+            />
           </View>
-        )}
-        {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
-        {/* {username && pub && sig && } */}
-        <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
-          <RoundButton
-            onPress={handleToggleDisplay}
-            type={IconTypes.Ionicons}
-            name={"map-outline"}
+        </HeroBanner>
+        <ScrollView
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderTopColor: "#ddd",
+            borderTopWidth: 1,
+          }}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+        >
+          <FilterBubble
+            flat={true}
+            active={filter === "featured"}
+            name="Featured"
+            onPress={() => setFilter("featured")}
           />
-          <RoundButton
-            onPress={handleSearchPress}
-            type={IconTypes.Ionicons}
-            name={"search"}
+          <FilterBubble
+            flat={true}
+            active={filter === "all"}
+            name="All"
+            onPress={() => setFilter("all")}
           />
-          <RoundButton
-            onPress={handleBookmarkPress}
-            type={IconTypes.Ionicons}
-            name={"bookmark-outline"}
+          <FilterBubble
+            flat={true}
+            active={filter === "art"}
+            name="Art"
+            onPress={() => setFilter("art")}
           />
-          <RoundButton
-            onPress={handleSharePress}
-            type={IconTypes.Ionicons}
-            name={"share"}
+          <FilterBubble
+            flat={true}
+            active={filter === "music"}
+            name="Music"
+            onPress={() => setFilter("music")}
           />
-        </View>
-      </HeroBanner>
+          <FilterBubble
+            flat={true}
+            active={filter === "fitness"}
+            name="Fitness"
+            onPress={() => setFilter("fitness")}
+          />
+          <FilterBubble
+            flat={true}
+            active={filter === "tech"}
+            name="Tech"
+            onPress={() => setFilter("tech")}
+          />
+          <FilterBubble
+            flat={true}
+            active={filter === "networking"}
+            name="Networking"
+            onPress={() => setFilter("networking")}
+          />
+          <View style={{ width: 16, height: 16 }} />
+        </ScrollView>
+      </View>
     );
   };
 
@@ -230,12 +330,28 @@ const CalendarScreen = ({ navigation }) => {
         )}
         renderItem={({ item }) => {
           return (
-            <View style={{ paddingHorizontal: 28 }}>
-              <EventCard
-                event={item}
-                options={{ showBookmark: true, showVenue: true }}
-                onSelectEvent={() => handlePressEvent(item)}
-              />
+            <View>
+              <View style={{ paddingHorizontal: 28 }}>
+                <EventCard
+                  event={item}
+                  options={{ showBookmark: true, showVenue: true }}
+                  onSelectEvent={() => handlePressEvent(item)}
+                />
+                {item.featured && item.image && (
+                  <View style={{ paddingVertical: 16 }}>
+                    <Image
+                      source={{
+                        uri: item.image,
+                      }}
+                      style={{
+                        height: 380,
+                        width: "100%",
+                        resizeMode: "cover",
+                      }}
+                    />
+                  </View>
+                )}
+              </View>
             </View>
           );
         }}

@@ -16,27 +16,13 @@ import { Button, Searchbar } from "react-native-paper";
 import { EventCard } from "../Components/EventCard";
 
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
+import FilterBubble from "../Components/FilterBubble";
 
 import { lightGreen } from "../colors";
 import moment from "moment";
 import { DAEvent } from "../interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 
-const FilterBubble = ({ active, name, onPress }) => {
-  return (
-    <Button
-      style={{
-        backgroundColor: active ? "blue" : "transparent",
-        marginRight: 8,
-        borderColor: "blue",
-        borderWidth: 1,
-      }}
-      onPress={onPress}
-    >
-      <Text style={{ color: active ? "white" : "gray" }}>{name}</Text>
-    </Button>
-  );
-};
 
 const SearchScreen = ({ navigation, route }) => {
   navigation.setOptions({

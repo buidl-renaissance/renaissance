@@ -28,6 +28,7 @@ export interface DAVenue {
 }
 
 export interface DAEvent {
+  image: string | undefined;
   organizer: any;
   id: any;
   categories: string[];
