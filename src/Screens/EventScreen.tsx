@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Image,
   View,
+  Dimensions,
 } from "react-native";
 import * as Linking from "expo-linking";
 
@@ -40,6 +41,10 @@ const EventScreen = ({ navigation, route }) => {
     }
   }, [event]);
 
+  const imageHeight =
+  event.image_data?.width ? (event.image_data?.height / event.image_data?.width) *
+    Dimensions.get("window").width : 360;
+
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -56,7 +61,7 @@ const EventScreen = ({ navigation, route }) => {
                 uri: event.image,
               }}
               style={{
-                height: 360,
+                height: imageHeight ?? 360,
                 width: "100%",
                 resizeMode: "cover",
               }}

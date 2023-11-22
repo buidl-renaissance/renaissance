@@ -22,6 +22,7 @@ import EventPopup from "../Components/EventPopup";
 
 import { DAEvent, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const { height, width } = Dimensions.get("window");
 
@@ -329,6 +330,10 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )}
         renderItem={({ item }) => {
+          const imageHeight =
+          item.image_data?.width ? (item.image_data?.height / item.image_data?.width) *
+            Dimensions.get("window").width - 54 : 360;
+                    
           return (
             <View>
               <View style={{ paddingHorizontal: 28 }}>
@@ -338,18 +343,18 @@ const CalendarScreen = ({ navigation }) => {
                   onSelectEvent={() => handlePressEvent(item)}
                 />
                 {item.featured && item.image && (
-                  <View style={{ paddingVertical: 16 }}>
+                  <TouchableOpacity onPress={() => handlePressEvent(item)} style={{ paddingVertical: 16 }}>
                     <Image
                       source={{
                         uri: item.image,
                       }}
                       style={{
-                        height: 380,
+                        height: imageHeight,
                         width: "100%",
                         resizeMode: "cover",
                       }}
                     />
-                  </View>
+                  </TouchableOpacity>
                 )}
               </View>
             </View>
