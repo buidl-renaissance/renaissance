@@ -23,7 +23,6 @@ import moment from "moment";
 import { DAEvent } from "../interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 
-
 const SearchScreen = ({ navigation, route }) => {
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
@@ -73,7 +72,7 @@ const SearchScreen = ({ navigation, route }) => {
           if (music && event.categories?.includes("Music")) {
             return true && textMatch;
           }
-          if (fitness && event.categories?.includes("Yoga")) {
+          if (fitness && event.categories?.includes("Fitness")) {
             return true && textMatch;
           }
           if (
@@ -159,7 +158,14 @@ const SearchScreen = ({ navigation, route }) => {
                 <View>
                   <TouchableOpacity onPress={() => handlePressEvent(item)}>
                     <View style={{ paddingHorizontal: 4 }}>
-                      <EventCard event={item} options={{ showDate: true, showBookmark: true, showVenue: true }} />
+                      <EventCard
+                        event={item}
+                        options={{
+                          showDate: true,
+                          showBookmark: true,
+                          showVenue: true,
+                        }}
+                      />
                     </View>
                   </TouchableOpacity>
                 </View>

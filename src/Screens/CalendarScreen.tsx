@@ -145,7 +145,7 @@ const CalendarScreen = ({ navigation }) => {
         ) {
           return true;
         }
-        if (filter === "fitness" && event.categories?.includes("Yoga")) {
+        if (filter === "fitness" && event.categories?.includes("Fitness")) {
           return true;
         }
         if (
