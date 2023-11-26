@@ -139,6 +139,9 @@ const CalendarScreen = ({ navigation }) => {
         if (filter === "tech" && event.categories?.includes("Tech")) {
           return true;
         }
+        if (filter === "sports" && event.categories?.includes("Sports")) {
+          return true;
+        }
         if (
           filter === "music" &&
           (event.categories?.includes("Music") ||
@@ -272,6 +275,12 @@ const CalendarScreen = ({ navigation }) => {
             active={filter === "music"}
             name="Music"
             onPress={() => setFilter("music")}
+          />
+          <FilterBubble
+            flat={true}
+            active={filter === "sports"}
+            name="Sports"
+            onPress={() => setFilter("sports")}
           />
           <FilterBubble
             flat={true}

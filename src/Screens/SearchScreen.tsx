@@ -34,6 +34,7 @@ const SearchScreen = ({ navigation, route }) => {
 
   const [art, setArt] = React.useState<boolean>(false);
   const [music, setMusic] = React.useState<boolean>(false);
+  const [sports, setSports] = React.useState<boolean>(false);
   const [fitness, setFitness] = React.useState<boolean>(false);
   const [tech, setTech] = React.useState<boolean>(false);
   const [networking, setNetworking] = React.useState<boolean>(false);
@@ -70,6 +71,9 @@ const SearchScreen = ({ navigation, route }) => {
             return true && textMatch;
           }
           if (music && event.categories?.includes("Music")) {
+            return true && textMatch;
+          }
+          if (sports && event.categories?.includes("Sports")) {
             return true && textMatch;
           }
           if (fitness && event.categories?.includes("Fitness")) {
@@ -130,6 +134,11 @@ const SearchScreen = ({ navigation, route }) => {
                 active={music}
                 name="Music"
                 onPress={() => setMusic(!music)}
+              />
+              <FilterBubble
+                active={sports}
+                name="Sports"
+                onPress={() => setSports(!sports)}
               />
               <FilterBubble
                 active={fitness}
