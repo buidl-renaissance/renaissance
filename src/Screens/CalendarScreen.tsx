@@ -45,7 +45,7 @@ const CalendarScreen = ({ navigation }) => {
   const [weather, setWeather] = React.useState<Weather>();
   const [time, setTime] = React.useState<string>("");
 
-  const [filter, setFilter] = React.useState<string>("featured");
+  const [filter, setFilter] = React.useState<string>("all");
 
   navigation.setOptions({
     title: "Home",
@@ -252,12 +252,12 @@ const CalendarScreen = ({ navigation }) => {
           horizontal={true}
           showsHorizontalScrollIndicator={false}
         >
-          <FilterBubble
+          {/* <FilterBubble
             flat={true}
             active={filter === "featured"}
             name="Featured"
             onPress={() => setFilter("featured")}
-          />
+          /> */}
           <FilterBubble
             flat={true}
             active={filter === "all"}
