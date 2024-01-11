@@ -7,26 +7,31 @@ import * as Linking from "expo-linking";
 
 const activities = [
   {
+    title: 'Sweat it out',
     url: "https://schvitzdetroit.com/",
     image:
       "https://dpop.nyc3.digitaloceanspaces.com/wp-content/uploads/2024/01/10202916/schwitz.png",
   },
   {
+    title: 'Climb some steazy rocks',
     url: "https://www.dynodetroit.com/",
     image:
       "https://dpop.nyc3.digitaloceanspaces.com/wp-content/uploads/2024/01/06185132/dyno.jpeg",
   },
   {
+    title: 'Spike that shit',
     url: "https://www.detroittennis.com/",
     image:
       "https://dpop.nyc3.digitaloceanspaces.com/wp-content/uploads/2024/01/06162338/detroit-indoor-tennis.jpeg",
   },
   {
+    title: 'Stay on your feet',
     url: "https://downtowndetroit.org/experience-downtown/things-to-do/the-rink/",
     image:
       "https://dpop.nyc3.digitaloceanspaces.com/wp-content/uploads/2024/01/06162336/detroit-park-skate.jpeg",
   },
   {
+    title: 'Knock down those pins',
     url: "https://fowlingwarehouse.com/hamtramck/",
     image:
       "https://dpop.nyc3.digitaloceanspaces.com/wp-content/uploads/2024/01/06162335/detroit-fowling.jpeg",
@@ -64,6 +69,7 @@ export const SuggestedActivities = ({ }) => {
                   resizeMode: "cover",
                 }}
               />
+              <Text>{activity.title}</Text>
             </TouchableOpacity>
           );
         })}
