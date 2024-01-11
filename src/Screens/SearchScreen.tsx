@@ -63,7 +63,7 @@ const SearchScreen = ({ navigation, route }) => {
         const textMatch =
           !searchQuery?.length ||
           (searchQuery?.length && event.title.match(searchQuery));
-        if (art || music || fitness || tech || networking) {
+        if (art || music || fitness || sports || tech || networking) {
           if (art && event.categories?.includes("Art")) {
             return true && textMatch;
           }

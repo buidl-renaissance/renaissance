@@ -15,6 +15,7 @@ import FilterBubble from "../Components/FilterBubble";
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
+import { SuggestedActivities } from "../Components/SuggestedActivities";
 
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
@@ -242,6 +243,9 @@ const CalendarScreen = ({ navigation }) => {
             />
           </View>
         </HeroBanner>
+        
+        <SuggestedActivities />
+
         <ScrollView
           style={{
             paddingHorizontal: 16,
@@ -318,7 +322,7 @@ const CalendarScreen = ({ navigation }) => {
               flexDirection: "row",
               alignItems: "baseline",
               marginBottom: 8,
-              marginTop: 22,
+              marginTop: 8,
               paddingHorizontal: 28,
               paddingBottom: 4,
               backgroundColor: "white",
@@ -339,10 +343,12 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )}
         renderItem={({ item }) => {
-          const imageHeight =
-          item.image_data?.width ? (item.image_data?.height / item.image_data?.width) *
-            Dimensions.get("window").width - 54 : 360;
-                    
+          const imageHeight = item.image_data?.width
+            ? (item.image_data?.height / item.image_data?.width) *
+                Dimensions.get("window").width -
+              54
+            : 360;
+
           return (
             <View>
               <View style={{ paddingHorizontal: 28 }}>
@@ -352,7 +358,10 @@ const CalendarScreen = ({ navigation }) => {
                   onSelectEvent={() => handlePressEvent(item)}
                 />
                 {item.featured && item.image && (
-                  <TouchableOpacity onPress={() => handlePressEvent(item)} style={{ paddingVertical: 16 }}>
+                  <TouchableOpacity
+                    onPress={() => handlePressEvent(item)}
+                    style={{ paddingVertical: 16 }}
+                  >
                     <Image
                       source={{
                         uri: item.image,
