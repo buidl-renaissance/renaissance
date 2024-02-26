@@ -16,6 +16,7 @@ import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
+import { FloatingButton } from "../Components/FloatingButton";
 
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
@@ -94,6 +95,15 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleSharePress = React.useCallback(() => {
     navigation.push("Share");
+  }, []);
+
+  const handleAddEvent = React.useCallback(() => {
+    navigation.push("ProposalList");
+    // navigation.push("CreateEvent");
+  }, []);
+
+  const handleShowAccount = React.useCallback(() => {
+    navigation.push("Account");
   }, []);
 
   const updateEvents = React.useCallback(() => {
@@ -241,6 +251,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"share"}
             />
+            {/* <RoundButton
+              onPress={handleShowAccount}
+              type={IconTypes.Ionicons}
+              name={"person"}
+            /> */}
           </View>
         </HeroBanner>
         
@@ -379,6 +394,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
+      {/* <FloatingButton onPress={handleAddEvent} /> */}
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

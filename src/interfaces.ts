@@ -27,6 +27,13 @@ export interface DAVenue {
   events?: DAEvent[];
 }
 
+export interface DAProposal {
+  id: number;
+  title: string;
+  description: string;
+  budget: string;
+}
+
 export interface DAEvent {
   image: string | undefined;
   image_data?: any;

@@ -8,6 +8,10 @@ import BookmarksScreen from "../Screens/BookmarksScreen";
 import CalendarScreen from "../Screens/CalendarScreen";
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
+import CreateEventScreen from "../Screens/CreateEventScreen";
+import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
+import ProposalListScreen from "../Screens/ProposalListScreen";
+import ProposalDetailScreen from "../Screens/ProposalDetailScreen";
 import GetStartedScreen from "../Screens/GetStartedScreen";
 import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
@@ -22,16 +26,20 @@ type HomeNavigationStackParamList = {
   Artist: undefined;
   Artwork: undefined;
   Bookmarks: undefined;
+  BrowseMap: undefined;
   Calendar: undefined;
   Camera: undefined;
   Collect: undefined;
+  CreateEvent: undefined;
+  CreateProposal: undefined;
   Event: undefined;
   GetStarted: undefined;
   Home: undefined;
-  Share: undefined;
   Map: undefined;
+  ProposalList: undefined;
+  ProposalDetail: undefined;
   Search: undefined;
-  BrowseMap: undefined;
+  Share: undefined;
   Splash: undefined;
 };
 
@@ -53,6 +61,46 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CalendarScreen}
         name="Calendar"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ProposalCreationScreen}
+        name="CreateProposal"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={CreateEventScreen}
+        name="CreateEvent"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ProposalListScreen}
+        name="ProposalList"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ProposalDetailScreen}
+        name="ProposalDetail"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

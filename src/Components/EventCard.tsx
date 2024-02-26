@@ -46,6 +46,7 @@ export const EventCard = ({
 }: EventCardProps) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const start = moment(event.start_date);
@@ -85,6 +86,9 @@ export const EventCard = ({
       });
     })();
     setIsBookmarked(!isBookmarked);
+  }, [isBookmarked]);
+
+  const handleAdminPress = React.useCallback(() => {
   }, [isBookmarked]);
 
   return (
@@ -213,7 +217,7 @@ export const EventCard = ({
               borderRadius: 14,
               borderWidth: 1,
               padding: 6,
-              margin: 16,
+              margin: 8,
             }}
             onPress={handleBookmarkPress}
           >
@@ -225,6 +229,24 @@ export const EventCard = ({
             />
           </TouchableOpacity>
         )}
+        {isAdmin && <TouchableOpacity
+          style={{
+            opacity: 1,
+            borderColor: "#999",
+            borderRadius: 14,
+            borderWidth: 1,
+            padding: 6,
+            margin: 8,
+          }}
+          onPress={handleAdminPress}
+        >
+          <Icon
+            type={IconTypes.Ionicons}
+            size={14}
+            color="#999"
+            name="ellipsis-vertical-outline"
+          />
+        </TouchableOpacity>}
         {/* <Image
                 source={require('../../assets/hunt-street-station.png')}
                 style={{
