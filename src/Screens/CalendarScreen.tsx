@@ -17,6 +17,7 @@ import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { FloatingButton } from "../Components/FloatingButton";
+import { SectionTitle } from "../Components/SectionTitle";
 
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
@@ -98,8 +99,11 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
+    navigation.push("CreateEvent");
+  }, []);
+
+  const handleShowProposals = React.useCallback(() => {
     navigation.push("ProposalList");
-    // navigation.push("CreateEvent");
   }, []);
 
   const handleShowAccount = React.useCallback(() => {
@@ -251,22 +255,29 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"share"}
             />
-            {/* <RoundButton
+            <RoundButton
               onPress={handleShowAccount}
               type={IconTypes.Ionicons}
               name={"person"}
-            /> */}
+            />
+            <RoundButton
+              onPress={handleShowProposals}
+              type={IconTypes.Ionicons}
+              name={"document-text-outline"}
+            />
           </View>
         </HeroBanner>
         
         <SuggestedActivities />
 
+        <SectionTitle>Upcoming Events</SectionTitle>
+
         <ScrollView
           style={{
             paddingHorizontal: 16,
-            paddingVertical: 8,
-            borderTopColor: "#ddd",
-            borderTopWidth: 1,
+            paddingTop: 8,
+            borderBottomColor: "#eee",
+            borderBottomWidth: 1,
           }}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -336,17 +347,16 @@ const CalendarScreen = ({ navigation }) => {
               flex: 1,
               flexDirection: "row",
               alignItems: "baseline",
-              marginBottom: 8,
+              marginBottom: 4,
               marginTop: 8,
-              paddingHorizontal: 28,
-              paddingBottom: 4,
+              paddingHorizontal: 16,
               backgroundColor: "white",
             }}
           >
             <Text
               style={{
                 color: "black",
-                fontSize: 28,
+                fontSize: 22,
                 paddingRight: 12,
                 fontWeight: "bold",
                 textAlign: "left",
@@ -366,7 +376,7 @@ const CalendarScreen = ({ navigation }) => {
 
           return (
             <View>
-              <View style={{ paddingHorizontal: 28 }}>
+              <View style={{ paddingHorizontal: 16 }}>
                 <EventCard
                   event={item}
                   options={{ showBookmark: true, showVenue: true }}

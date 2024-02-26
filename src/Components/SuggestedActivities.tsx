@@ -3,6 +3,8 @@ import { TouchableOpacity } from "react-native";
 
 import { View, Text, ScrollView, Image } from "react-native";
 
+import { SectionTitle } from "./SectionTitle";
+
 import * as Linking from "expo-linking";
 
 const activities = [
@@ -41,7 +43,7 @@ const activities = [
 export const SuggestedActivities = ({ }) => {
   return (
     <View>
-      <Text style={{ padding: 16, fontSize: 18, fontWeight: 'bold', paddingBottom: 0 }}>Daily Activities</Text>
+      <SectionTitle>Daily Activities</SectionTitle>
       <ScrollView
         style={{
           paddingHorizontal: 16,
@@ -67,9 +69,10 @@ export const SuggestedActivities = ({ }) => {
                   width: 200,
                   borderRadius: 4,
                   resizeMode: "cover",
+                  marginBottom: 4,
                 }}
               />
-              <Text>{activity.title}</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', fontStyle: 'italic', marginBottom: 4 }}>{activity.title}</Text>
             </TouchableOpacity>
           );
         })}
