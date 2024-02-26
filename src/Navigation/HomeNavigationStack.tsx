@@ -168,46 +168,6 @@ const HomeNavigationStack = () => {
           headerTintColor: "#000",
         }}
       />
-      {/* <Stack.Screen
-        component={SplashScreen}
-        name="Splash"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      />
-      <Stack.Screen
-        component={HomeScreen}
-        name="Home"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      />
-      <Stack.Screen
-        component={CameraScreen}
-        name="Camera"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      />
-      <Stack.Screen
-        component={CollectScreen}
-        name="Collect"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      /> */}
       <Stack.Screen
         component={EventScreen}
         name="Event"
@@ -218,37 +178,8 @@ const HomeNavigationStack = () => {
           headerTintColor: "#000",
         }}
       />
-      {/* <Stack.Screen
-        component={ArtistScreen}
-        name="Artist"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      />
-      <Stack.Screen
-        component={ArtworkScreen}
-        name="Artwork"
-        options={{
-          headerStyle: {
-            backgroundColor: '#d2e4dd',
-          },
-          headerTintColor: '#000',
-        }}
-      /> */}
     </Stack.Navigator>
   );
 };
 
 export default HomeNavigationStack;
-
-// screenOptions={{
-//     headerTintColor: colors.navigationTint,
-//     headerStyle: { ...Styles.defaultHeaderStyle, backgroundColor: colors.navigationBackground },
-//     headerTitleStyle: {
-//       fontWeight: 'bold',
-//       color: colors.text,
-//     },
-//   }}
