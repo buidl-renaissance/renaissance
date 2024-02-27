@@ -26,10 +26,10 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
   return (
     <Card style={styles.card}>
       <Card.Content>
-        <Title>{`Proposal #${id}`}</Title>
-        <Paragraph>{`Title: ${title}`}</Paragraph>
-        <Paragraph>{`Description: ${description}`}</Paragraph>
-        <Paragraph>{`Budget: ${budget}`}</Paragraph>
+        <Paragraph>{`Proposal #${id}`}</Paragraph>
+        <Title>{`${title}`}</Title>
+        <Paragraph>{`${description}`}</Paragraph>
+        <Paragraph>{`Est. Budget: ${budget}`}</Paragraph>
       </Card.Content>
       <Card.Actions style={styles.actions}>
         <Button onPress={handleShowDetail}>Details</Button>

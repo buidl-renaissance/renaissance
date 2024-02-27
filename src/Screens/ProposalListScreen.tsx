@@ -4,8 +4,14 @@ import { DAProposal } from "../interfaces";
 import { ExampleProposals } from "../mocks/proposals";
 import ProposalCard from "../Components/ProposalCard";
 import { FloatingButton } from "../Components/FloatingButton";
+// import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 const ProposalListScreen = ({ navigation }) => {
+
+  navigation.setOptions({
+    headerTitle: "Proposals",
+  });
+
   const [proposals, setProposals] =
     React.useState<DAProposal[]>(ExampleProposals);
 

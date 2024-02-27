@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Image, Text, View, Dimensions } from 'react-native';
 import { Button } from '../Components/Button';
 import { FadeInView } from '../Components/AnimatedDisplay';
-import { generateWallet, loadWallet } from '../utils/generateWallet';
+import { generateWallet, loadWallet } from '../utils/web3';
 import * as SecureStore from 'expo-secure-store';
 
 async function save(key, value) {

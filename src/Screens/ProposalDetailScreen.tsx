@@ -5,6 +5,7 @@ import { DAProposal } from "../interfaces";
 import ProposalCard from "../Components/ProposalCard";
 
 interface ProposalDetailScreenProps {
+  navigation,
   route: {
     params: {
       proposal: DAProposal;
@@ -13,9 +14,14 @@ interface ProposalDetailScreenProps {
 }
 
 const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
+  navigation,
   route,
 }) => {
   const { proposal } = route.params;
+
+  navigation.setOptions({
+    headerTitle: `Proposal #${proposal.id}`,
+  });
 
   // Sample chat messages for demonstration purposes
   const [messages, setMessages] = useState<IMessage[]>([

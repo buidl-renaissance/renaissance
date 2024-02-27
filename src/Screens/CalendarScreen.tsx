@@ -12,6 +12,8 @@ import {
 import { HeroBanner } from "../Components/HeroBanner";
 import FilterBubble from "../Components/FilterBubble";
 
+import { getProvider } from "../utils/web3";
+
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
@@ -26,6 +28,7 @@ import EventPopup from "../Components/EventPopup";
 import { DAEvent, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { getWallet } from "../utils/wallet";
 
 const { height, width } = Dimensions.get("window");
 
@@ -99,7 +102,21 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
-    navigation.push("CreateEvent");
+    (async () => {
+      // const provider = getProvider();
+      // // const res = await provider.getBlockNumber();
+      // const res = (await provider.getBalance('0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70')).toJSON();
+      // console.log('provider.getBalance("0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70")', res, res.hex, Number(res.hex));
+      const wallet = await getWallet();
+      // console.log("wallet: ", wallet);
+      console.log("address:", wallet.address);
+      // console.log("publicKey:", wallet.publicKey);
+      // console.log("privateKey:", wallet.privateKey);
+      // console.log("mnemonic:", wallet.mnemonic);
+      const signature = await wallet.signMessage('Hello World!');
+      console.log('signature: ', signature);
+    })();
+    // navigation.push("CreateEvent");
   }, []);
 
   const handleShowProposals = React.useCallback(() => {
@@ -267,7 +284,7 @@ const CalendarScreen = ({ navigation }) => {
             />
           </View>
         </HeroBanner>
-        
+
         <SuggestedActivities />
 
         <SectionTitle>Upcoming Events</SectionTitle>
@@ -404,7 +421,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      {/* <FloatingButton onPress={handleAddEvent} /> */}
+      <FloatingButton onPress={handleAddEvent} />
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

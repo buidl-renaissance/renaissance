@@ -1,10 +1,52 @@
 import React from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { ScrollView } from "react-native-gesture-handler";
 
 const ProposalCreationScreen = () => {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [budget, setBudget] = React.useState("");
+
+  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [customCategory, setCustomCategory] = React.useState("");
+  const bottomSheetRef = React.useRef<BottomSheet>(null);
+
+  const categories = [
+    "Public Art Installation",
+    "Workshop Series",
+    "Mural",
+    "Exhibition",
+    "Interactive Sculpture Garden",
+    "Community Storytelling Project",
+    "Digital Arts Education Program",
+    "Street Art Beautification Project",
+    "Cultural Heritage Preservation Project",
+    "Public Music Performance Series",
+    "Photography Documentation Project",
+    "Community Arts Festival",
+    "Nature-Inspired Art Installations",
+    "Art Therapy Workshops",
+    "Inclusive Public Art Project",
+    "Upcycled Art Exhibition",
+    "Other",
+  ];
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    bottomSheetRef.current?.close();
+  };
+
+  const handleCustomCategoryChange = (text: string) => {
+    setCustomCategory(text);
+  };
 
   const handleCreateProposal = () => {
     // Implement logic to handle the creation of the proposal
@@ -14,22 +56,39 @@ const ProposalCreationScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}> Title</Text>
+      <Text style={styles.label}>Title</Text>
       <TextInput
         style={styles.input}
         value={title}
         onChangeText={(text) => setTitle(text)}
       />
 
-      <Text style={styles.label}> Description</Text>
+      <Text style={styles.label}>Select Category:</Text>
       <TextInput
+        value={selectedCategory}
+        onTouchStart={() => bottomSheetRef.current?.expand()}
         style={styles.input}
+        placeholder="Select category..."
+        editable={false}
+      />
+      {selectedCategory === "Other" && (
+        <TextInput
+          value={customCategory}
+          onChangeText={handleCustomCategoryChange}
+          style={styles.input}
+          placeholder="Enter custom category..."
+        />
+      )}
+
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        style={[styles.input, { height: 120 }]}
         value={description}
         onChangeText={(text) => setDescription(text)}
         multiline
       />
 
-      <Text style={styles.label}> Budget (USD)</Text>
+      <Text style={styles.label}>Estimated Budget (USD)</Text>
       <TextInput
         style={styles.input}
         value={budget}
@@ -39,7 +98,29 @@ const ProposalCreationScreen = () => {
 
       <Button title="Create Proposal" onPress={handleCreateProposal} />
 
-      {/* Add additional UI components as needed */}
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={["25%", "50%"]}
+        backgroundComponent={({ style }) => (
+          <View style={[style, styles.bottomSheetBackground]} />
+        )}
+      >
+        <ScrollView
+          style={styles.bottomSheetContainer}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={styles.bottomSheetItem}
+              onPress={() => handleCategoryChange(category)}
+            >
+              <Text>{category}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </BottomSheet>
     </View>
   );
 };
@@ -56,10 +137,24 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: "gray",
+    borderColor: "#999",
     borderWidth: 1,
     marginBottom: 16,
     paddingHorizontal: 8,
+  },
+  bottomSheetBackground: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  bottomSheetContainer: {
+    backgroundColor: "white",
+    padding: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  bottomSheetItem: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
   },
 });
 
