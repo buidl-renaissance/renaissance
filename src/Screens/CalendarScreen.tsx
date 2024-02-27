@@ -29,6 +29,7 @@ import { DAEvent, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
+import { GrantOpportunities } from "../Components/GrantOpportunities";
 
 const { height, width } = Dimensions.get("window");
 
@@ -284,6 +285,8 @@ const CalendarScreen = ({ navigation }) => {
             />
           </View>
         </HeroBanner>
+
+        <GrantOpportunities />
 
         <SuggestedActivities />
 
