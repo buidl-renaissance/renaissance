@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { lightGreen, darkGrey } from '../colors';
 
 type ButtonVariant = 'hollow' | 'solid';
@@ -14,9 +14,9 @@ export const Button = ({ onPress, title = 'Save', variant = 'hollow' } ) => {
   const textColor = variant === 'hollow' ? darkGrey : lightGreen;
   const borderColor = variant === 'hollow' ? darkGrey : lightGreen;
   return (
-    <Pressable style={[styles.button, { borderColor: borderColor }]} onPress={onPress}>
+    <TouchableOpacity style={[styles.button, { borderColor: borderColor }]} onPress={onPress}>
       <Text style={[styles.text, { color: textColor }]}>{title}</Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 

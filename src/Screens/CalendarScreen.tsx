@@ -293,7 +293,7 @@ const CalendarScreen = ({ navigation }) => {
 
         <GrantOpportunities />
         <View style={{ paddingHorizontal: 16 }}>
-          <Button onPress={handleCreateGrant} title="Submit Grant" />
+          <Button onPress={handleCreateGrant} title="Add New Grant" />
         </View>
 
         <SuggestedActivities />
@@ -432,7 +432,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      <FloatingButton onPress={handleAddEvent} />
+      {/* <FloatingButton onPress={handleAddEvent} /> */}
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

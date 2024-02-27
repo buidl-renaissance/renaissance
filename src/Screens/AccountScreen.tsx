@@ -51,14 +51,14 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
   const [selectedAttributions, setSelectedAttributions] = useState<
     UserAttribution[]
   >([]);
-  const [availibleSkills, setAvailibleSkills] = useState<UserAttribution[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<UserAttribution[]>([]);
 
   React.useEffect(() => {
     const ids = selectedAttributions.map((s) => s.id);
     const skills = skillsList.filter((ua: UserAttribution) => {
       return !ids.includes(ua.id);
     });
-    setAvailibleSkills(skills);
+    setAvailableSkills(skills);
   }, [selectedAttributions]);
 
   const handleSave = () => {
@@ -136,7 +136,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
           itemStyle={styles.item}
           itemTextStyle={styles.itemText}
           itemsContainerStyle={styles.itemsContainer}
-          items={availibleSkills}
+          items={availableSkills}
           defaultIndex={0}
           placeholder="Select Attributes..."
           resetValue={false}
