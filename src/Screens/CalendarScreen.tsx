@@ -30,6 +30,7 @@ import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
 import { GrantOpportunities } from "../Components/GrantOpportunities";
+import { Button } from "../Components/Button";
 
 const { height, width } = Dimensions.get("window");
 
@@ -122,6 +123,10 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleShowProposals = React.useCallback(() => {
     navigation.push("ProposalList");
+  }, []);
+
+  const handleCreateGrant = React.useCallback(() => {
+    navigation.push("CreateGrant");
   }, []);
 
   const handleShowAccount = React.useCallback(() => {
@@ -287,6 +292,9 @@ const CalendarScreen = ({ navigation }) => {
         </HeroBanner>
 
         <GrantOpportunities />
+        <View style={{ paddingHorizontal: 16 }}>
+          <Button onPress={handleCreateGrant} title="Submit Grant" />
+        </View>
 
         <SuggestedActivities />
 

@@ -27,7 +27,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
     <Card style={styles.card}>
       <Card.Content>
         <Paragraph>{`Proposal #${id}`}</Paragraph>
-        <Title>{`${title}`}</Title>
+        <Title style={{ fontWeight: 'bold' }}>{`${title}`}</Title>
         <Paragraph>{`${description}`}</Paragraph>
         <Paragraph>{`Est. Budget: ${budget}`}</Paragraph>
       </Card.Content>
