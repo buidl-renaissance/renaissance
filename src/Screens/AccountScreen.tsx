@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet } from "react-native";
+import { View, TextInput, StyleSheet } from "react-native";
 import { Chip, Text } from "react-native-paper";
 import SearchableDropdown from "react-native-searchable-dropdown";
-import { skillsList } from '../mocks/skills';
-
+import { Button } from "../Components/Button";
+import { skillsList } from "../mocks/skills";
 
 // const artistAttributes = [
 //   { id: 1, name: 'Username', value: 'username' },
@@ -35,16 +35,31 @@ interface UserProfile {
 }
 
 interface AccountScreenProps {
-  onSave: (profile: UserProfile) => void;
+  // onSave: (profile: UserProfile) => void;
+  navigation: any;
 }
 
-const AccountScreen: React.FC<AccountScreenProps> = ({ onSave }) => {
+const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
+
+  navigation.setOptions({
+    headerTitle: "Profile",
+  });
+
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [portfolio, setPortfolio] = useState("");
-  const [selectedAttributions, setSelectedAttributions] = useState<UserAttribution[]>(
-    []
-  );
+  const [selectedAttributions, setSelectedAttributions] = useState<
+    UserAttribution[]
+  >([]);
+  const [availibleSkills, setAvailibleSkills] = useState<UserAttribution[]>([]);
+
+  React.useEffect(() => {
+    const ids = selectedAttributions.map((s) => s.id);
+    const skills = skillsList.filter((ua: UserAttribution) => {
+      return !ids.includes(ua.id);
+    });
+    setAvailibleSkills(skills);
+  }, [selectedAttributions]);
 
   const handleSave = () => {
     const profile: UserProfile = {
@@ -53,7 +68,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ onSave }) => {
       portfolio,
       attributions: selectedAttributions,
     };
-    onSave(profile);
+    // onSave(profile);
 
     // Optionally, reset the form fields after saving
     setName("");
@@ -77,7 +92,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ onSave }) => {
     <View style={styles.container}>
       <Text style={styles.label}>Name</Text>
       <TextInput
-        placeholder="Name"
+        placeholder="Enter Name..."
         value={name}
         onChangeText={(text) => setName(text)}
         style={styles.input}
@@ -85,16 +100,16 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ onSave }) => {
 
       <Text style={styles.label}>Bio</Text>
       <TextInput
-        placeholder="Bio"
+        placeholder="Enter Bio..."
         value={bio}
         onChangeText={(text) => setBio(text)}
         multiline
-        style={styles.input}
+        style={[styles.input, { height: 80 }]}
       />
 
       <Text style={styles.label}>Portfolio Link</Text>
       <TextInput
-        placeholder="Portfolio Link"
+        placeholder="Enter Portfolio Link..."
         value={portfolio}
         onChangeText={(text) => setPortfolio(text)}
         style={styles.input}
@@ -113,20 +128,21 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ onSave }) => {
           </Chip>
         ))}
       </View>
-      <SearchableDropdown
-        onTextChange={(text) => console.log(text)} // Handle search input
-        onItemSelect={handleAddAttribution}
-        containerStyle={{ padding: 5 }}
-        textInputStyle={styles.input}
-        itemStyle={styles.item}
-        itemTextStyle={styles.itemText}
-        itemsContainerStyle={styles.itemsContainer}
-        items={skillsList}
-        defaultIndex={0}
-        placeholder="Select attribute..."
-        resetValue={false}
-        underlineColorAndroid="transparent"
-      />
+      <View style={{ zIndex: 10 }}>
+        <SearchableDropdown
+          onTextChange={(text) => console.log(text)} // Handle search input
+          onItemSelect={handleAddAttribution}
+          textInputStyle={styles.input}
+          itemStyle={styles.item}
+          itemTextStyle={styles.itemText}
+          itemsContainerStyle={styles.itemsContainer}
+          items={availibleSkills}
+          defaultIndex={0}
+          placeholder="Select Attributes..."
+          resetValue={false}
+          underlineColorAndroid="transparent"
+        />
+      </View>
 
       <Button title="Save Profile" onPress={handleSave} />
     </View>
@@ -153,15 +169,16 @@ const styles = StyleSheet.create({
   chipsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 10,
   },
   chip: {
-    margin: 4,
+    marginRight: 8,
+    marginBottom: 8,
+    borderColor: '#bbb',
   },
   item: {
-    padding: 10,
+    padding: 8,
     marginTop: 2,
-    backgroundColor: "#ddd",
+    backgroundColor: "#fff",
     borderColor: "#bbb",
     borderWidth: 1,
     borderRadius: 5,
@@ -170,7 +187,13 @@ const styles = StyleSheet.create({
     color: "#222",
   },
   itemsContainer: {
+    position: "absolute",
+    borderWidth: 1,
+    backgroundColor: "#ddd",
+    borderColor: '#bbb',
+    padding: 4,
     maxHeight: 140,
+    top: 39,
   },
   selectedAttributeContainer: {
     marginTop: 20,
@@ -181,7 +204,7 @@ const styles = StyleSheet.create({
   },
   selectedAttributeValue: {
     fontSize: 16,
-    marginTop: 5,
+    marginTop: 4,
   },
 });
 
