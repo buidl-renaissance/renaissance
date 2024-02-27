@@ -10,7 +10,14 @@ import {
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
 
-const ProposalCreationScreen = () => {
+const ProposalCreationScreen = ({
+  navigation
+}) => {
+
+  navigation.setOptions({
+    headerTitle: "Create Proposal",
+  });
+
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [budget, setBudget] = React.useState("");
@@ -21,21 +28,16 @@ const ProposalCreationScreen = () => {
 
   const categories = [
     "Public Art Installation",
-    "Workshop Series",
+    "Workshop",
     "Mural",
     "Exhibition",
-    "Interactive Sculpture Garden",
-    "Community Storytelling Project",
-    "Digital Arts Education Program",
-    "Street Art Beautification Project",
-    "Cultural Heritage Preservation Project",
-    "Public Music Performance Series",
-    "Photography Documentation Project",
-    "Community Arts Festival",
-    "Nature-Inspired Art Installations",
-    "Art Therapy Workshops",
-    "Inclusive Public Art Project",
-    "Upcycled Art Exhibition",
+    "Community Project",
+    "Digital Arts",
+    "Street Art Beautification",
+    "Cultural Project",
+    "Public Music Performance",
+    "Photography Project",
+    "Arts Festival",
     "Other",
   ];
 

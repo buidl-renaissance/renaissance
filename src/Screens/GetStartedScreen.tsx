@@ -17,25 +17,7 @@ const GetStartedScreen = ({
     const [username, onChangeUsername] = React.useState<string>();
     const [email, onChangeEmail] = React.useState<string>();
     const [phone, onChangePhone] = React.useState<string>();
-  
-    // const [request, response, promptAsync] = Google.useAuthRequest({
-    //     expoClientId: '272979904049-mfrnnrpd2ta5q8bdcsprkb70d2c3djtk.apps.googleusercontent.com', // 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
-    //     iosClientId: '272979904049-ifajosp5u7bivlhbf16998t05e3q721u.apps.googleusercontent.com',
-    //     // androidClientId: 'GOOGLE_GUID.apps.googleusercontent.com',
-    //     // webClientId: 'GOOGLE_GUID.apps.googleusercontent.com',
-    // });
-    
-    // React.useEffect(() => {
-    //     if (response?.type === 'success') {
-    //       const { authentication } = response;
-    //       fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${authentication?.accessToken}`)
-    //         .then((res) => res.json())
-    //         .then((res) => {
-    //             alert(`${JSON.stringify(res)}`);
-    //         });
-    //     }
-    //   }, [response]);
-    
+      
     navigation.setOptions({
         headerTitle: () => <HeaderTitleImage />,
     });
