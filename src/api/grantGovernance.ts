@@ -1,5 +1,12 @@
-const Web3 = require('web3');
+
+import Web3 from "web3";
+import BN from "bn.js";
+import TruffleContract from "@truffle/contract";
 const ABI = require('../build/contracts/GrantGovernance.json'); // Assuming you have the ABI of your contract
+
+// @ts-ignore
+const GrantGovernance = TruffleContract(ABI);
+
 
 // Initialize Web3 with your provider
 const web3 = new Web3('http://localhost:8545'); // Update with your provider URL
@@ -12,11 +19,26 @@ const contractInstance = new web3.eth.Contract(ABI, CONTRACT_ADDRESS);
 
 // Function to create a proposal
 
-type GrantContractDetails {
-
-    
+interface GrantContractDetails {
+    proposalId: String,
+    description: String,
+    creator: String
+    forVotes: BigInt,
+    againstVotes: BigInt,
+    executed: boolean,
+    revoked:boolean,
+    queued: boolean
 }
 
+export async function createProposal(
+    web3: Web3,
+    description: string
+  ) {
+    GrantGovernance.setProvider(web3.currentProvider);
+    const grantDAO = await GrantGovernance.deployed();
+  
+    await grantDAO.createProposal({ description });
+  }
 
 
 
@@ -47,16 +69,6 @@ type GrantContractDetails {
 //       console.error("Error creating proposal:", error);
 //     }
 //   }
-
-
-
-
-
-
-
-
-
-
 
 // async function vote(proposalId, inFavor) {
 //     try {
