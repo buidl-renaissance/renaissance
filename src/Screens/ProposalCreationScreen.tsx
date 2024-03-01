@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
+import { createProposal } from "../utils/proposal";
 
 const ProposalCreationScreen = ({
   navigation
@@ -54,6 +55,10 @@ const ProposalCreationScreen = ({
     // Implement logic to handle the creation of the proposal
     // You may send this data to your backend or use it in the smart contract interactions
     console.log("Proposal Created:", { title, description, budget });
+    (async () => {
+      const proposal = await createProposal(description);
+      console.log("proposal: ", proposal)
+    })();
   };
 
   return (

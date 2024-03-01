@@ -12,8 +12,6 @@ import {
 import { HeroBanner } from "../Components/HeroBanner";
 import FilterBubble from "../Components/FilterBubble";
 
-import { getProvider } from "../utils/web3";
-
 import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
@@ -110,6 +108,9 @@ const CalendarScreen = ({ navigation }) => {
       // const res = (await provider.getBalance('0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70')).toJSON();
       // console.log('provider.getBalance("0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70")', res, res.hex, Number(res.hex));
       const wallet = await getWallet();
+      // const balance = await (await wallet.provider.getBalance(wallet.address)).toJSON();
+      // console.log('balance: ', balance, balance.hex, Number(balance.hex));
+
       // console.log("wallet: ", wallet);
       console.log("address:", wallet.address);
       // console.log("publicKey:", wallet.publicKey);
