@@ -10,5 +10,5 @@
     "./global.d.ts"
   ],
   "exclude": ["**/*.spec.ts", "**/*.spec.tsx", "test-setup.ts"],
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"]
 }
