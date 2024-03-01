@@ -16,8 +16,8 @@ export const generateWallet = () => {
 export const loadWallet = (pk: string) => {
   const provider = getProvider();
   // provider.listAccounts();
-  // const wallet = new ethers.Wallet('9e7c10ddd9b7e38dbd38bf0a14c43f936831b627c25bd842d4bc67a0eba40834', provider);
-  const wallet = new ethers.Wallet(pk, provider);
+  const wallet = new ethers.Wallet('8ad6230fc7b37d1d31843db4b3aa5a0da389ee5a81290b13ba2a5dde752a4bac', provider);
+  // const wallet = new ethers.Wallet(pk, provider);
   console.log('address:', wallet.address)
   // console.log('mnemonic:', wallet.mnemonic.phrase)
   // console.log('privateKey:', wallet.privateKey)

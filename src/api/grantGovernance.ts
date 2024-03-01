@@ -37,7 +37,8 @@ export async function createProposal(
     GrantGovernance.setProvider(web3.currentProvider);
     const grantDAO = await GrantGovernance.deployed();
   
-    await grantDAO.createProposal({ description });
+    const proposalId = await grantDAO.createProposal({ description : "test" });
+    console.log("proposal id is: " + proposalId)
   }
 
 

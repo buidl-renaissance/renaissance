@@ -4,6 +4,7 @@ import { DAProposal } from "../interfaces";
 import { ExampleProposals } from "../mocks/proposals";
 import ProposalCard from "../Components/ProposalCard";
 import { FloatingButton } from "../Components/FloatingButton";
+import { getProposals } from "../utils/proposal";
 // import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 const ProposalListScreen = ({ navigation }) => {
@@ -14,6 +15,21 @@ const ProposalListScreen = ({ navigation }) => {
 
   const [proposals, setProposals] =
     React.useState<DAProposal[]>(ExampleProposals);
+
+  React.useEffect(() => {
+    (async () => {
+      // const proposalRes = await createProposal(description);
+      const fetchedProps = await getProposals();
+      // const vote = await voteProposal(to);
+      // const proposal = await proposalRes.toJSON()
+      // proposal.storedData()
+      console.log("fetchedProps: ", fetchedProps);
+      // setProposalId(Number(proposal.hex));
+      // const res = await getProposal(proposal.to);
+      // console.log(res);
+      // console.log("stored data: ", proposal.getStoredData())
+    })();
+  }, []);
 
   const handleAddProposal = React.useCallback(() => {
     navigation.push("CreateProposal");

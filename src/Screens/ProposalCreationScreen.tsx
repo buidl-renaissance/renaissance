@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -9,12 +10,10 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
-import { createProposal } from "../utils/proposal";
+import { createProposal, getProposal } from "../utils/proposal";
+import { voteProposal } from "../utils/vote";
 
-const ProposalCreationScreen = ({
-  navigation
-}) => {
-
+const ProposalCreationScreen = ({ navigation }) => {
   navigation.setOptions({
     headerTitle: "Create Proposal",
   });
@@ -22,6 +21,8 @@ const ProposalCreationScreen = ({
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [budget, setBudget] = React.useState("");
+
+  const [proposalId, setProposalId] = useState(0);
 
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [customCategory, setCustomCategory] = React.useState("");
@@ -56,10 +57,31 @@ const ProposalCreationScreen = ({
     // You may send this data to your backend or use it in the smart contract interactions
     console.log("Proposal Created:", { title, description, budget });
     (async () => {
+      // const proposalRes = await createProposal(description);
       const proposal = await createProposal(description);
-      console.log("proposal: ", proposal)
+      console.log("proposal: ", proposal);
+      const to = proposal.to;
+      console.log("to: ", to);
+      const vote = await getProposal(to);
+      // const vote = await voteProposal(to);
+      // const proposal = await proposalRes.toJSON()
+      // proposal.storedData()
+      console.log("vote: ", vote);
+      // setProposalId(Number(proposal.hex));
+      // const res = await getProposal(proposal.to);
+      // console.log(res);
+      // console.log("stored data: ", proposal.getStoredData())
     })();
   };
+
+  // const handleVote = () => {
+  //   // Implement logic to handle the creation of the proposal
+  //   // You may send this data to your backend or use it in the smart contract interactions
+  //   console.log("Vote:", { title, description, budget });
+  //   (async () => {
+  //     await vote({proposalId, inFavor});
+  //   })();
+  // };
 
   return (
     <View style={styles.container}>
