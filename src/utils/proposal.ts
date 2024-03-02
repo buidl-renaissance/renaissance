@@ -11,11 +11,13 @@ const ABI = require("../build/contracts/GrantGovernance.json"); // Assuming you 
 const CONTRACT_ADDRESS = "0x6Af9c955CE0780f78944F0472fb1fE24cfeF0800"; // Update with the contract address in truffle develop
 
 export interface ProposalData {
-  id?: string;
+  againstVotes: string;
   body: string;
   budget: string;
   category: string;
   description: string;
+  forVotes: string;
+  id?: string;
   title: string;
 }
 
@@ -35,12 +37,13 @@ export const getProposals = async () => {
   try {
     const proposalData = await contract.getProposals();
     return proposalData.map((proposalData) => {
-      // console.log('proposalData: ', proposalData);
       return {
+        againstVotes: Number(proposalData.againstVotes.toJSON().hex),
         body: proposalData.body,
         budget: proposalData.estBudget,
         category: proposalData.category,
         description: proposalData.description,
+        forVotes: Number(proposalData.forVotes.toJSON().hex),
         id: Number(proposalData[0].toJSON().hex),
         title: proposalData.title,
       };
@@ -50,9 +53,25 @@ export const getProposals = async () => {
   }
 };
 
+export const voteOnProposal = async (proposalId: string, inFavor: boolean) => {
+  const wallet = await getWallet();
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
+  try {
+    return await contract.vote(
+      proposalId,
+      inFavor,
+      {
+        gasPrice: 5000000000,
+        gasLimit: 1000000,
+      }
+    );
+  } catch (err) {
+    console.log("error voting on proposal", err);
+  }
+};
+
 export const createProposal = async (data: ProposalData) => {
   const wallet = await getWallet();
-  console.log("proposal wallet: ", wallet.address);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
   try {
     return await contract.createProposal(

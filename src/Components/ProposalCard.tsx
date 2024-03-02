@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { Button, Card, Title, Paragraph } from "react-native-paper";
 import { DAProposal } from "../interfaces";
+import { voteOnProposal } from "../utils/proposal";
 
 interface ProposalCardProps {
   proposal: DAProposal;
@@ -13,6 +14,10 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
 
   const handleVote = React.useCallback(() => {
     console.log("handleVote: ", proposal);
+    (async () => {
+      const result = await voteOnProposal(`${proposal.id}`, true);
+      console.log(result);
+    })();
   }, [proposal]);
 
   const handleStake = React.useCallback(() => {

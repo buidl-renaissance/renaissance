@@ -8,17 +8,16 @@ import { getProposals } from "../utils/proposal";
 // import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 const ProposalListScreen = ({ navigation }) => {
+  const [proposals, setProposals] = React.useState<DAProposal[]>([]);
 
   navigation.setOptions({
     headerTitle: "Proposals",
   });
 
-  const [proposals, setProposals] =
-    React.useState<DAProposal[]>(ExampleProposals);
-
   React.useEffect(() => {
     (async () => {
       const fetchedProposals = await getProposals();
+      console.log('fetchedProposals: ', fetchedProposals)
       setProposals(fetchedProposals);
     })();
   }, []);

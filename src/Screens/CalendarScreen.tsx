@@ -102,24 +102,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
-    (async () => {
-      // const provider = getProvider();
-      // // const res = await provider.getBlockNumber();
-      // const res = (await provider.getBalance('0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70')).toJSON();
-      // console.log('provider.getBalance("0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70")', res, res.hex, Number(res.hex));
-      const wallet = await getWallet();
-      // const balance = await (await wallet.provider.getBalance(wallet.address)).toJSON();
-      // console.log('balance: ', balance, balance.hex, Number(balance.hex));
-
-      // console.log("wallet: ", wallet);
-      console.log("address:", wallet.address);
-      // console.log("publicKey:", wallet.publicKey);
-      // console.log("privateKey:", wallet.privateKey);
-      // console.log("mnemonic:", wallet.mnemonic);
-      const signature = await wallet.signMessage('Hello World!');
-      console.log('signature: ', signature);
-    })();
-    // navigation.push("CreateEvent");
+    navigation.push("CreateEvent");
   }, []);
 
   const handleShowProposals = React.useCallback(() => {

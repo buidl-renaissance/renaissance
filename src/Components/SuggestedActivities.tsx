@@ -52,9 +52,10 @@ export const SuggestedActivities = ({ }) => {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
       >
-        {activities.map((activity) => {
+        {activities.map((activity, i) => {
           return (
             <TouchableOpacity
+              key={`activity-${i}`}
               onPress={() => {
                 Linking.openURL(activity.url);
               }}
