@@ -8,7 +8,7 @@ const ABI = require("../build/contracts/GrantGovernance.json"); // Assuming you 
 
 // const GrantGovernance = TruffleContract(ABI);
 
-const CONTRACT_ADDRESS = "0xc5d580994EBCA8fa987cB2CEc178C7FecF8a11A3"; // Update with the contract address in truffle develop
+const CONTRACT_ADDRESS = "0xc36c7E4437674CDF63ac77dA39883652dED09aE9"; // Update with the contract address in truffle develop
 
 export interface ProposalData { 
   againstVotes?: number;
