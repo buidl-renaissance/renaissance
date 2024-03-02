@@ -8,7 +8,7 @@ const ABI = require("../build/contracts/GrantGovernance.json"); // Assuming you 
 
 // const GrantGovernance = TruffleContract(ABI);
 
-const CONTRACT_ADDRESS = "0xc36c7E4437674CDF63ac77dA39883652dED09aE9"; // Update with the contract address in truffle develop
+const CONTRACT_ADDRESS = "0xc5d580994EBCA8fa987cB2CEc178C7FecF8a11A3"; // Update with the contract address in truffle develop
 
 export interface ProposalData { 
   againstVotes?: number;
@@ -17,16 +17,31 @@ export interface ProposalData {
   category: string;
   description: string;
   forVotes?: number;
-  id?: string;
+  id?: string | number;
   tokensStaked?: number;
   title: string;
 }
 
-export const getProposal = async (proposalId: string) => {
+const extractProposalData = (data) => {
+  return {
+    againstVotes: Number(data.againstVotes.toJSON().hex),
+    body: data.body,
+    budget: data.estBudget,
+    category: data.category,
+    description: data.description,
+    forVotes: Number(data.forVotes.toJSON().hex),
+    id: Number(data[0].toJSON().hex),
+    tokensStaked: Number(data.tokensStaked?.toJSON().hex),
+    title: data.title,
+  };
+}
+
+export const getProposal = async (proposalId: string | number) => {
   const provider = await getProvider();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, provider);
   try {
-    return await contract.getProposal(proposalId);
+    const result = await contract.getProposal(proposalId);
+    return extractProposalData(result);
   } catch (err) {
     console.log("error getting proposal", err);
   }
@@ -37,18 +52,8 @@ export const getProposals = async () => {
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, provider);
   try {
     const proposalData = await contract.getProposals();
-    return proposalData.map((proposalData) => {
-      return {
-        againstVotes: Number(proposalData.againstVotes.toJSON().hex),
-        body: proposalData.body,
-        budget: proposalData.estBudget,
-        category: proposalData.category,
-        description: proposalData.description,
-        forVotes: Number(proposalData.forVotes.toJSON().hex),
-        id: Number(proposalData[0].toJSON().hex),
-        tokensStaked: Number(proposalData.tokensStaked?.toJSON().hex),
-        title: proposalData.title,
-      };
+    return proposalData.map((data) => {
+      return extractProposalData(data);
     });
   } catch (err) {
     console.log("error getting proposal", err);

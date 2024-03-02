@@ -3,25 +3,32 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { ScrollView } from "react-native-gesture-handler";
 import { createProposal } from "../utils/proposal";
 import { EventRegister } from "react-native-event-listeners";
+import { Button } from "../Components/Button";
 
 const ProposalCreationScreen = ({ navigation }) => {
   navigation.setOptions({
     headerTitle: "Create Proposal",
   });
 
-  const [title, setTitle] = React.useState("East Side Community Garden Development ");
-  const [description, setDescription] = React.useState("Join a group artists from Detroit's east side beautifying their community garden.");
-  const [body, setBody] = React.useState("To enhance the beauty and vibrancy of the East Side Community Garden through the installation of a fountain and sculptures, creating an inviting and inspiring space for community members.");
+  const [title, setTitle] = React.useState(
+    "East Side Community Garden Development "
+  );
+  const [description, setDescription] = React.useState(
+    "Join a group artists from Detroit's east side beautifying their community garden."
+  );
+  const [body, setBody] = React.useState(
+    "To enhance the beauty and vibrancy of the East Side Community Garden through the installation of a fountain and sculptures, creating an inviting and inspiring space for community members."
+  );
   const [budget, setBudget] = React.useState("$5,000");
-  const [selectedCategory, setSelectedCategory] = React.useState("Community Project");
+  const [selectedCategory, setSelectedCategory] =
+    React.useState("Community Project");
   const [customCategory, setCustomCategory] = React.useState("");
 
   // const [title, setTitle] = React.useState("Blender for Beginners");
@@ -31,10 +38,9 @@ const ProposalCreationScreen = ({ navigation }) => {
   // const [selectedCategory, setSelectedCategory] = React.useState("Workshop");
   // const [customCategory, setCustomCategory] = React.useState("");
 
-  // East Side Community Garden Development 
+  // East Side Community Garden Development
   // Join a group artists from Detroit's east side beautifying their community garden.
   // To enhance the beauty and vibrancy of the East Side Community Garden through the installation of a fountain and sculptures, creating an inviting and inspiring space for community members.
-
 
   const bottomSheetRef = React.useRef<BottomSheet>(null);
 
@@ -64,7 +70,9 @@ const ProposalCreationScreen = ({ navigation }) => {
 
   const handleCreateProposal = () => {
     (async () => {
-      const category = customCategory.length ? customCategory : selectedCategory;
+      const category = customCategory.length
+        ? customCategory
+        : selectedCategory;
       await createProposal({
         title,
         description,
@@ -78,57 +86,61 @@ const ProposalCreationScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={(text) => setTitle(text)}
-      />
-
-      <Text style={styles.label}>Select Category:</Text>
-      <TextInput
-        value={selectedCategory}
-        onTouchStart={() => bottomSheetRef.current?.expand()}
-        style={styles.input}
-        placeholder="Select category..."
-        editable={false}
-      />
-      {selectedCategory === "Other" && (
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 48 }}
+      >
+        <Text style={styles.label}>Title</Text>
         <TextInput
-          value={customCategory}
-          onChangeText={handleCustomCategoryChange}
           style={styles.input}
-          placeholder="Enter custom category..."
+          value={title}
+          onChangeText={(text) => setTitle(text)}
         />
-      )}
 
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, { height: 120 }]}
-        value={description}
-        onChangeText={(text) => setDescription(text)}
-        multiline
-      />
+        <Text style={styles.label}>Select Category:</Text>
+        <TextInput
+          value={selectedCategory}
+          onTouchStart={() => bottomSheetRef.current?.expand()}
+          style={styles.input}
+          placeholder="Select category..."
+          editable={false}
+        />
+        {selectedCategory === "Other" && (
+          <TextInput
+            value={customCategory}
+            onChangeText={handleCustomCategoryChange}
+            style={styles.input}
+            placeholder="Enter custom category..."
+          />
+        )}
 
-      <Text style={styles.label}>Estimated Budget (USD)</Text>
-      <TextInput
-        style={styles.input}
-        value={budget}
-        onChangeText={(text) => setBudget(text)}
-        keyboardType="numeric"
-      />
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={[styles.input, { height: 80 }]}
+          value={description}
+          onChangeText={(text) => setDescription(text)}
+          multiline
+        />
 
-      <Text style={styles.label}>Details</Text>
-      <TextInput
-        style={[styles.input, { height: 220 }]}
-        value={body}
-        onChangeText={(text) => setBody(text)}
-        multiline
-      />
+        <Text style={styles.label}>Estimated Budget (USD)</Text>
+        <TextInput
+          style={styles.input}
+          value={budget}
+          onChangeText={(text) => setBudget(text)}
+          keyboardType="numeric"
+        />
 
-      <Button title="Create Proposal" onPress={handleCreateProposal} />
+        <Text style={styles.label}>Details</Text>
+        <TextInput
+          style={[styles.input, { height: 200 }]}
+          value={body}
+          onChangeText={(text) => setBody(text)}
+          multiline
+        />
 
+        <Button title="Create Proposal" onPress={handleCreateProposal} />
+      </ScrollView>
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
@@ -152,7 +164,7 @@ const ProposalCreationScreen = ({ navigation }) => {
           ))}
         </ScrollView>
       </BottomSheet>
-    </View>
+    </>
   );
 };
 

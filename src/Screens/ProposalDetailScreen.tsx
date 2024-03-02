@@ -2,10 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 // import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import ProposalCard from "../Components/ProposalCard";
-import { ProposalData } from "../utils/proposal";
+import { ProposalData, getProposal } from "../utils/proposal";
+import { EventRegister } from "react-native-event-listeners";
 
 interface ProposalDetailScreenProps {
-  navigation,
+  navigation;
   route: {
     params: {
       proposal: ProposalData;
@@ -17,12 +18,35 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { proposal } = route.params;
+  const [proposal, setProposal] = React.useState(route.params.proposal);
 
   navigation.setOptions({
     headerTitle: `Proposal #${proposal.id}`,
   });
 
+  const fetchProposal = React.useCallback(() => {
+    (async () => {
+      console.log("proposal: ", proposal);
+      if (proposal.id === 0 || proposal.id) {
+        const fetchedProposal = await getProposal(proposal.id);
+        console.log("fetchedProposal", fetchedProposal);
+        setProposal(fetchedProposal);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener(
+      "UpdateProposalsEvent",
+      () => {
+        fetchProposal();
+      }
+    );
+    return () => {
+      if (typeof listener === "string")
+        EventRegister.removeEventListener(listener);
+    };
+  }, []);
   // // Sample chat messages for demonstration purposes
   // const [messages, setMessages] = useState<IMessage[]>([
   //   {
