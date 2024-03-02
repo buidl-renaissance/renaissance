@@ -32,7 +32,6 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
   }, [proposal]);
 
   const handleStake = React.useCallback(() => {
-    console.log("handleStake: ", proposal);
     (async () => {
       await stakeTokens(`${proposal.id}`, 10);
       EventRegister.emitEvent("UpdateProposalsEvent");

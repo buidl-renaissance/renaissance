@@ -229,7 +229,7 @@ const CalendarScreen = ({ navigation }) => {
     return (
       <View>
         <HeroBanner>
-          {weather?.properties?.periods?.length && (
+          {/* {weather?.properties?.periods?.length && (
             <View>
               <Text style={{ color: "white", fontSize: 32 }}>
                 {weather?.properties?.periods[0].temperature} °F
@@ -238,7 +238,7 @@ const CalendarScreen = ({ navigation }) => {
                 {weather?.properties?.periods[0].shortForecast}
               </Text>
             </View>
-          )}
+          )} */}
           {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
           {/* {username && pub && sig && } */}
           <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>

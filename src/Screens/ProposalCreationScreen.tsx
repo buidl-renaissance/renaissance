@@ -51,7 +51,6 @@ const ProposalCreationScreen = ({ navigation }) => {
   };
 
   const handleCreateProposal = () => {
-    console.log("Proposal Created:", { title, description, budget });
     (async () => {
       const category = customCategory.length ? customCategory : selectedCategory;
       const proposal = await createProposal({
@@ -63,20 +62,8 @@ const ProposalCreationScreen = ({ navigation }) => {
       });
       EventRegister.emitEvent("UpdateProposalsEvent");
       navigation.goBack();
-      // const to = proposal.to;
-      // const fetched = await getProposal(to);
-      // console.log("created proposal: ", fetched);
     })();
   };
-
-  // const handleVote = () => {
-  //   // Implement logic to handle the creation of the proposal
-  //   // You may send this data to your backend or use it in the smart contract interactions
-  //   console.log("Vote:", { title, description, budget });
-  //   (async () => {
-  //     await vote({proposalId, inFavor});
-  //   })();
-  // };
 
   return (
     <View style={styles.container}>
