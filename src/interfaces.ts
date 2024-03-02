@@ -28,10 +28,12 @@ export interface DAVenue {
 }
 
 export interface DAProposal {
+  body: string;
+  budget: string;
+  category: string;
+  description: string;
   id: number;
   title: string;
-  description: string;
-  budget: string;
 }
 
 export interface DAEvent {

@@ -18,16 +18,8 @@ const ProposalListScreen = ({ navigation }) => {
 
   React.useEffect(() => {
     (async () => {
-      // const proposalRes = await createProposal(description);
-      const fetchedProps = await getProposals();
-      // const vote = await voteProposal(to);
-      // const proposal = await proposalRes.toJSON()
-      // proposal.storedData()
-      console.log("fetchedProps: ", fetchedProps);
-      // setProposalId(Number(proposal.hex));
-      // const res = await getProposal(proposal.to);
-      // console.log(res);
-      // console.log("stored data: ", proposal.getStoredData())
+      const fetchedProposals = await getProposals();
+      setProposals(fetchedProposals);
     })();
   }, []);
 

@@ -9,7 +9,7 @@ interface ProposalCardProps {
 }
 
 const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
-  const { id, title, description, budget } = proposal;
+  const { id, category, title, description, budget } = proposal;
 
   const handleVote = React.useCallback(() => {
     console.log("handleVote: ", proposal);
@@ -28,6 +28,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
       <Card.Content>
         <Paragraph>{`Proposal #${id}`}</Paragraph>
         <Title style={{ fontWeight: 'bold' }}>{`${title}`}</Title>
+        {category && <Paragraph>{`${category}`}</Paragraph>}
         <Paragraph>{`${description}`}</Paragraph>
         <Paragraph>{`Est. Budget: ${budget}`}</Paragraph>
       </Card.Content>
