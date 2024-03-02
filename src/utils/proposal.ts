@@ -8,16 +8,17 @@ const ABI = require("../build/contracts/GrantGovernance.json"); // Assuming you 
 
 // const GrantGovernance = TruffleContract(ABI);
 
-const CONTRACT_ADDRESS = "0x6Af9c955CE0780f78944F0472fb1fE24cfeF0800"; // Update with the contract address in truffle develop
+const CONTRACT_ADDRESS = "0xc5d580994EBCA8fa987cB2CEc178C7FecF8a11A3"; // Update with the contract address in truffle develop
 
-export interface ProposalData {
-  againstVotes: string;
+export interface ProposalData { 
+  againstVotes?: number;
   body: string;
   budget: string;
   category: string;
   description: string;
-  forVotes: string;
+  forVotes?: number;
   id?: string;
+  tokensStaked?: number;
   title: string;
 }
 
@@ -45,6 +46,7 @@ export const getProposals = async () => {
         description: proposalData.description,
         forVotes: Number(proposalData.forVotes.toJSON().hex),
         id: Number(proposalData[0].toJSON().hex),
+        tokensStaked: Number(proposalData.tokensStaked?.toJSON().hex),
         title: proposalData.title,
       };
     });
@@ -67,6 +69,23 @@ export const voteOnProposal = async (proposalId: string, inFavor: boolean) => {
     );
   } catch (err) {
     console.log("error voting on proposal", err);
+  }
+};
+
+export const stakeTokens = async (proposalId: string, amount: number) => {
+  const wallet = await getWallet();
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
+  try {
+    return await contract.stakeTokens(
+      proposalId,
+      amount,
+      {
+        gasPrice: 5000000000,
+        gasLimit: 1000000,
+      }
+    );
+  } catch (err) {
+    console.log("error staking on proposal", err);
   }
 };
 

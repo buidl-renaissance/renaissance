@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import {
   View,
   Text,
@@ -10,20 +9,20 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
-import { createProposal, getProposal } from "../utils/proposal";
-import { voteProposal } from "../utils/vote";
+import { createProposal } from "../utils/proposal";
+import { EventRegister } from "react-native-event-listeners";
 
 const ProposalCreationScreen = ({ navigation }) => {
   navigation.setOptions({
     headerTitle: "Create Proposal",
   });
 
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [body, setBody] = React.useState("");
-  const [budget, setBudget] = React.useState("");
+  const [title, setTitle] = React.useState("Blender for Beginners");
+  const [description, setDescription] = React.useState("This Hands on workshop will teach you all you need to know to get started with Blender.");
+  const [body, setBody] = React.useState("Join us every Tuesday evening for the month of April. Sessions will last approximately two hours. Snacks will be served.");
+  const [budget, setBudget] = React.useState("$250");
 
-  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [selectedCategory, setSelectedCategory] = React.useState("Workshop");
   const [customCategory, setCustomCategory] = React.useState("");
   const bottomSheetRef = React.useRef<BottomSheet>(null);
 
@@ -62,9 +61,11 @@ const ProposalCreationScreen = ({ navigation }) => {
         body,
         budget,
       });
-      const to = proposal.to;
-      const fetched = await getProposal(to);
-      console.log("created proposal: ", fetched);
+      EventRegister.emitEvent("UpdateProposalsEvent");
+      navigation.goBack();
+      // const to = proposal.to;
+      // const fetched = await getProposal(to);
+      // console.log("created proposal: ", fetched);
     })();
   };
 

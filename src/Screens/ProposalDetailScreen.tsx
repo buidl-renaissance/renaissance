@@ -1,14 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 // import { GiftedChat, IMessage } from "react-native-gifted-chat";
-import { DAProposal } from "../interfaces";
 import ProposalCard from "../Components/ProposalCard";
+import { ProposalData } from "../utils/proposal";
 
 interface ProposalDetailScreenProps {
   navigation,
   route: {
     params: {
-      proposal: DAProposal;
+      proposal: ProposalData;
     };
   };
 }
@@ -51,9 +51,7 @@ const ProposalDetailScreen: React.FC<ProposalDetailScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      <ProposalCard proposal={proposal} />
-      <Text>{proposal.body}</Text>
-
+      <ProposalCard proposal={proposal} showDetails={true} />
       {/* Add more details or actions related to the proposal as needed */}
 
       {/* <View style={styles.chatContainer}>

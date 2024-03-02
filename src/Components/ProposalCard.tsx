@@ -1,27 +1,42 @@
 import React from "react";
-import { StyleSheet } from "react-native";
-import { Button, Card, Title, Paragraph } from "react-native-paper";
-import { DAProposal } from "../interfaces";
-import { voteOnProposal } from "../utils/proposal";
+import { StyleSheet, Text, View } from "react-native";
+import { Button, Card, Title, Paragraph, Icon } from "react-native-paper";
+import { ProposalData, stakeTokens, voteOnProposal } from "../utils/proposal";
+import { EventRegister } from "react-native-event-listeners";
 
 interface ProposalCardProps {
-  proposal: DAProposal;
-  onPress?: (proposal: DAProposal) => void;
+  proposal: ProposalData;
+  showDetails?: boolean;
+  onPress?: (proposal: ProposalData) => void;
 }
 
-const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
-  const { id, category, title, description, budget } = proposal;
+const ProposalCard: React.FC<ProposalCardProps> = ({
+  proposal,
+  showDetails,
+  onPress,
+}) => {
+  const { id, category, title, description, body, budget } = proposal;
 
-  const handleVote = React.useCallback(() => {
-    console.log("handleVote: ", proposal);
+  const handleUpVote = React.useCallback(() => {
     (async () => {
-      const result = await voteOnProposal(`${proposal.id}`, true);
-      console.log(result);
+      await voteOnProposal(`${proposal.id}`, true);
+      EventRegister.emitEvent("UpdateProposalsEvent");
+    })();
+  }, [proposal]);
+
+  const handleDownVote = React.useCallback(() => {
+    (async () => {
+      await voteOnProposal(`${proposal.id}`, false);
+      EventRegister.emitEvent("UpdateProposalsEvent");
     })();
   }, [proposal]);
 
   const handleStake = React.useCallback(() => {
     console.log("handleStake: ", proposal);
+    (async () => {
+      await stakeTokens(`${proposal.id}`, 10);
+      EventRegister.emitEvent("UpdateProposalsEvent");
+    })();
   }, [proposal]);
 
   const handleShowDetail = React.useCallback(() => {
@@ -31,19 +46,70 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
   return (
     <Card style={styles.card}>
       <Card.Content>
-        <Paragraph>{`Proposal #${id}`}</Paragraph>
-        <Title style={{ fontWeight: 'bold' }}>{`${title}`}</Title>
-        {category && <Paragraph>{`${category}`}</Paragraph>}
-        <Paragraph>{`${description}`}</Paragraph>
-        <Paragraph>{`Est. Budget: ${budget}`}</Paragraph>
+        <Text
+          style={{ fontWeight: "bold", fontSize: 22, marginBottom: 4 }}
+        >{`#${id} - ${title}`}</Text>
+        {category && (
+          <Text
+            style={{
+              marginBottom: 8,
+              fontWeight: "500",
+              fontStyle: "italic",
+              color: "gray",
+            }}
+          >{`${category}`}</Text>
+        )}
+        <Text
+          style={{
+            marginBottom: 8,
+          }}
+        >{`${description}`}</Text>
+        <Text
+          style={{
+            marginBottom: 8,
+            fontWeight: "500",
+            fontStyle: "italic",
+          }}
+        >{`Est. Budget: ${budget}`}</Text>
+        {showDetails ? (
+          <View>
+            <Text
+              style={{ fontSize: 14, fontWeight: "bold", marginVertical: 4 }}
+            >
+              Proposal Details:
+            </Text>
+            <Text style={{ fontSize: 16, marginBottom: 8 }}>{body}</Text>
+          </View>
+        ) : (
+          <View
+            style={{
+              borderBottomColor: "#ccc",
+              borderBottomWidth: 1,
+              paddingBottom: 8,
+            }}
+          >
+            <Button
+              onPress={handleShowDetail}
+              style={{
+                alignContent: "flex-end",
+                borderColor: "#7c1aed",
+                borderWidth: 1,
+              }}
+            >
+              See Details
+            </Button>
+          </View>
+        )}
       </Card.Content>
       <Card.Actions style={styles.actions}>
-        <Button onPress={handleShowDetail}>Details</Button>
-        <Button icon="thumb-up" onPress={handleVote}>
-          Vote
+        <Button onPress={handleStake}>
+          Staked (§{proposal.tokensStaked})
         </Button>
-        <Button icon="currency-usd" onPress={handleStake}>
-          Stake
+        <Button icon="thumb-up" onPress={handleUpVote}>
+          {proposal.forVotes}
+        </Button>
+        <Button icon="thumb-down" onPress={handleDownVote}>
+          {proposal.againstVotes}
         </Button>
       </Card.Actions>
     </Card>
@@ -52,7 +118,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onPress }) => {
 
 const styles = StyleSheet.create({
   card: {
-    marginVertical: 10,
+    marginTop: 16,
     marginHorizontal: 16,
   },
   actions: {
