@@ -7,6 +7,7 @@ import { FloatingButton } from "../Components/FloatingButton";
 import { ProposalData, getProposals } from "../utils/proposal";
 // import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { EventRegister } from "react-native-event-listeners";
+import { Button } from "../Components/Button";
 
 const ProposalListScreen = ({ navigation }) => {
   const [proposals, setProposals] = React.useState<ProposalData[]>([]);
@@ -52,7 +53,10 @@ const ProposalListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {proposals?.length < 1 ? (
-        <Text>No proposals available.</Text>
+        <View>
+          <Text>No proposals available.</Text>
+          <Button onPress={handleAddProposal} title="Create Proposal" />
+        </View>
       ) : (
         <FlatList
           contentContainerStyle={styles.list}

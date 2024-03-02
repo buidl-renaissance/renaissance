@@ -41,6 +41,7 @@ export const getProposal = async (proposalId: string | number) => {
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, provider);
   try {
     const result = await contract.getProposal(proposalId);
+    console.log('getProposal: ', result);
     return extractProposalData(result);
   } catch (err) {
     console.log("error getting proposal", err);
@@ -52,6 +53,7 @@ export const getProposals = async () => {
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, provider);
   try {
     const proposalData = await contract.getProposals();
+    console.log('proposalData: ', proposalData);
     return proposalData.map((data) => {
       return extractProposalData(data);
     });
@@ -64,7 +66,7 @@ export const voteOnProposal = async (proposalId: string, inFavor: boolean) => {
   const wallet = await getWallet();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
   try {
-    return await contract.vote(
+    const res = await contract.vote(
       proposalId,
       inFavor,
       {
@@ -72,6 +74,8 @@ export const voteOnProposal = async (proposalId: string, inFavor: boolean) => {
         gasLimit: 1000000,
       }
     );
+    console.log('vote: ', res);
+    return res;
   } catch (err) {
     console.log("error voting on proposal", err);
   }
@@ -81,7 +85,7 @@ export const stakeTokens = async (proposalId: string, amount: number) => {
   const wallet = await getWallet();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
   try {
-    return await contract.stakeTokens(
+    const res = await contract.stakeTokens(
       proposalId,
       amount,
       {
@@ -89,6 +93,8 @@ export const stakeTokens = async (proposalId: string, amount: number) => {
         gasLimit: 1000000,
       }
     );
+    console.log('staked: ', res);
+    return res;
   } catch (err) {
     console.log("error staking on proposal", err);
   }
@@ -98,7 +104,7 @@ export const createProposal = async (data: ProposalData) => {
   const wallet = await getWallet();
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI.abi, wallet);
   try {
-    return await contract.createProposal(
+    const res = await contract.createProposal(
       data.title,
       data.description,
       data.category,
@@ -109,6 +115,8 @@ export const createProposal = async (data: ProposalData) => {
         gasLimit: 1000000,
       }
     );
+    console.log('created proposal: ', res);
+    return res;
   } catch (err) {
     console.log("error creating proposal", err);
   }
