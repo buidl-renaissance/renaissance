@@ -69,7 +69,7 @@ const EventEditScreen = ({ navigation, route }) => {
     (async () => {
       await saveEvent(event);
     })();
-  }, [event]);
+  }, [event, title, desc, venue, startDate, endDate]);
 
   const imageHeight = event.image_data?.width
     ? (event.image_data?.height / event.image_data?.width) *

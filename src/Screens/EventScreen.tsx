@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from "react-native";
 import * as Linking from "expo-linking";
+import Icon, { IconTypes } from "../Components/Icon";
 
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { Button } from "../Components/Button";
@@ -21,6 +22,21 @@ const EventScreen = ({ navigation, route }) => {
 
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
+    headerRight: () => (
+      <>
+        <TouchableOpacity
+          onPress={handleEdit}
+          style={{ marginRight: 16, opacity: 0 }}
+        >
+          <Icon
+            type={IconTypes.Ionicons}
+            size={20}
+            color="black"
+            name={"edit"}
+          />
+        </TouchableOpacity>
+      </>
+    ),
   });
 
   React.useEffect(() => {
@@ -35,15 +51,22 @@ const EventScreen = ({ navigation, route }) => {
     })();
   }, []);
 
+  const handleEdit = React.useCallback(() => {
+    navigation.push("EventEdit", {
+      event,
+    });
+  }, [event]);
+
   const handleRSVP = React.useCallback(() => {
     if (event.url) {
       Linking.openURL(event.url);
     }
   }, [event]);
 
-  const imageHeight =
-  event.image_data?.width ? (event.image_data?.height / event.image_data?.width) *
-    Dimensions.get("window").width : 360;
+  const imageHeight = event.image_data?.width
+    ? (event.image_data?.height / event.image_data?.width) *
+      Dimensions.get("window").width
+    : 360;
 
   return (
     <View style={styles.container}>
