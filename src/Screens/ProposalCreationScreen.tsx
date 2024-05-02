@@ -18,12 +18,31 @@ const ProposalCreationScreen = ({
     headerTitle: "Create Proposal",
   });
 
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [budget, setBudget] = React.useState("");
+  // const [title, setTitle] = React.useState(
+  //   "East Side Community Garden Development "
+  // );
+  // const [description, setDescription] = React.useState(
+  //   "Join a group artists from Detroit's east side beautifying their community garden."
+  // );
+  // const [body, setBody] = React.useState(
+  //   "To enhance the beauty and vibrancy of the East Side Community Garden through the installation of a fountain and sculptures, creating an inviting and inspiring space for community members."
+  // );
+  // const [budget, setBudget] = React.useState("$5,000");
+  // const [selectedCategory, setSelectedCategory] =
+  //   React.useState("Community Project");
+  // const [customCategory, setCustomCategory] = React.useState("");
 
-  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [title, setTitle] = React.useState("Blender for Beginners");
+  const [description, setDescription] = React.useState("This Hands on workshop will teach you all you need to know to get started with Blender.");
+  const [body, setBody] = React.useState("Join us every Tuesday evening for the month of April. Sessions will last approximately two hours. Snacks will be served.");
+  const [budget, setBudget] = React.useState("$250");
+  const [selectedCategory, setSelectedCategory] = React.useState("Workshop");
   const [customCategory, setCustomCategory] = React.useState("");
+
+  // East Side Community Garden Development
+  // Join a group artists from Detroit's east side beautifying their community garden.
+  // To enhance the beauty and vibrancy of the East Side Community Garden through the installation of a fountain and sculptures, creating an inviting and inspiring space for community members.
+
   const bottomSheetRef = React.useRef<BottomSheet>(null);
 
   const categories = [

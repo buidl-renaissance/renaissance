@@ -103,6 +103,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Share");
   }, []);
 
+  const handleReviewEvents = React.useCallback(() => {
+    navigation.push("ReviewEvents");
+  }, []);
+
   const handleAddEvent = React.useCallback(() => {
     (async () => {
       // const provider = getProvider();
@@ -279,6 +283,11 @@ const CalendarScreen = ({ navigation }) => {
               name={"share"}
             />
             <RoundButton
+              onPress={handleReviewEvents}
+              type={IconTypes.Ionicons}
+              name={"review"}
+            />
+            <RoundButton
               onPress={handleShowAccount}
               type={IconTypes.Ionicons}
               name={"person"}
@@ -291,10 +300,10 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         </HeroBanner>
 
-        <GrantOpportunities />
+        {/* <GrantOpportunities />
         <View style={{ paddingHorizontal: 16 }}>
           <Button onPress={handleCreateGrant} title="Add New Grant" />
-        </View>
+        </View> */}
 
         <SuggestedActivities />
 

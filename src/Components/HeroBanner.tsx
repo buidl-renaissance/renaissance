@@ -15,7 +15,7 @@ export const HeroBanner = ({ children }) => {
       >
         <Animated.View
           style={{
-            paddingTop: 220,
+            paddingTop: 280,
             paddingHorizontal: 16,
             paddingVertical: 16,
             backgroundColor: "rgba(0, 0, 0, 0.5)",

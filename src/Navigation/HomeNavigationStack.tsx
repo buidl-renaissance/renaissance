@@ -13,6 +13,8 @@ import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
 import ProposalListScreen from "../Screens/ProposalListScreen";
 import ProposalDetailScreen from "../Screens/ProposalDetailScreen";
+import ReviewEventsScreen from "../Screens/ReviewEventsScreen";
+import EventEditScreen from "../Screens/EventEditScreen";
 // import GetStartedScreen from "../Screens/GetStartedScreen";
 import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
@@ -34,12 +36,14 @@ type HomeNavigationStackParamList = {
   CreateEvent: undefined;
   CreateProposal: undefined;
   Event: undefined;
+  EventEdit: undefined;
   GetStarted: undefined;
   GrantCreate: undefined;
   Home: undefined;
   Map: undefined;
   ProposalList: undefined;
   ProposalDetail: undefined;
+  ReviewEvents: undefined;
   Search: undefined;
   Share: undefined;
   Splash: undefined;
@@ -73,6 +77,26 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={ProposalCreationScreen}
         name="CreateProposal"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ReviewEventsScreen}
+        name="ReviewEvents"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={EventEditScreen}
+        name="EventEdit"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

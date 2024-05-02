@@ -44,6 +44,7 @@ export interface DAEvent {
   slug: string;
   start_date: string | null;
   title: string;
+  description?: string;
   featured: boolean;
   excerpt: string;
   venue: DAVenue;
