@@ -210,7 +210,7 @@ export const EventCard = ({
           </View>
         </TouchableOpacity>
         {options.showImage && event.image && (
-          <View style={{ padding: 8 }}>
+          <TouchableOpacity style={{ padding: 8 }} onPress={onSelectEvent}>
             <Image
               source={{
                 uri: event.image,
@@ -222,7 +222,7 @@ export const EventCard = ({
                 borderRadius: 4,
               }}
             />
-          </View>
+          </TouchableOpacity>
         )}
         {options.showBookmark && (
           <TouchableOpacity
