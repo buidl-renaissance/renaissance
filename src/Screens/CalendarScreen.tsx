@@ -286,10 +286,10 @@ const CalendarScreen = ({ navigation }) => {
             />
             <RoundButton
               onPress={handleReviewEvents}
-              type={IconTypes.Ionicons}
-              name={"review"}
+              type={IconTypes.MaterialIcons}
+              name={"create-new-folder"}
             />
-            <RoundButton
+            {/* <RoundButton
               onPress={handleShowAccount}
               type={IconTypes.Ionicons}
               name={"person"}
@@ -298,7 +298,7 @@ const CalendarScreen = ({ navigation }) => {
               onPress={handleShowProposals}
               type={IconTypes.Ionicons}
               name={"document-text-outline"}
-            />
+            /> */}
           </View>
         </HeroBanner>
 
@@ -431,7 +431,7 @@ const CalendarScreen = ({ navigation }) => {
               <View style={{ paddingHorizontal: 16 }}>
                 <EventCard
                   event={item}
-                  options={{ showBookmark: true, showVenue: true }}
+                  options={{ showBookmark: true, showVenue: true, showImage: true }}
                   onSelectEvent={() => handlePressEvent(item)}
                 />
                 {item.featured && item.image && (

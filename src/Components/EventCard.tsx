@@ -12,6 +12,7 @@ import { EventRegister } from "react-native-event-listeners";
 export interface EventCardOptions {
   showBookmark?: boolean;
   showDate?: boolean;
+  showImage?: boolean;
   showVenue?: boolean;
 }
 
@@ -66,7 +67,8 @@ export const EventCard = ({
       }
     });
     return () => {
-      if (typeof listener === 'string') EventRegister.removeEventListener(listener);
+      if (typeof listener === "string")
+        EventRegister.removeEventListener(listener);
     };
   });
 
@@ -88,8 +90,7 @@ export const EventCard = ({
     setIsBookmarked(!isBookmarked);
   }, [isBookmarked]);
 
-  const handleAdminPress = React.useCallback(() => {
-  }, [isBookmarked]);
+  const handleAdminPress = React.useCallback(() => {}, [isBookmarked]);
 
   return (
     <View style={styles.container}>
@@ -176,16 +177,15 @@ export const EventCard = ({
                   )}
                 </View>
                 <Text
-                  style={[
-                    styles.title,
-                    { fontSize: event.id === 2673 ? 18 : 16 },
-                  ]}
+                  style={[styles.title, { fontSize: 18 }]}
                   numberOfLines={2}
                 >
                   {decode(event.title)}
                 </Text>
                 {event.venue && options?.showVenue && (
-                  <Text style={styles.subtitle}>{decode(event.venue.title)}</Text>
+                  <Text style={styles.subtitle}>
+                    {decode(event.venue.title)}
+                  </Text>
                 )}
                 {event.organizer?.[0] && (
                   <Text style={styles.subtitle}>{organizedByText(event)}</Text>
@@ -209,6 +209,21 @@ export const EventCard = ({
             {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
           </View>
         </TouchableOpacity>
+        {options.showImage && event.image && (
+          <View style={{ padding: 8 }}>
+            <Image
+              source={{
+                uri: event.image,
+              }}
+              style={{
+                height: 55,
+                width: 55,
+                resizeMode: "cover",
+                borderRadius: 4,
+              }}
+            />
+          </View>
+        )}
         {options.showBookmark && (
           <TouchableOpacity
             style={{
@@ -229,24 +244,26 @@ export const EventCard = ({
             />
           </TouchableOpacity>
         )}
-        {isAdmin && <TouchableOpacity
-          style={{
-            opacity: 1,
-            borderColor: "#999",
-            borderRadius: 14,
-            borderWidth: 1,
-            padding: 6,
-            margin: 8,
-          }}
-          onPress={handleAdminPress}
-        >
-          <Icon
-            type={IconTypes.Ionicons}
-            size={14}
-            color="#999"
-            name="ellipsis-vertical-outline"
-          />
-        </TouchableOpacity>}
+        {isAdmin && (
+          <TouchableOpacity
+            style={{
+              opacity: 1,
+              borderColor: "#999",
+              borderRadius: 14,
+              borderWidth: 1,
+              padding: 6,
+              margin: 8,
+            }}
+            onPress={handleAdminPress}
+          >
+            <Icon
+              type={IconTypes.Ionicons}
+              size={14}
+              color="#999"
+              name="ellipsis-vertical-outline"
+            />
+          </TouchableOpacity>
+        )}
         {/* <Image
                 source={require('../../assets/hunt-street-station.png')}
                 style={{
