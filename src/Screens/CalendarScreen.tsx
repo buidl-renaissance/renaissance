@@ -22,7 +22,7 @@ import { FloatingButton } from "../Components/FloatingButton";
 import { SectionTitle } from "../Components/SectionTitle";
 
 import * as ImagePicker from "expo-image-picker";
-import moment from "moment";
+import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
 import { DAEvent, Weather } from "../interfaces";
@@ -44,7 +44,7 @@ const CalendarScreen = ({ navigation }) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: DAEvent[]; title: string }[]
+    { data: DAEvent[]; title: string, subtitle: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
@@ -215,10 +215,12 @@ const CalendarScreen = ({ navigation }) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
-        const date = start.format("dddd, MMMM Do");
+        const date = start.format("MMMM Do");
+        const subtitle = start.format("dddd");
         if (!groups[date]) {
           groups[date] = {
             title: date,
+            subtitle: subtitle,
             data: [],
           };
         }
@@ -378,7 +380,7 @@ const CalendarScreen = ({ navigation }) => {
       <SectionList
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
-        renderSectionHeader={({ section: { title } }) => (
+        renderSectionHeader={({ section: { title, subtitle } }) => (
           <View
             style={{
               flex: 1,
@@ -386,6 +388,7 @@ const CalendarScreen = ({ navigation }) => {
               alignItems: "baseline",
               marginBottom: 4,
               marginTop: 8,
+              paddingTop: 8,
               paddingHorizontal: 16,
               backgroundColor: "white",
             }}
@@ -394,14 +397,26 @@ const CalendarScreen = ({ navigation }) => {
               style={{
                 color: "black",
                 fontSize: 22,
-                paddingRight: 12,
+                paddingRight: 6,
                 fontWeight: "bold",
                 textAlign: "left",
-                marginTop: 16,
+                paddingTop: 16,
               }}
             >
               {title}
             </Text>
+            {subtitle && <Text
+              style={{
+                color: "#999",
+                fontSize: 16,
+                paddingRight: 12,
+                fontWeight: "bold",
+                textAlign: "left",
+                paddingTop: 16,
+              }}
+            >
+              / {subtitle}
+            </Text>}
           </View>
         )}
         renderItem={({ item }) => {
