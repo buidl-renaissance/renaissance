@@ -20,6 +20,7 @@ import { lightGreen, darkGrey } from "../colors";
 import { DAEvent, DAVenue } from "../interfaces";
 import moment from "moment";
 import { saveEvent } from "../dpop";
+import { useVenues } from "../hooks/useVenues";
 
 const EventEditScreen = ({ navigation, route }) => {
   navigation.setOptions({
@@ -33,8 +34,10 @@ const EventEditScreen = ({ navigation, route }) => {
   const [title, onChangeTitle] = React.useState<string>(event.title);
   const [desc, onChangeDesc] = React.useState<string>(event.description ?? "");
 
-  const [venue, onChangeVenue] = React.useState<DAVenue>(event.venue);
-  const [venues, setVenues] = React.useState<DAVenue[]>([]);
+  const [venue, onChangeVenue] = React.useState<DAVenue | undefined>(event.venue);
+
+  const [venues] = useVenues();
+
   const [startDate, setStartDate] = React.useState<Date>(
     moment(event.start_date).toDate()
   );
@@ -76,19 +79,6 @@ const EventEditScreen = ({ navigation, route }) => {
         Dimensions.get("window").width -
       54
     : 420;
-
-  React.useEffect(() => {
-    if (!venues?.length) updateVenues();
-  }, [venues]);
-
-  const updateVenues = React.useCallback(() => {
-    (async () => {
-      console.log("UPDATE VENUES!!");
-      const eventsRes = await fetch("https://api.dpop.tech/api/venues");
-      const fetchedEvents = await eventsRes.json();
-      setVenues(fetchedEvents.data);
-    })();
-  }, []);
 
   return (
     <AutocompleteDropdownContextProvider headerOffset={88}>

@@ -31,6 +31,8 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
 import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
+import { useEvents } from "../hooks/useEvents";
+import { useWeather } from "../hooks/useWeather";
 
 const { height, width } = Dimensions.get("window");
 
@@ -41,16 +43,17 @@ const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const CalendarScreen = ({ navigation }) => {
-  const [events, setEvents] = React.useState<DAEvent[]>([]);
+  const [events] = useEvents();
+
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: DAEvent[]; title: string, subtitle: string }[]
+    { data: DAEvent[]; title: string; subtitle: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
 
-  const [weather, setWeather] = React.useState<Weather>();
+  const [weather] = useWeather();
   const [time, setTime] = React.useState<string>("");
 
   const [filter, setFilter] = React.useState<string>("all");
@@ -108,21 +111,13 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
-    (async () => {
-      // const provider = getProvider();
-      // // const res = await provider.getBlockNumber();
-      // const res = (await provider.getBalance('0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70')).toJSON();
-      // console.log('provider.getBalance("0xb96EF9ad80bAc8d117e2744e5b9B1C6357471C70")', res, res.hex, Number(res.hex));
-      const wallet = await getWallet();
-      // console.log("wallet: ", wallet);
-      console.log("address:", wallet.address);
-      // console.log("publicKey:", wallet.publicKey);
-      // console.log("privateKey:", wallet.privateKey);
-      // console.log("mnemonic:", wallet.mnemonic);
-      const signature = await wallet.signMessage('Hello World!');
-      console.log('signature: ', signature);
-    })();
-    // navigation.push("CreateEvent");
+    // (async () => {
+    //   const wallet = await getWallet();
+    //   console.log("address:", wallet.address);
+    //   const signature = await wallet.signMessage('Hello World!');
+    //   console.log('signature: ', signature);
+    // })();
+    navigation.push("CreateEvent");
   }, []);
 
   const handleShowProposals = React.useCallback(() => {
@@ -135,35 +130,6 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleShowAccount = React.useCallback(() => {
     navigation.push("Account");
-  }, []);
-
-  const updateEvents = React.useCallback(() => {
-    (async () => {
-      console.log("UPDATE EVENTS!!");
-      const eventsRes = await fetch("https://api.dpop.tech/api/events");
-      const fetchedEvents = await eventsRes.json();
-      setEvents(fetchedEvents.data);
-    })();
-  }, []);
-
-  const updateWeather = React.useCallback(() => {
-    (async () => {
-      console.log("UPDATE WEATHER!!");
-      const weatherRes = await fetch(
-        "https://api.weather.gov/gridpoints/DTX/66,34/forecast/hourly"
-      );
-      const weatherData = await weatherRes.json();
-      setWeather(weatherData);
-    })();
-  }, []);
-
-  React.useEffect(() => {
-    updateEvents();
-    updateWeather();
-    setTimeout(() => {
-      updateEvents();
-      updateWeather();
-    }, 10 * 60 * 1000);
   }, []);
 
   React.useEffect(() => {
@@ -405,18 +371,20 @@ const CalendarScreen = ({ navigation }) => {
             >
               {title}
             </Text>
-            {subtitle && <Text
-              style={{
-                color: "#999",
-                fontSize: 16,
-                paddingRight: 12,
-                fontWeight: "bold",
-                textAlign: "left",
-                paddingTop: 16,
-              }}
-            >
-              / {subtitle}
-            </Text>}
+            {subtitle && (
+              <Text
+                style={{
+                  color: "#999",
+                  fontSize: 16,
+                  paddingRight: 12,
+                  fontWeight: "bold",
+                  textAlign: "left",
+                  paddingTop: 16,
+                }}
+              >
+                / {subtitle}
+              </Text>
+            )}
           </View>
         )}
         renderItem={({ item }) => {
@@ -431,7 +399,11 @@ const CalendarScreen = ({ navigation }) => {
               <View style={{ paddingHorizontal: 16 }}>
                 <EventCard
                   event={item}
-                  options={{ showBookmark: true, showVenue: true, showImage: true }}
+                  options={{
+                    showBookmark: true,
+                    showVenue: true,
+                    showImage: true,
+                  }}
                   onSelectEvent={() => handlePressEvent(item)}
                 />
                 {item.featured && item.image && (
@@ -456,7 +428,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      {/* <FloatingButton onPress={handleAddEvent} /> */}
+      <FloatingButton onPress={handleAddEvent} />
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

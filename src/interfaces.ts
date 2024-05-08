@@ -47,7 +47,7 @@ export interface DAEvent {
   description?: string;
   featured: boolean;
   excerpt: string;
-  venue: DAVenue;
+  venue?: DAVenue;
 }
 
 export interface WeatherPeriod {

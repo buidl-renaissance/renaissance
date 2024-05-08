@@ -159,7 +159,7 @@ export const saveEvent = async (event: DAEvent) => {
     await fetch(`${hostname}/api/event/${event.id}`, {
       method: "POST",
       body: JSON.stringify({
-        description: event.description ?? '',
+        description: event.description ?? "",
         end_date: event.end_date,
         start_date: event.start_date,
         title: event.title,
@@ -168,7 +168,38 @@ export const saveEvent = async (event: DAEvent) => {
       headers: { "content-type": "application/json" },
     })
   ).json();
-  console.log("SAVED EVENT: ", result)
+  console.log("SAVED EVENT: ", result);
+  return result;
+};
+
+export const createEvent = async (
+  title,
+  description,
+  venue,
+  start_date,
+  end_date
+) => {
+  console.log("CREATE EVENT!!", {
+    description: description,
+    end_date: end_date,
+    start_date: start_date,
+    title: title,
+    venue_id: venue?.id,
+  });
+  const result = await (
+    await fetch(`${hostname}/api/event`, {
+      method: "POST",
+      body: JSON.stringify({
+        description: description ?? "",
+        end_date: end_date,
+        start_date: start_date,
+        title: title,
+        venue_id: venue?.id,
+      }),
+      headers: { "content-type": "application/json" },
+    })
+  ).json();
+  console.log("SAVED EVENT: ", result);
   return result;
 };
 
