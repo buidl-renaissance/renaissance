@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   View,
+  Touchable,
 } from "react-native";
 
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
@@ -21,11 +22,15 @@ import { createEvent } from "../dpop";
 import { lightGreen, darkGrey } from "../colors";
 import { DAVenue } from "../interfaces";
 import moment from "moment";
+import { useImagePicker } from "../hooks/useImagePicker";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const CreateEventScreen = ({ navigation, route }) => {
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
   });
+
+  const { pickImage, image, uploadedImageUrl } = useImagePicker({ allowsEditing: false });
 
   const [title, onChangeTitle] = React.useState<string>("");
   const [desc, onChangeDesc] = React.useState<string>("");
@@ -35,10 +40,10 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [venues] = useVenues();
 
   const [startDate, setStartDate] = React.useState<Date>(
-    moment().add('hour', 1).startOf("hour").toDate()
+    moment().add("hour", 1).startOf("hour").toDate()
   );
   const [endDate, setEndDate] = React.useState<Date>(
-    moment().add('hour', 4).startOf("hour").toDate()
+    moment().add("hour", 4).startOf("hour").toDate()
   );
 
   const setSelectedItem = React.useCallback(
@@ -63,10 +68,12 @@ const CreateEventScreen = ({ navigation, route }) => {
       await createEvent(
         title,
         desc,
+        uploadedImageUrl,
         venue,
         startDate?.toISOString(),
         endDate?.toISOString()
       );
+      navigation.goBack();
     })();
   }, [title, desc, venue, startDate, endDate]);
 
@@ -118,9 +125,18 @@ const CreateEventScreen = ({ navigation, route }) => {
             onDateChange={onChangeEndDate}
             style={styles.input}
           />
+          {!image && <Button title="Upload Image" variant="hollow" onPress={pickImage} />}
+          {image && (
+            <TouchableOpacity onPress={pickImage}>
+              <Image
+                source={{ uri: image[0].uri }}
+                style={{ height: 200, width: '100%', marginBottom: 32 }}
+              />
+            </TouchableOpacity>
+          )}
         </ScrollView>
         <View style={styles.buttonContainer}>
-          <Button title="Create" variant="solid" onPress={handleCreate} />
+          <Button title="Create Event" variant="solid" onPress={handleCreate} />
         </View>
       </View>
     </AutocompleteDropdownContextProvider>

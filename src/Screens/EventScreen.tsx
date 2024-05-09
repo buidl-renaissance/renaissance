@@ -7,6 +7,7 @@ import {
   View,
   Dimensions,
 } from "react-native";
+// import { WebView } from "react-native-webview";
 import * as Linking from "expo-linking";
 import Icon, { IconTypes } from "../Components/Icon";
 
@@ -95,6 +96,8 @@ const EventScreen = ({ navigation, route }) => {
           <RenderHTML html={event.content} style={{ padding: 16 }} />
         )}
       </ScrollView>
+      {/* {event.url && <WebView style={{ flex: 1 }} source={{ uri: event.url }} />} */}
+
       {event.url?.match("http") && (
         <View style={styles.buttonContainer}>
           <Button title="View Details" variant="solid" onPress={handleRSVP} />

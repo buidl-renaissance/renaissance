@@ -1,4 +1,5 @@
 import { DAEvent } from "./interfaces";
+import { createFormData } from "./utils/uploadImage";
 
 export interface Contact {
   name: string;
@@ -172,9 +173,26 @@ export const saveEvent = async (event: DAEvent) => {
   return result;
 };
 
+export const uploadImage = async (image) => {
+  const form = createFormData(image);
+  // console.log('uploadform: ', form)
+  const result = await (
+    await fetch(`${hostname}/api/upload-media`, {
+      body: form,
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  ).json();
+  // console.log("uploadImage: ", result);
+  return result;
+};
+
 export const createEvent = async (
   title,
   description,
+  image,
   venue,
   start_date,
   end_date
@@ -182,6 +200,7 @@ export const createEvent = async (
   console.log("CREATE EVENT!!", {
     description: description,
     end_date: end_date,
+    image: image,
     start_date: start_date,
     title: title,
     venue_id: venue?.id,
@@ -192,6 +211,7 @@ export const createEvent = async (
       body: JSON.stringify({
         description: description ?? "",
         end_date: end_date,
+        image: image,
         start_date: start_date,
         title: title,
         venue_id: venue?.id,

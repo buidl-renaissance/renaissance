@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   Image,
+  Text,
   View,
 } from "react-native";
 
@@ -108,6 +109,7 @@ const EventEditScreen = ({ navigation, route }) => {
                 styles.input,
               ]}
             />
+            <Text>Location</Text>
             <AutocompleteDropdown
               clearOnFocus={false}
               closeOnBlur={true}
