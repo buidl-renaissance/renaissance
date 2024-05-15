@@ -282,9 +282,9 @@ const CalendarScreen = ({ navigation }) => {
         <Activities onPress={handleActivity} />
         {/* <SuggestedActivities /> */}
 
-        <SectionTitle>Upcoming Events</SectionTitle>
+        <SectionTitle>What Up Doe?</SectionTitle>
 
-        <ScrollView
+        {/* <ScrollView
           style={{
             paddingHorizontal: 16,
             paddingTop: 8,
@@ -294,12 +294,6 @@ const CalendarScreen = ({ navigation }) => {
           horizontal={true}
           showsHorizontalScrollIndicator={false}
         >
-          {/* <FilterBubble
-            flat={true}
-            active={filter === "featured"}
-            name="Featured"
-            onPress={() => setFilter("featured")}
-          /> */}
           <FilterBubble
             flat={true}
             active={filter === "all"}
@@ -343,7 +337,7 @@ const CalendarScreen = ({ navigation }) => {
             onPress={() => setFilter("networking")}
           />
           <View style={{ width: 16, height: 16 }} />
-        </ScrollView>
+        </ScrollView> */}
       </View>
     );
   };
