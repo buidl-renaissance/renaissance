@@ -282,7 +282,7 @@ const CalendarScreen = ({ navigation }) => {
         <Activities onPress={handleActivity} />
         {/* <SuggestedActivities /> */}
 
-        <SectionTitle>What Up Doe?</SectionTitle>
+        {/* <SectionTitle>What Up Doe?</SectionTitle> */}
 
         {/* <ScrollView
           style={{
@@ -354,8 +354,8 @@ const CalendarScreen = ({ navigation }) => {
               flexDirection: "row",
               alignItems: "baseline",
               marginBottom: 4,
-              marginTop: 8,
-              paddingTop: 8,
+              marginTop: 0,
+              paddingBottom: 4,
               paddingHorizontal: 16,
               backgroundColor: "white",
             }}
@@ -367,7 +367,7 @@ const CalendarScreen = ({ navigation }) => {
                 paddingRight: 6,
                 fontWeight: "bold",
                 textAlign: "left",
-                paddingTop: 16,
+                paddingTop: 32,
               }}
             >
               {title}

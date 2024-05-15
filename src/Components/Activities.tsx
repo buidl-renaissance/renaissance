@@ -41,7 +41,7 @@ export const Activities = ({ onPress }) => {
       <ScrollView
         style={{
           paddingHorizontal: 16,
-          paddingVertical: 16,
+          paddingVertical: 12,
         }}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
@@ -52,7 +52,7 @@ export const Activities = ({ onPress }) => {
               onPress={() => onPress(activity.title)}
               style={{
                 marginRight: 8,
-                width: 66,
+                width: 60,
                 alignItems: "center",
                 display: "flex",
               }}
@@ -60,8 +60,8 @@ export const Activities = ({ onPress }) => {
               <View
                 style={{
                   borderRadius: 30,
-                  width: 60,
-                  height: 60,
+                  width: 55,
+                  height: 55,
                   borderColor: "black",
                   borderWidth: 1,
                   marginBottom: 6,
