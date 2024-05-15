@@ -8,6 +8,7 @@ import BookmarksScreen from "../Screens/BookmarksScreen";
 import CalendarScreen from "../Screens/CalendarScreen";
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
+import ActivityScreen from "../Screens/ActivityScreen";
 import CreateEventScreen from "../Screens/CreateEventScreen";
 import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
@@ -26,6 +27,7 @@ import SearchScreen from "../Screens/SearchScreen";
 
 type HomeNavigationStackParamList = {
   Account: undefined;
+  Activity: undefined;
   Artist: undefined;
   Artwork: undefined;
   Bookmarks: undefined;
@@ -87,6 +89,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={ReviewEventsScreen}
         name="ReviewEvents"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ActivityScreen}
+        name="Activity"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

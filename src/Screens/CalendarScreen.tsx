@@ -21,7 +21,6 @@ import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { FloatingButton } from "../Components/FloatingButton";
 import { SectionTitle } from "../Components/SectionTitle";
 
-import * as ImagePicker from "expo-image-picker";
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
@@ -29,6 +28,7 @@ import { DAEvent, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
+import { Activities } from "../Components/Activities";
 import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
 import { useEvents } from "../hooks/useEvents";
@@ -92,6 +92,12 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleToggleDisplay = React.useCallback(() => {
     navigation.push("BrowseMap");
+  }, []);
+
+  const handleActivity = React.useCallback((activity) => {
+    navigation.push("Activity", {
+      activity
+    });
   }, []);
 
   const handleSearchPress = React.useCallback(() => {
@@ -273,7 +279,8 @@ const CalendarScreen = ({ navigation }) => {
           <Button onPress={handleCreateGrant} title="Add New Grant" />
         </View> */}
 
-        <SuggestedActivities />
+        <Activities onPress={handleActivity} />
+        {/* <SuggestedActivities /> */}
 
         <SectionTitle>Upcoming Events</SectionTitle>
 
