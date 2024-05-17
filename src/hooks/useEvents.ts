@@ -2,7 +2,11 @@ import React from "react";
 
 import { DAEvent } from "../interfaces";
 
-export const useEvents = () => {
+export interface EventsQuery {
+  type?: string;
+}
+
+export const useEvents = (query: EventsQuery) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
 
   React.useEffect(() => {
@@ -14,8 +18,12 @@ export const useEvents = () => {
 
   const updateEvents = React.useCallback(() => {
     (async () => {
+      const params = new URLSearchParams(query);
       console.log("UPDATE EVENTS!!");
-      const eventsRes = await fetch("https://api.dpop.tech/api/events");
+      console.log("PARAMS: ", params.toString());
+      const eventsRes = await fetch(
+        `https://api.dpop.tech/api/events?${params.toString()}`
+      );
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);
     })();

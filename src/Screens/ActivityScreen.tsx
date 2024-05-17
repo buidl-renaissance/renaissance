@@ -25,7 +25,9 @@ const ActivityScreen = ({ navigation, route }) => {
     headerTitle: route?.params?.activity,
   });
 
-  const [ events ] = useEvents();
+  const [ events ] = useEvents({
+    type: route?.params?.activity
+  });
 //   const [ activity, setActivity ] = React.useState(route?.params?.activity ?? null);
 
   const [searchQuery, setSearchQuery] = React.useState("");
