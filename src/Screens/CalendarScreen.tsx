@@ -279,7 +279,7 @@ const CalendarScreen = ({ navigation }) => {
           <Button onPress={handleCreateGrant} title="Add New Grant" />
         </View> */}
 
-        <Activities onPress={handleActivity} />
+        {/* <Activities onPress={handleActivity} /> */}
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
