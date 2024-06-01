@@ -7,6 +7,7 @@ import RenderHtml from "react-native-render-html";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
 import { getBookmarkStatus, toggleBookmark } from "../utils/bookmarks";
+import { EventBookmarkButton } from "./EventBookmarkButton";
 import { EventRegister } from "react-native-event-listeners";
 
 export interface EventCardOptions {
@@ -46,7 +47,6 @@ export const EventCard = ({
   onSelectEvent,
 }: EventCardProps) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
 
   React.useEffect(() => {
@@ -59,38 +59,7 @@ export const EventCard = ({
     }
   }, [event.start_date, event.end_date, isNow, setIsNow]);
 
-  React.useEffect(() => {
-    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
-      if (event.id === data.event?.id) {
-        // console.log("DID UPDATE BOOKMARK: ", data.event.id, data.isBookmarked)
-        setIsBookmarked(data.isBookmarked);
-      }
-    });
-    return () => {
-      if (typeof listener === "string")
-        EventRegister.removeEventListener(listener);
-    };
-  });
-
-  React.useEffect(() => {
-    (async () => {
-      const isBookmarked = await getBookmarkStatus(event);
-      setIsBookmarked(isBookmarked);
-    })();
-  }, []);
-
-  const handleBookmarkPress = React.useCallback(() => {
-    (async () => {
-      await toggleBookmark(event);
-      EventRegister.emitEvent("BookmarkEvent", {
-        event,
-        isBookmarked: !isBookmarked,
-      });
-    })();
-    setIsBookmarked(!isBookmarked);
-  }, [isBookmarked]);
-
-  const handleAdminPress = React.useCallback(() => {}, [isBookmarked]);
+  const handleAdminPress = React.useCallback(() => {}, []);
 
   return (
     <View style={styles.container}>
@@ -224,26 +193,7 @@ export const EventCard = ({
             />
           </TouchableOpacity>
         )}
-        {options.showBookmark && (
-          <TouchableOpacity
-            style={{
-              opacity: 1,
-              borderColor: isBookmarked ? "blue" : "#999",
-              borderRadius: 14,
-              borderWidth: 1,
-              padding: 6,
-              margin: 8,
-            }}
-            onPress={handleBookmarkPress}
-          >
-            <Icon
-              type={IconTypes.Ionicons}
-              size={14}
-              color={isBookmarked ? "blue" : "#999"}
-              name={isBookmarked ? "bookmark-sharp" : "bookmark-outline"}
-            />
-          </TouchableOpacity>
-        )}
+        {options.showBookmark && <EventBookmarkButton event={event} />}
         {isAdmin && (
           <TouchableOpacity
             style={{

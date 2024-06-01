@@ -27,17 +27,21 @@ export const toggleBookmark = async (event: DAEvent) => {
       bookmarks.push(event.id);
       await AsyncStorage.setItem("Bookmarks", JSON.stringify(bookmarks));
       await AsyncStorage.setItem(`Bookmark-${event.id}`, "1");
-      await schedulePushNotification({
-        content: {
-          title: "Event Starts in 1 Hour",
-          body: event.title,
-          data: {
-            event,
+      try {
+        await schedulePushNotification({
+          content: {
+            title: "Event Starts in 1 Hour",
+            body: event.title,
+            data: {
+              event,
+            },
           },
-        },
-        trigger: {
-          date: moment(event.start_date).subtract(1, "hour").toDate(),
-        },
-      });
+          trigger: {
+            date: moment(event.start_date).subtract(1, "hour").toDate(),
+          },
+        });
+      } catch (error) {
+        
+      }
     }
 };

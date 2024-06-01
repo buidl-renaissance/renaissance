@@ -4,6 +4,7 @@ import { Chip, Text } from "react-native-paper";
 import SearchableDropdown from "react-native-searchable-dropdown";
 import { Button } from "../Components/Button";
 import { skillsList } from "../mocks/skills";
+import { Contact, createUser, getContact, saveContact } from "../dpop";
 
 // const artistAttributes = [
 //   { id: 1, name: 'Username', value: 'username' },
@@ -21,72 +22,89 @@ import { skillsList } from "../mocks/skills";
 //   // Add more attributes as needed
 // ];
 
-interface UserAttribution {
-  id: number;
-  name: string;
-  value: string;
-}
-
-interface UserProfile {
-  name: string;
-  bio: string;
-  portfolio: string;
-  attributions: UserAttribution[];
-}
-
 interface AccountScreenProps {
   // onSave: (profile: UserProfile) => void;
   navigation: any;
 }
 
 const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
-
   navigation.setOptions({
     headerTitle: "Profile",
   });
 
   const [name, setName] = useState("");
+  const [publicName, setPublicName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("");
+  const [organization, setOrganization] = useState("");
   const [portfolio, setPortfolio] = useState("");
-  const [selectedAttributions, setSelectedAttributions] = useState<
-    UserAttribution[]
-  >([]);
-  const [availableSkills, setAvailableSkills] = useState<UserAttribution[]>([]);
+  // const [selectedAttributions, setSelectedAttributions] = useState<
+  //   UserAttribution[]
+  // >([]);
+  // const [availableSkills, setAvailableSkills] = useState<UserAttribution[]>([]);
+
+  // React.useEffect(() => {
+  //   const ids = selectedAttributions.map((s) => s.id);
+  //   const skills = skillsList.filter((ua: UserAttribution) => {
+  //     return !ids.includes(ua.id);
+  //   });
+  //   setAvailableSkills(skills);
+  // }, [selectedAttributions]);
 
   React.useEffect(() => {
-    const ids = selectedAttributions.map((s) => s.id);
-    const skills = skillsList.filter((ua: UserAttribution) => {
-      return !ids.includes(ua.id);
-    });
-    setAvailableSkills(skills);
-  }, [selectedAttributions]);
+    (async () => {
+      const contact = await getContact();
+      setName(contact.name);
+      setEmail(contact.email ?? "");
+      setPublicName(contact.public_name ?? "");
+      setPhone(contact.phone);
+      setBio(contact.bio ?? "");
+      setPortfolio(contact.portfolio ?? "");
+    })();
+  });
 
-  const handleSave = () => {
-    const profile: UserProfile = {
+  const handleSave = async () => {
+    const contact: Contact = {
       name,
+      email,
       bio,
       portfolio,
-      attributions: selectedAttributions,
+      phone,
+      organization,
+      public_name: publicName,
+      // attributions: selectedAttributions,
     };
     // onSave(profile);
+    saveContact(contact);
+    try {      
+      const user = await createUser(contact);
+      saveContact(user);
+    } catch (error) {
+      console.log("USER error: ", error);
+    }
+
+    navigation.goBack();
 
     // Optionally, reset the form fields after saving
-    setName("");
-    setBio("");
-    setPortfolio("");
-    setSelectedAttributions([]);
+    // setName("");
+    // setPublicName("");
+    // setPhone("");
+    // setBio("");
+    // setPortfolio("");
+    // setSelectedAttributions([]);
   };
 
-  const handleAddAttribution = (attribution: UserAttribution) => {
-    setSelectedAttributions([...selectedAttributions, attribution]);
-  };
+  // const handleAddAttribution = (attribution: UserAttribution) => {
+  //   setSelectedAttributions([...selectedAttributions, attribution]);
+  // };
 
-  const handleRemoveAttribution = (attribution: UserAttribution) => {
-    const updatedAttributions = selectedAttributions.filter(
-      (item) => item !== attribution
-    );
-    setSelectedAttributions(updatedAttributions);
-  };
+  // const handleRemoveAttribution = (attribution: UserAttribution) => {
+  //   const updatedAttributions = selectedAttributions.filter(
+  //     (item) => item !== attribution
+  //   );
+  //   setSelectedAttributions(updatedAttributions);
+  // };
 
   return (
     <View style={styles.container}>
@@ -98,24 +116,48 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
         style={styles.input}
       />
 
-      <Text style={styles.label}>Bio</Text>
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        placeholder="Enter Email..."
+        value={email}
+        onChangeText={(text) => setEmail(text)}
+        style={styles.input}
+      />
+
+      <Text style={styles.label}>Phone</Text>
+      <TextInput
+        placeholder="Enter Phone..."
+        value={phone}
+        onChangeText={(text) => setPhone(text)}
+        style={styles.input}
+      />
+
+      <Text style={styles.label}>Public Name (optional)</Text>
+      <TextInput
+        placeholder="Enter Public Name..."
+        value={publicName}
+        onChangeText={(text) => setPhone(text)}
+        style={styles.input}
+      />
+
+      {/* <Text style={styles.label}>Bio</Text>
       <TextInput
         placeholder="Enter Bio..."
         value={bio}
         onChangeText={(text) => setBio(text)}
         multiline
         style={[styles.input, { height: 80 }]}
-      />
+      /> */}
 
-      <Text style={styles.label}>Portfolio Link</Text>
+      {/* <Text style={styles.label}>Portfolio Link</Text>
       <TextInput
         placeholder="Enter Portfolio Link..."
         value={portfolio}
         onChangeText={(text) => setPortfolio(text)}
         style={styles.input}
-      />
+      /> */}
 
-      <Text style={styles.label}>Attributions</Text>
+      {/* <Text style={styles.label}>Attributions</Text>
       <View style={styles.chipsContainer}>
         {selectedAttributions.map((attribution: UserAttribution) => (
           <Chip
@@ -142,7 +184,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
           resetValue={false}
           underlineColorAndroid="transparent"
         />
-      </View>
+      </View> */}
 
       <Button title="Save Profile" onPress={handleSave} />
     </View>
@@ -173,7 +215,7 @@ const styles = StyleSheet.create({
   chip: {
     marginRight: 8,
     marginBottom: 8,
-    borderColor: '#bbb',
+    borderColor: "#bbb",
   },
   item: {
     padding: 8,
@@ -190,7 +232,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     borderWidth: 1,
     backgroundColor: "#ddd",
-    borderColor: '#bbb',
+    borderColor: "#bbb",
     padding: 4,
     maxHeight: 140,
     top: 39,

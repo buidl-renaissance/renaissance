@@ -96,7 +96,7 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleActivity = React.useCallback((activity) => {
     navigation.push("Activity", {
-      activity
+      activity,
     });
   }, []);
 
@@ -124,6 +124,10 @@ const CalendarScreen = ({ navigation }) => {
     //   console.log('signature: ', signature);
     // })();
     navigation.push("CreateEvent");
+  }, []);
+
+  const handleChatPress = React.useCallback(() => {
+    navigation.push("Chat");
   }, []);
 
   const handleShowProposals = React.useCallback(() => {
@@ -219,10 +223,14 @@ const CalendarScreen = ({ navigation }) => {
   //     username && pug && sig
   // }, []);
 
+  const handleLogin = React.useCallback(() => {
+    navigation.push("Account");
+  }, []);
+
   const sectionHeader = () => {
     return (
       <View>
-        <HeroBanner>
+        <HeroBanner handleLogin={handleLogin}>
           {weather?.properties?.periods?.length && (
             <View>
               <Text style={{ color: "white", fontSize: 32 }}>
@@ -250,6 +258,11 @@ const CalendarScreen = ({ navigation }) => {
               onPress={handleBookmarkPress}
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
+            />
+            <RoundButton
+              onPress={handleChatPress}
+              type={IconTypes.MaterialIcons}
+              name={"chat"}
             />
             <RoundButton
               onPress={handleSharePress}

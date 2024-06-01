@@ -1,12 +1,24 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DAEvent } from "./interfaces";
 import { createFormData } from "./utils/uploadImage";
 
+interface UserAttribution {
+  id: number;
+  name: string;
+  value: string;
+}
+
 export interface Contact {
+  id?: number;
   name: string;
   email: string;
   phone: string;
-  public_name: string;
+  cid?: string;
+  public_name?: string;
   organization: string;
+  bio?: string;
+  portfolio?: string;
+  attributions?: UserAttribution[];
 }
 
 export interface Event {
@@ -66,51 +78,56 @@ export interface ContentSignature {
 const hostname = "https://api.dpop.tech";
 // const hostname = 'http://localhost:9090';
 
-export const isAuthorized = () => {
-  return localStorage.getItem("DPoPToken") ? true : false;
+export const isAuthorized = async () => {
+  return (await AsyncStorage.getItem("DPoPToken")) ? true : false;
 };
 
-export const getContact = (): Contact => {
-  const contact = localStorage.getItem("DPoPContact");
+export const isAdmin = async () => {
+  const contact = getContact();
+  return (contact.id === 1) ? true : false;
+};
+
+export const getContact = async (): Promise<Contact> => {
+  const contact = await AsyncStorage.getItem("DPoPContact");
   return contact ? JSON.parse(contact) : null;
 };
 
-export const saveContact = (contact: Contact) => {
-  localStorage.setItem("DPoPContact", JSON.stringify(contact));
+export const saveContact = async (contact: Contact) => {
+  await AsyncStorage.setItem("DPoPContact", JSON.stringify(contact));
 };
 
 export const storeCheckIn = (checkIn: DPoPEventCheckIn) => {
   console.log("storeCheckIn: ", checkIn);
-  localStorage.setItem(
+  AsyncStorage.setItem(
     `DPoPEvent-${checkIn.event_cid}-checkin`,
     JSON.stringify(checkIn)
   );
 };
 
-export const getCheckIn = (event_cid: string) => {
-  const checkIn = localStorage.getItem(`DPoPEvent-${event_cid}-checkin`);
+export const getCheckIn = async (event_cid: string) => {
+  const checkIn = await AsyncStorage.getItem(`DPoPEvent-${event_cid}-checkin`);
   return checkIn ? JSON.parse(checkIn) : null;
 };
 
-const getDPoPToken = () => {
-  return localStorage.getItem("DPoPToken");
+const getDPoPToken = async () => {
+  return AsyncStorage.getItem("DPoPToken");
 };
 
-const setDPoPToken = (token: string) => {
-  localStorage.setItem("DPoPToken", token);
+const setDPoPToken = async (token: string) => {
+  AsyncStorage.setItem("DPoPToken", token);
 };
 
 export const getUser = (): User => {
-  const u = localStorage.getItem("DPoPUser");
+  const u = AsyncStorage.getItem("DPoPUser");
   return u ? JSON.parse(u) : null;
 };
 
 const setUser = (user: User) => {
-  localStorage.setItem("DPoPUser", JSON.stringify(user));
+  AsyncStorage.setItem("DPoPUser", JSON.stringify(user));
 };
 
-export const getUserId = () => {
-  const token = getDPoPToken();
+export const getUserId = async () => {
+  const token = await getDPoPToken();
   if (!token) return 0;
   const jwtData = parseJwt(token);
   console.log("jwtData: ", jwtData);
@@ -119,7 +136,7 @@ export const getUserId = () => {
 
 const authorizedRequest = async (endpoint: string, options: any = {}) => {
   const headers = options?.headers ?? {};
-  const DPoPToken = getDPoPToken();
+  const DPoPToken = await getDPoPToken();
   if (DPoPToken) headers["Authorization"] = `Bearer ${DPoPToken}`;
   options.headers = headers;
   // const res = await fetch(`http://localhost:9090/api/${endpoint}`, options);
@@ -267,6 +284,46 @@ export const submitEventCheckIn = async (
     body: contact ? JSON.stringify(contact) : null,
   });
   if (result?.data?.user_cid) storeCheckIn(result.data);
+  return result?.data;
+};
+
+export const submitEventComment = async (event: DAEvent, text: string) => {
+  const contact = await getContact();
+  // console.log(
+  //   `event/${event.id}/comment`,
+  //   text,
+  //   "CID: ",
+  //   contact.cid,
+  //   JSON.stringify({
+  //     text: text,
+  //     user_cid: contact.cid,
+  //   })
+  // );
+  const result = await authorizedRequest(`event/${event.id}/comment`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text: text,
+      user_cid: contact.cid,
+    }),
+  })
+  console.log("EVENT COMMENT: ", result);
+  return result.data;
+  // return [];
+};
+
+export const createUser = async (contact: Contact): Promise<Contact> => {
+  const result = await authorizedRequest(`user`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: contact ? JSON.stringify(contact) : null,
+  });
+  console.log("RESULT: ", result);
   return result?.data;
 };
 

@@ -1,12 +1,19 @@
 import React from "react";
-import {
-  Animated,
-  ImageBackground,
-  Text,
-  View,
-} from "react-native";
+import { Animated, ImageBackground, Text, View } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { getContact, Contact } from "../dpop";
 
-export const HeroBanner = ({ children }) => {
+export const HeroBanner = ({ children, handleLogin }) => {
+
+  const [ contact, setContact ] = React.useState<Contact>();
+
+  React.useEffect(() => {
+    (async () => {
+      const contact = await getContact();
+      setContact(contact);
+    })();
+  }, []);
+
   return (
     <View>
       <ImageBackground
@@ -23,6 +30,23 @@ export const HeroBanner = ({ children }) => {
             borderBottomWidth: 1,
           }}
         >
+          <View style={{ position: "absolute", top: 48, right: 16 }}>
+            <TouchableOpacity onPress={handleLogin}>
+              <Text
+                style={{
+                  borderColor: "white",
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  color: "white",
+                  fontSize: 18,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              >
+                {contact?.name ?? "Login"}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <Text
             style={{
               color: "white",

@@ -21,6 +21,7 @@ import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
 import BrowseMap from "../Screens/BrowseMapScreen";
 // import HomeScreen from '../Screens/HomeScreen';
+import ChatScreen from "../Screens/ChatScreen";
 import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
 // import SplashScreen from '../Screens/SplashScreen';
@@ -34,6 +35,7 @@ type HomeNavigationStackParamList = {
   BrowseMap: undefined;
   Calendar: undefined;
   Camera: undefined;
+  Chat: undefined;
   Collect: undefined;
   CreateEvent: undefined;
   CreateProposal: undefined;
@@ -89,6 +91,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={ReviewEventsScreen}
         name="ReviewEvents"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ChatScreen}
+        name="Chat"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

@@ -1,3 +1,16 @@
+export interface DAUser {
+  cid: string;
+  created_at: string;
+  email: string;
+  email_verified_at: string | null;
+  id: number;
+  name: string;
+  phone: string | null;
+  public_address: string | null;
+  public_name: string | null;
+  organization: string | null;
+  updated_at: string;
+}
 export interface DAVenue {
   id: number; // 583,
   author: string; // "2",
@@ -34,6 +47,11 @@ export interface DAProposal {
   budget: string;
 }
 
+export interface DAComment {
+  user: DAUser;
+  text: string;
+}
+
 export interface DAEvent {
   image: string | undefined;
   image_data?: any;
@@ -48,6 +66,7 @@ export interface DAEvent {
   featured: boolean;
   excerpt: string;
   venue?: DAVenue;
+  comments?: DAComment[]; 
 }
 
 export interface WeatherPeriod {
