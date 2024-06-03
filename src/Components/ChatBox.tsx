@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { TextInput } from "./Styled/TextInput";
 import { Button } from "./Button";
 import { DAComment } from "../interfaces";
+import { styledInput } from "./Styles";
 
 const CommentBox = ({ comment }: { comment: DAComment }) => {
   return (
@@ -22,19 +23,54 @@ const CommentBox = ({ comment }: { comment: DAComment }) => {
 export const ChatBox = ({ comments, handleSubmit }) => {
   const [text, setText] = React.useState<string>("");
   return (
-    <View style={{ margin: 16, borderColor: "grey", borderWidth: 1, padding: 16, backgroundColor: "white" }}>
+    <View
+      style={{
+        margin: 16,
+        borderColor: "grey",
+        borderWidth: 1,
+        padding: 16,
+        backgroundColor: "white",
+      }}
+    >
       {comments?.map((comment: DAComment) => (
         <CommentBox comment={comment} />
       ))}
-      <TextInput
-        placeholder="What Up Doe?..."
-        value={text}
-        onChangeText={(text) => setText(text)}
-        style={styles.input}
-      />
-      <View>
+      <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
         <Button
-          title="Submit Comment"
+          size="small"
+          title="I'm going"
+          onPress={() => {
+            handleSubmit("I'm going");
+            setText("");
+          }}
+        />
+        <Button
+          size="small"
+          title="I'm interested"
+          onPress={() => {
+            handleSubmit("I'm interested");
+            setText("");
+          }}
+        />
+      </View>
+      <View
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: 8,
+          alignItems: "center",
+          marginTop: 8,
+        }}
+      >
+        <TextInput
+          placeholder="What Up Doe?..."
+          value={text}
+          onChangeText={(text) => setText(text)}
+          style={styles.input}
+        />
+        <Button
+          size="small"
+          title="Send"
           onPress={() => {
             handleSubmit(text);
             setText("");
@@ -47,12 +83,11 @@ export const ChatBox = ({ comments, handleSubmit }) => {
 
 const styles = StyleSheet.create({
   input: {
-    height: 40,
+    height: 34,
     borderColor: "gray",
     borderWidth: 1,
-    marginBottom: 8,
-    marginTop: 8,
     paddingHorizontal: 10,
+    flexGrow: 1,
     // marginHorizontal: 16,
   },
 });

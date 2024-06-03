@@ -130,7 +130,7 @@ const EventScreen = ({ navigation, route }) => {
 
       {event.url?.match("http") && (
         <View style={styles.buttonContainer}>
-          <EventBookmarkButton event={event} type="large" />
+          {/* <EventBookmarkButton event={event} type="large" />
           <RoundButton
             onPress={handleChatPress}
             type={IconTypes.MaterialIcons}
@@ -140,7 +140,7 @@ const EventScreen = ({ navigation, route }) => {
             onPress={handleSharePress}
             type={IconTypes.Ionicons}
             name={"share"}
-          />
+          /> */}
           <Button title="View Details" variant="solid" onPress={handleRSVP} />
         </View>
       )}

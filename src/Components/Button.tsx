@@ -1,29 +1,39 @@
-import React from 'react';
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { lightGreen, darkGrey } from '../colors';
+import React from "react";
+import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { lightGreen, darkGrey } from "../colors";
 
-type ButtonVariant = 'hollow' | 'solid';
+type ButtonVariant = "hollow" | "solid";
+type ButtonSize = "normal" | "small";
 
 interface ButtonProps {
-  onPress: () => void; 
+  onPress: () => void;
   title?: string;
   variant?: ButtonVariant;
+  size?: ButtonSize;
 }
 
-export const Button = ({ onPress, title = 'Save', variant = 'hollow' } ) => {
-  const textColor = variant === 'hollow' ? darkGrey : lightGreen;
-  const borderColor = variant === 'hollow' ? darkGrey : lightGreen;
+export const Button = ({
+  onPress,
+  title = "Save",
+  variant = "hollow",
+  size = "normal",
+}) => {
+  const textColor = variant === "hollow" ? darkGrey : lightGreen;
+  const borderColor = variant === "hollow" ? darkGrey : lightGreen;
   return (
-    <TouchableOpacity style={[styles.button, { borderColor: borderColor }]} onPress={onPress}>
-      <Text style={[styles.text, { color: textColor }]}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.button, { borderColor: borderColor }, size === 'small' ? styles.smallButton : {}]}
+      onPress={onPress}
+    >
+      <Text style={[styles.text, { color: textColor }, size === 'small' ? styles.smallText : {}]}>{title}</Text>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginVertical: 12,
     paddingVertical: 12,
     paddingHorizontal: 32,
@@ -34,8 +44,17 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     lineHeight: 21,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 0.25,
     // color: '#28303d',
+  },
+  smallButton: {
+    marginVertical: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderWidth: 2,
+  },
+  smallText: {
+    fontSize: 11,
   },
 });
