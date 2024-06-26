@@ -123,7 +123,8 @@ const CalendarScreen = ({ navigation }) => {
     //   const signature = await wallet.signMessage('Hello World!');
     //   console.log('signature: ', signature);
     // })();
-    navigation.push("CreateEvent");
+    // navigation.push("CreateEvent");
+    navigation.push("CreateFlyer");
   }, []);
 
   const handleChatPress = React.useCallback(() => {

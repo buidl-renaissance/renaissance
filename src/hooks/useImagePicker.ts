@@ -29,9 +29,13 @@ export const useImagePicker = ({
 
     if (!result.canceled) {
       setImage(result.assets);
-      let upload = await uploadImage(result.assets[0]);
-      console.log("upload: ", upload);
-      setUploadedImageUrl(upload?.url);
+      try {
+        let upload = await uploadImage(result.assets[0]);        
+        console.log("upload: ", upload);
+        setUploadedImageUrl(upload?.url);
+      } catch (error) {
+        console.log("UPLOAD IMAGE ERR: ", error);
+      }
     }
   };
 

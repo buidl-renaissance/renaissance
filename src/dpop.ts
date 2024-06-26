@@ -84,7 +84,7 @@ export const isAuthorized = async () => {
 
 export const isAdmin = async () => {
   const contact = getContact();
-  return (contact.id === 1) ? true : false;
+  return contact.id === 1 ? true : false;
 };
 
 export const getContact = async (): Promise<Contact> => {
@@ -202,7 +202,7 @@ export const uploadImage = async (image) => {
       },
     })
   ).json();
-  // console.log("uploadImage: ", result);
+  console.log("uploadImage: ", result);
   return result;
 };
 
@@ -237,6 +237,30 @@ export const createEvent = async (
     })
   ).json();
   console.log("SAVED EVENT: ", result);
+  return result;
+};
+
+export const createFlyer = async (image) => {
+  const userId = await getUserId();
+  console.log("CREATE FLYER: ", {
+    data: {
+      image: image,
+    },
+    user_id: userId,
+  });
+  const result = await (
+    await fetch(`${hostname}/api/flyer`, {
+      method: "POST",
+      body: JSON.stringify({
+        data: {
+          image: image,
+        },
+        user_id: userId,
+      }),
+      headers: { "content-type": "application/json" },
+    })
+  ).json();
+  console.log("SUBMITTED FLYER: ", result);
   return result;
 };
 
@@ -309,7 +333,7 @@ export const submitEventComment = async (event: DAEvent, text: string) => {
       text: text,
       user_cid: contact.cid,
     }),
-  })
+  });
   console.log("EVENT COMMENT: ", result);
   return result.data;
   // return [];

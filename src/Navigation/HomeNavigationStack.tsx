@@ -24,6 +24,7 @@ import BrowseMap from "../Screens/BrowseMapScreen";
 import ChatScreen from "../Screens/ChatScreen";
 import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
+import CreateFlyerScreen from "../Screens/CreateFlyerScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -38,6 +39,7 @@ type HomeNavigationStackParamList = {
   Chat: undefined;
   Collect: undefined;
   CreateEvent: undefined;
+  CreateFlyer: undefined;
   CreateProposal: undefined;
   Event: undefined;
   EventEdit: undefined;
@@ -131,6 +133,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CreateEventScreen}
         name="CreateEvent"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={CreateFlyerScreen}
+        name="CreateFlyer"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",
