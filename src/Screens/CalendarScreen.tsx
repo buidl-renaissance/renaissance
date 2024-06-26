@@ -33,6 +33,7 @@ import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
 import { useEvents } from "../hooks/useEvents";
 import { useWeather } from "../hooks/useWeather";
+import { useContact } from "../hooks/useContact";
 
 const { height, width } = Dimensions.get("window");
 
@@ -44,6 +45,7 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
+  const [contact] = useContact();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -57,6 +59,7 @@ const CalendarScreen = ({ navigation }) => {
   const [time, setTime] = React.useState<string>("");
 
   const [filter, setFilter] = React.useState<string>("all");
+
 
   navigation.setOptions({
     title: "Home",
@@ -443,7 +446,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      <FloatingButton onPress={handleAddEvent} />
+      {contact?.id && <FloatingButton onPress={handleAddEvent} />}
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

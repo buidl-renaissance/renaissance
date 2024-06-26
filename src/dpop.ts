@@ -192,7 +192,6 @@ export const saveEvent = async (event: DAEvent) => {
 
 export const uploadImage = async (image) => {
   const form = createFormData(image);
-  // console.log('uploadform: ', form)
   const result = await (
     await fetch(`${hostname}/api/upload-media`, {
       body: form,
@@ -241,13 +240,13 @@ export const createEvent = async (
 };
 
 export const createFlyer = async (image) => {
-  const userId = await getUserId();
-  console.log("CREATE FLYER: ", {
-    data: {
-      image: image,
-    },
-    user_id: userId,
-  });
+  const contact = await getContact();
+  // console.log("CREATE FLYER: ", {
+  //   data: {
+  //     image: image,
+  //   },
+  //   user_id: contact.id,
+  // });
   const result = await (
     await fetch(`${hostname}/api/flyer`, {
       method: "POST",
@@ -255,12 +254,12 @@ export const createFlyer = async (image) => {
         data: {
           image: image,
         },
-        user_id: userId,
+        user_id: contact.id,
       }),
       headers: { "content-type": "application/json" },
     })
   ).json();
-  console.log("SUBMITTED FLYER: ", result);
+  // console.log("SUBMITTED FLYER: ", result);
   return result;
 };
 

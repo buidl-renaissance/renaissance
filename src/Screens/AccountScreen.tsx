@@ -53,15 +53,17 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
   // }, [selectedAttributions]);
 
   React.useEffect(() => {
-    (async () => {
-      const contact = await getContact();
-      setName(contact.name);
-      setEmail(contact.email ?? "");
-      setPublicName(contact.public_name ?? "");
-      setPhone(contact.phone);
-      setBio(contact.bio ?? "");
-      setPortfolio(contact.portfolio ?? "");
-    })();
+    if (!name) {
+      (async () => {
+        const contact = await getContact();
+        setName(contact.name);
+        setEmail(contact.email ?? "");
+        setPublicName(contact.public_name ?? "");
+        setPhone(contact.phone);
+        setBio(contact.bio ?? "");
+        setPortfolio(contact.portfolio ?? "");
+      })();
+    }
   });
 
   const handleSave = async () => {
@@ -77,8 +79,12 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
     };
     // onSave(profile);
     saveContact(contact);
-    try {      
+    try {
       const user = await createUser(contact);
+      user.bio = bio;
+      user.email = email;
+      user.phone = phone;
+      user.organization = organization;
       saveContact(user);
     } catch (error) {
       console.log("USER error: ", error);
