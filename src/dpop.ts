@@ -239,6 +239,11 @@ export const createEvent = async (
   return result;
 };
 
+export const getFlyers = async () => {
+  const result = await (await fetch(`${hostname}/api/flyers`)).json();
+  return result.data;
+}
+
 export const createFlyer = async (image) => {
   const contact = await getContact();
   // console.log("CREATE FLYER: ", {

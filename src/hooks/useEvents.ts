@@ -6,7 +6,7 @@ export interface EventsQuery {
   type?: string;
 }
 
-export const useEvents = (query: EventsQuery) => {
+export const useEvents = (query?: EventsQuery) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
 
   React.useEffect(() => {

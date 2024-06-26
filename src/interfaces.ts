@@ -52,6 +52,12 @@ export interface DAComment {
   text: string;
 }
 
+export interface DAFlyer {
+  id: string;
+  data: any;
+  user: DAUser;
+}
+
 export interface DAEvent {
   image: string | undefined;
   image_data?: any;

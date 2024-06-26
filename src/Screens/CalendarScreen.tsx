@@ -34,6 +34,7 @@ import { Button } from "../Components/Button";
 import { useEvents } from "../hooks/useEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
+import { useFlyers } from "../hooks/useFlyers";
 
 const { height, width } = Dimensions.get("window");
 
@@ -46,6 +47,7 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
   const [contact] = useContact();
+  const [flyers] = useFlyers();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -59,7 +61,6 @@ const CalendarScreen = ({ navigation }) => {
   const [time, setTime] = React.useState<string>("");
 
   const [filter, setFilter] = React.useState<string>("all");
-
 
   navigation.setOptions({
     title: "Home",
@@ -355,6 +356,23 @@ const CalendarScreen = ({ navigation }) => {
           />
           <View style={{ width: 16, height: 16 }} />
         </ScrollView> */}
+        <SectionTitle>Friend Flyers</SectionTitle>
+        {flyers.map((flyer, f) => {
+          return (
+            <View key={f} style={{ padding: 16 }}>
+              <Image
+                source={{
+                  uri: flyer.data.image,
+                }}
+                style={{
+                  height: 100,
+                  width: 100,
+                  resizeMode: "cover",
+                }}
+              />
+            </View>
+          );
+        })}
       </View>
     );
   };
