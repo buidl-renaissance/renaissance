@@ -257,7 +257,7 @@ export const createFlyer = async (image) => {
       method: "POST",
       body: JSON.stringify({
         data: {
-          image: image,
+          imageUrl: image,
         },
         user_id: contact.id,
       }),

@@ -362,7 +362,7 @@ const CalendarScreen = ({ navigation }) => {
             <View key={f} style={{ padding: 16 }}>
               <Image
                 source={{
-                  uri: flyer.data.image,
+                  uri: flyer.data.imageUrl,
                 }}
                 style={{
                   height: 180,
