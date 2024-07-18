@@ -12,7 +12,7 @@ export const useVenues = () => {
   const updateVenues = React.useCallback(() => {
     (async () => {
       console.log("UPDATE VENUES!!");
-      const eventsRes = await fetch("https://api.dpop.tech/api/venues");
+      const eventsRes = await fetch("https://api.detroiter.network/api/venues");
       const fetchedEvents = await eventsRes.json();
       setVenues(fetchedEvents.data);
     })();

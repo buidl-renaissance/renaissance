@@ -22,7 +22,7 @@ export const useFlyers = (query?: EventsQuery) => {
       console.log("UPDATE FLYERS!!");
       console.log("PARAMS: ", params.toString());
       const res = await fetch(
-        `https://api.dpop.tech/api/flyers?${params.toString()}`
+        `https://api.detroiter.network/api/flyers?${params.toString()}`
       );
       const result = await res.json();
       console.log('flyesr result: ', result)

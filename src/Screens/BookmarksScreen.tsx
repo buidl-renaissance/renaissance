@@ -32,7 +32,7 @@ const BookmarksScreen = ({ navigation, route }) => {
 
   React.useEffect(() => {
     (async () => {
-      const eventsRes = await fetch("https://api.dpop.tech/api/events");
+      const eventsRes = await fetch("https://api.detroiter.network/api/events");
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);
     })();

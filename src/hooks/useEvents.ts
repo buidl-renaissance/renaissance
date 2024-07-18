@@ -22,7 +22,7 @@ export const useEvents = (query?: EventsQuery) => {
       console.log("UPDATE EVENTS!!");
       console.log("PARAMS: ", params.toString());
       const eventsRes = await fetch(
-        `https://api.dpop.tech/api/events?${params.toString()}`
+        `https://api.detroiter.network/api/events?${params.toString()}`
       );
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);

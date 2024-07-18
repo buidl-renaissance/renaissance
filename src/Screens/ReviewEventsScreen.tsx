@@ -22,7 +22,7 @@ const ReviewEventsScreen = ({ navigation }) => {
     (async () => {
       console.log("UPDATE EVENTS!!");
       const eventsRes = await fetch(
-        "https://api.dpop.tech/api/events?verified=0"
+        "https://api.detroiter.network/api/events?verified=0"
       );
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);

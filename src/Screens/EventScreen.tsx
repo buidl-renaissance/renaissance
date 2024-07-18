@@ -52,7 +52,7 @@ const EventScreen = ({ navigation, route }) => {
     (async () => {
       if (event.id) {
         const eventRes = await fetch(
-          `https://api.dpop.tech/api/event/${event.slug}`
+          `https://api.detroiter.network/api/event/${event.slug}`
         );
         const fetchedEvent = await eventRes.json();
         setEvent(fetchedEvent.data);
