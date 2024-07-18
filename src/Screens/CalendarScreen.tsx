@@ -356,7 +356,7 @@ const CalendarScreen = ({ navigation }) => {
           />
           <View style={{ width: 16, height: 16 }} />
         </ScrollView> */}
-        <SectionTitle>Friend Flyers</SectionTitle>
+        {flyers?.length > 0 && (<SectionTitle>Friend Flyers</SectionTitle>)}
         {flyers.map((flyer, f) => {
           return (
             <View key={f} style={{ padding: 16 }}>
@@ -365,11 +365,12 @@ const CalendarScreen = ({ navigation }) => {
                   uri: flyer.data.image,
                 }}
                 style={{
-                  height: 100,
-                  width: 100,
+                  height: 180,
+                  width: 180,
                   resizeMode: "cover",
                 }}
               />
+              <Text>{flyer.user.name}</Text>
             </View>
           );
         })}
