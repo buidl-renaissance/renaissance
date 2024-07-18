@@ -55,6 +55,7 @@ export interface DAComment {
 export interface DAFlyer {
   id: string;
   data: any;
+  event: DAEvent;
   user: DAUser;
 }
 

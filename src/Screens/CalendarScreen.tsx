@@ -24,7 +24,7 @@ import { SectionTitle } from "../Components/SectionTitle";
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
-import { DAEvent, Weather } from "../interfaces";
+import { DAEvent, DAFlyer, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
@@ -357,9 +357,21 @@ const CalendarScreen = ({ navigation }) => {
           <View style={{ width: 16, height: 16 }} />
         </ScrollView> */}
         {/* {flyers?.length > 0 && (<SectionTitle>Friend Flyers</SectionTitle>)} */}
-        {flyers.map((flyer, f) => {
+        {flyers.map((flyer: DAFlyer, f) => {
           return (
             <View key={f} style={{ padding: 16 }}>
+              {flyer.event && (
+                <EventCard
+                  event={flyer.event}
+                  options={{
+                    showBookmark: true,
+                    showDate: true,
+                    showVenue: true,
+                    showImage: false,
+                  }}
+                  onSelectEvent={() => handlePressEvent(flyer.event)}
+                />
+              )}
               <Image
                 source={{
                   uri: flyer.data.imageUrl,
