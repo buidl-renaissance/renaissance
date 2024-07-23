@@ -35,6 +35,7 @@ import { useEvents } from "../hooks/useEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
+import { FlyerCard } from "../Components/FlyerCard";
 
 const { height, width } = Dimensions.get("window");
 
@@ -359,31 +360,7 @@ const CalendarScreen = ({ navigation }) => {
         {/* {flyers?.length > 0 && (<SectionTitle>Friend Flyers</SectionTitle>)} */}
         {flyers.map((flyer: DAFlyer, f) => {
           return (
-            <View key={f} style={{ padding: 16 }}>
-              {flyer.event && (
-                <EventCard
-                  event={flyer.event}
-                  options={{
-                    showBookmark: true,
-                    showDate: true,
-                    showVenue: true,
-                    showImage: false,
-                  }}
-                  onSelectEvent={() => handlePressEvent(flyer.event)}
-                />
-              )}
-              <Image
-                source={{
-                  uri: flyer.data.imageUrl,
-                }}
-                style={{
-                  height: Dimensions.get("window").width - 32,
-                  width: Dimensions.get("window").width - 32,
-                  resizeMode: "cover",
-                }}
-              />
-              {/* <Text>{flyer.user.name}</Text> */}
-            </View>
+            <FlyerCard flyer={flyer} key={f} onSelectEvent={handlePressEvent} />
           );
         })}
       </View>
