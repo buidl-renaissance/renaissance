@@ -29,22 +29,10 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
       setIsAttending(false);
     }
   }, [numAttending, isAttending]);
-  //   const handleImInterested = React.useCallback(() => {}, []);
+  const handleImInterested = React.useCallback(() => {}, []);
 
   return (
-    <View style={{ padding: 16 }}>
-      {flyer.event && (
-        <EventCard
-          event={flyer.event}
-          options={{
-            showBookmark: true,
-            showDate: true,
-            showVenue: true,
-            showImage: false,
-          }}
-          onSelectEvent={() => onSelectEvent(flyer.event)}
-        />
-      )}
+    <View style={styles.container}>
       <TouchableOpacity onPress={() => onSelectEvent(flyer.event)}>
         <Image
           source={{
@@ -57,22 +45,44 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
           }}
         />
       </TouchableOpacity>
-      {/* <Text>{flyer.user.name}</Text> */}
-      <Text style={{ marginTop: 4 }}>{numAttending} people are going</Text>
-      <View
-        style={{ display: "flex", flexDirection: "row", gap: 8, marginTop: 4 }}
-      >
-        <Button
-          size="small"
-          title={isAttending ? "I'm goin!" : "RSVP"}
-          onPress={handleImGoing}
-        />
-        {/* <Button
-          size="small"
-          title="I'm interested"
-          onPress={handleImInterested}
-        /> */}
-      </View>
+      {flyer.event && (
+        <EventCard
+          event={flyer.event}
+          options={{
+            showBookmark: true,
+            showDate: true,
+            showVenue: true,
+            showImage: false,
+          }}
+          onSelectEvent={() => onSelectEvent(flyer.event)}
+        >
+          {/* <Text>{flyer.user.name}</Text> */}
+          <View style={{ marginLeft: 52, marginBottom: 12 }}>
+            <Text style={{ fontSize: 12 }}>
+              {numAttending} people are going
+            </Text>
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 8,
+                marginTop: 4,
+              }}
+            >
+              <Button
+                size="small"
+                title={isAttending ? "I'm goin!" : "RSVP"}
+                onPress={handleImGoing}
+              />
+              <Button
+                size="small"
+                title="I'm interested"
+                onPress={handleImInterested}
+              />
+            </View>
+          </View>
+        </EventCard>
+      )}
     </View>
   );
 };
@@ -81,9 +91,13 @@ const styles = StyleSheet.create({
   container: {
     // padding: 4,
     // borderBottomColor: "#bcd0c7",
-    paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    backgroundColor: 'white',
+    margin: 16,
+    borderRadius: 14,
+    borderColor: "#ccc",
+    borderWidth: 1,
     borderBottomWidth: 1,
+    overflow: "hidden",
   },
   title: {
     fontSize: 16,

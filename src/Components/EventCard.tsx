@@ -36,16 +36,18 @@ const organizedByText = (event) => {
 };
 
 interface EventCardProps {
+  children?: any;
   event: DAEvent;
   options?: EventCardOptions;
   onSelectEvent?: () => void;
 }
 
-export const EventCard = ({
+export const EventCard: React.FC<EventCardProps> = ({
+  children,
   event,
   options = { showVenue: true },
   onSelectEvent,
-}: EventCardProps) => {
+}) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
 
@@ -73,6 +75,7 @@ export const EventCard = ({
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
+            paddingRight: 8,
           }}
           onPress={onSelectEvent}
         >
@@ -224,6 +227,7 @@ export const EventCard = ({
                 }}
             /> */}
       </View>
+      {children}
     </View>
   );
 };

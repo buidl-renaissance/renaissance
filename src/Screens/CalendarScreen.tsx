@@ -357,12 +357,49 @@ const CalendarScreen = ({ navigation }) => {
           />
           <View style={{ width: 16, height: 16 }} />
         </ScrollView> */}
-        {/* {flyers?.length > 0 && (<SectionTitle>Friend Flyers</SectionTitle>)} */}
-        {flyers.map((flyer: DAFlyer, f) => {
-          return (
-            <FlyerCard flyer={flyer} key={f} onSelectEvent={handlePressEvent} />
-          );
-        })}
+        {flyers?.length > 0 && (
+          <View
+            style={{
+              backgroundColor: "#eee",
+              borderBottomWidth: 1,
+              borderColor: "#aaa",
+            }}
+          >
+            <Text
+              style={{
+                margin: 16,
+                marginTop: 32,
+                marginBottom: 0,
+                fontSize: 18,
+                fontWeight: "bold",
+                color: "#666",
+              }}
+            >
+              FEATURED EVENTS
+            </Text>
+            {flyers.map((flyer: DAFlyer, f) => {
+              return (
+                <FlyerCard
+                  flyer={flyer}
+                  key={f}
+                  onSelectEvent={handlePressEvent}
+                />
+              );
+            })}
+          </View>
+        )}
+        <Text
+          style={{
+            margin: 16,
+            marginTop: 32,
+            marginBottom: 0,
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#999",
+          }}
+        >
+          EVENT CALENDAR
+        </Text>
       </View>
     );
   };
