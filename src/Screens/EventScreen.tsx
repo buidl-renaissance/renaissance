@@ -22,6 +22,7 @@ import { isAdmin, submitEventComment } from "../dpop";
 import { DAComment } from "../interfaces";
 import { EventBookmarkButton } from "../Components/EventBookmarkButton";
 import { RoundButton } from "../Components/RoundButton";
+import QRCode from "react-qr-code";
 
 const EventScreen = ({ navigation, route }) => {
   const [event, setEvent] = React.useState(route?.params?.event ?? null);
@@ -125,6 +126,18 @@ const EventScreen = ({ navigation, route }) => {
           <RenderHTML html={event.content} style={{ padding: 16 }} />
         )}
         <ChatBox comments={comments} handleSubmit={handleSubmitComment} />
+        <View
+            style={{
+              borderColor: "#eee",
+              borderWidth: 5,
+              padding: 44,
+            }}
+          >
+          <QRCode
+            value={`https://dpop.tech/event/${event.slug}`}
+            size={Dimensions.get("window").width - 52 * 2}
+          />
+        </View>
       </ScrollView>
       {/* {event.url && <WebView style={{ flex: 1 }} source={{ uri: event.url }} />} */}
 
