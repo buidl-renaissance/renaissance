@@ -355,13 +355,16 @@ export const createUser = async (contact: Contact): Promise<Contact> => {
   return result?.data;
 };
 
-export const submitEventRsvp = async (event: string, contact?: Contact) => {
+export const submitEventRsvp = async (event: string, status?: string) => {
+  const contact = await getContact();
+  const body = contact ?? {};
+  body['status'] = status;
   const result = await authorizedRequest(`event/${event}/rsvp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: contact ? JSON.stringify(contact) : null,
+    body: JSON.stringify(body),
   });
   return result.data;
 };

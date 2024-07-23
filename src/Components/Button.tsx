@@ -7,25 +7,44 @@ type ButtonSize = "normal" | "small";
 
 interface ButtonProps {
   onPress: () => void;
+  active?: boolean;
   title?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }
 
 export const Button = ({
+  active,
   onPress,
   title = "Save",
   variant = "hollow",
   size = "normal",
-}) => {
+}: ButtonProps) => {
   const textColor = variant === "hollow" ? darkGrey : lightGreen;
   const borderColor = variant === "hollow" ? darkGrey : lightGreen;
+  const activeStyles = active
+    ? { color: "white", backgroundColor: darkGrey }
+    : {};
   return (
     <TouchableOpacity
-      style={[styles.button, { borderColor: borderColor }, size === 'small' ? styles.smallButton : {}]}
+      style={[
+        styles.button,
+        { borderColor: borderColor },
+        size === "small" ? styles.smallButton : {},
+        active ? { backgroundColor: darkGrey } : {},
+      ]}
       onPress={onPress}
     >
-      <Text style={[styles.text, { color: textColor }, size === 'small' ? styles.smallText : {}]}>{title}</Text>
+      <Text
+        style={[
+          styles.text,
+          { color: textColor },
+          size === "small" ? styles.smallText : {},
+          active ? { color: "white" } : {},
+        ]}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 };

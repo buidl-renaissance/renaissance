@@ -35,7 +35,7 @@ export const ChatBox = ({ comments, handleSubmit }) => {
       {comments?.map((comment: DAComment) => (
         <CommentBox comment={comment} />
       ))}
-      <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+      {/* <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
         <Button
           size="small"
           title="I'm going"
@@ -52,7 +52,7 @@ export const ChatBox = ({ comments, handleSubmit }) => {
             setText("");
           }}
         />
-      </View>
+      </View> */}
       <View
         style={{
           display: "flex",

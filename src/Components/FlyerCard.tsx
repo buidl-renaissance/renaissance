@@ -10,6 +10,7 @@ import {
 import { DAEvent, DAFlyer } from "../interfaces";
 import { EventCard } from "./EventCard";
 import { Button } from "./Button";
+import EventParticipation from "./EventParticipation";
 
 interface FlyerCardProps {
   flyer: DAFlyer;
@@ -17,20 +18,6 @@ interface FlyerCardProps {
 }
 
 export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
-  const [numAttending, setNumAttending] = React.useState<number>(17);
-  const [isAttending, setIsAttending] = React.useState<boolean>(false);
-  const handleImGoing = React.useCallback(() => {
-    console.log(isAttending, numAttending);
-    if (!isAttending) {
-      setNumAttending(numAttending + 1);
-      setIsAttending(true);
-    } else {
-      setNumAttending(numAttending - 1);
-      setIsAttending(false);
-    }
-  }, [numAttending, isAttending]);
-  const handleImInterested = React.useCallback(() => {}, []);
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => onSelectEvent(flyer.event)}>
@@ -56,31 +43,7 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
           }}
           onSelectEvent={() => onSelectEvent(flyer.event)}
         >
-          {/* <Text>{flyer.user.name}</Text> */}
-          <View style={{ marginLeft: 52, marginBottom: 12 }}>
-            <Text style={{ fontSize: 12 }}>
-              {numAttending} people are going
-            </Text>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 8,
-                marginTop: 4,
-              }}
-            >
-              <Button
-                size="small"
-                title={isAttending ? "I'm goin!" : "RSVP"}
-                onPress={handleImGoing}
-              />
-              <Button
-                size="small"
-                title="I'm interested"
-                onPress={handleImInterested}
-              />
-            </View>
-          </View>
+          <EventParticipation event={flyer.event} />
         </EventCard>
       )}
     </View>
@@ -91,7 +54,7 @@ const styles = StyleSheet.create({
   container: {
     // padding: 4,
     // borderBottomColor: "#bcd0c7",
-    backgroundColor: 'white',
+    backgroundColor: "white",
     margin: 16,
     borderRadius: 14,
     borderColor: "#ccc",

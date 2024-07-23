@@ -32,8 +32,8 @@ export interface DAVenue {
   geo_lat: number; // 42.3406527,
   geo_lng: number; // -83.0401141,
   geo: {
-      lat: number; // 42.3406527,
-      lng: number; // -83.0401141,
+    lat: number; // 42.3406527,
+    lng: number; // -83.0401141,
   };
   show_map: boolean; // true,
   show_map_link: boolean; // true
@@ -59,21 +59,27 @@ export interface DAFlyer {
   user: DAUser;
 }
 
+export interface DAEventStats {
+  num_going: number;
+  num_interested: number;
+}
+
 export interface DAEvent {
-  image: string | undefined;
-  image_data?: any;
-  organizer: any;
-  id: any;
   categories: string[];
+  comments?: DAComment[];
+  description?: string;
   end_date: string | null;
+  excerpt: string;
+  featured: boolean;
+  id: any;
+  image_data?: any;
+  image: string | undefined;
+  organizer: any;
   slug: string;
   start_date: string | null;
+  stats?: DAEventStats;
   title: string;
-  description?: string;
-  featured: boolean;
-  excerpt: string;
   venue?: DAVenue;
-  comments?: DAComment[]; 
 }
 
 export interface WeatherPeriod {
@@ -88,15 +94,15 @@ export interface WeatherPeriod {
   probabilityOfPrecipitation: {
     unitCode: string; // "wmoUnit:percent",
     value: number; // 3
-  },
+  };
   dewpoint: {
     unitCode: string; //"wmoUnit:degC",
     value: number; //18.333333333333332
-  },
+  };
   relativeHumidity: {
     unitCode: string; // "wmoUnit:percent",
     value: number; // 56
-  },
+  };
   windSpeed: string; // "12 mph",
   windDirection: string; // "N",
   icon: string; // "https://api.weather.gov/icons/land/day/sct,3?size=small",
@@ -114,7 +120,7 @@ export interface WeatherProperties {
   elevation: {
     unitCode: string;
     value: number;
-  }
+  };
   periods: WeatherPeriod[];
 }
 
