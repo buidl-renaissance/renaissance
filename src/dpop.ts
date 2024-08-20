@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DAEvent } from "./interfaces";
 import { createFormData } from "./utils/uploadImage";
+import * as FileSystem from 'expo-file-system';
 
 interface UserAttribution {
   id: number;
@@ -191,7 +192,13 @@ export const saveEvent = async (event: DAEvent) => {
 };
 
 export const uploadImage = async (image) => {
-  const form = createFormData(image);
+  const info = await FileSystem.getInfoAsync(image.uri as string);
+  const exif = image.exif
+    ? image.exif
+    : { ...info, width: image.width, height: image.height };
+  const form = createFormData(image, {
+    exif: JSON.stringify(exif),
+  });
   const result = await (
     await fetch(`${hostname}/api/upload-media`, {
       body: form,
@@ -242,7 +249,7 @@ export const createEvent = async (
 export const getFlyers = async () => {
   const result = await (await fetch(`${hostname}/api/flyers`)).json();
   return result.data;
-}
+};
 
 export const createFlyer = async (image) => {
   const contact = await getContact();
@@ -288,6 +295,13 @@ export const register = async (params: RegisterParams) => {
 export const getEvent = async (event: string) => {
   const result = await (await fetch(`${hostname}/api/event/${event}`)).json();
   return result.data;
+};
+
+export const getArtwork = async (artwork: string) => {
+  const result = await (
+    await fetch(`${hostname}/api/artwork/${artwork}`)
+  ).json();
+  return result;
 };
 
 export const getContent = async (cid: string) => {
@@ -358,7 +372,7 @@ export const createUser = async (contact: Contact): Promise<Contact> => {
 export const submitEventRsvp = async (event: string, status?: string) => {
   const contact = await getContact();
   const body = contact ?? {};
-  body['status'] = status;
+  body["status"] = status;
   const result = await authorizedRequest(`event/${event}/rsvp`, {
     method: "POST",
     headers: {

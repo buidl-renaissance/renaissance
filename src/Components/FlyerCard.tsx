@@ -11,6 +11,7 @@ import { DAEvent, DAFlyer } from "../interfaces";
 import { EventCard } from "./EventCard";
 import { Button } from "./Button";
 import EventParticipation from "./EventParticipation";
+// import { Video, ResizeMode } from 'expo-av';
 
 interface FlyerCardProps {
   flyer: DAFlyer;
@@ -18,8 +19,21 @@ interface FlyerCardProps {
 }
 
 export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
+  const video = React.useRef(null);
+  const [status, setStatus] = React.useState({});
   return (
     <View style={styles.container}>
+      {/* <Video
+        ref={video}
+        style={styles.video}
+        source={{
+          uri: flyer.data.imageUrl,
+        }}
+        useNativeControls
+        resizeMode={ResizeMode.CONTAIN}
+        isLooping
+        onPlaybackStatusUpdate={status => setStatus(() => status)}
+      /> */}
       <TouchableOpacity onPress={() => onSelectEvent(flyer.event)}>
         <Image
           source={{
@@ -66,6 +80,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  video: {
+    height: Dimensions.get("window").width - 32,
+    width: Dimensions.get("window").width - 32,
+},
   subtitle: {
     fontSize: 12,
     width: "auto",

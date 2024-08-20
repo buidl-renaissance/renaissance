@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import AccountScreen from "../Screens/AccountScreen";
 // import ArtistScreen from '../Screens/ArtistScreen';
-// import ArtworkScreen from '../Screens/ArtworkScreen';
+import ArtworkScreen from '../Screens/ArtworkScreen';
 import BookmarksScreen from "../Screens/BookmarksScreen";
 import CalendarScreen from "../Screens/CalendarScreen";
 // import CameraScreen from '../Screens/CameraScreen';
@@ -243,6 +243,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={EventScreen}
         name="Event"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ArtworkScreen}
+        name="Artwork"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

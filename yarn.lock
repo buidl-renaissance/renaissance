@@ -4313,6 +4313,11 @@ expo-asset@~8.9.1:
     path-browserify "^1.0.0"
     url-parse "^1.5.9"
 
+expo-av@~13.2.1:
+  version "13.2.1"
+  resolved "https://registry.yarnpkg.com/expo-av/-/expo-av-13.2.1.tgz#ce502a4c5d4a57962fd9f5f1a40c76c39c88f5ee"
+  integrity sha512-mC0mYSzaOaZgXjzhW2l4Ag325JjH6q5IbptfwD7gkMOFYy7VPOMxEMUnetadbs3DDzmgE6vUWrTjUIUbwq59qg==
+
 expo-barcode-scanner@~12.3.2:
   version "12.3.2"
   resolved "https://registry.yarnpkg.com/expo-barcode-scanner/-/expo-barcode-scanner-12.3.2.tgz#d0023e8c9a3a8cef769bbc2080b5c275188affe8"
@@ -4527,6 +4532,11 @@ expo-updates@~0.16.4:
     expo-updates-interface "~0.9.0"
     fbemitter "^3.0.0"
     resolve-from "^5.0.0"
+
+expo-video@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/expo-video/-/expo-video-1.2.4.tgz#787342aded4295a1b6864f59227d178b93e1bb53"
+  integrity sha512-pBK9mt7vYAbuPQjCSQxHQ7xrNjbmRheJep7JIStEg57O183/JRfP2blKuXniiSt1HBdZYPdoQnGRa3jGMXB9pg==
 
 expo@~48.0.18:
   version "48.0.20"

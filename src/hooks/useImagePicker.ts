@@ -1,7 +1,6 @@
 import React from "react";
 
 import * as ImagePicker from "expo-image-picker";
-import { createFormData } from "../utils/uploadImage";
 import { uploadImage } from "../dpop";
 
 interface ImagePickerProps {
@@ -19,9 +18,10 @@ export const useImagePicker = ({
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: allowsEditing ?? true,
       aspect: aspect ?? [4, 3],
+      exif: true,
       quality: 1,
     });
 
@@ -33,6 +33,7 @@ export const useImagePicker = ({
         let upload = await uploadImage(result.assets[0]);        
         console.log("upload: ", upload);
         setUploadedImageUrl(upload?.url);
+        
       } catch (error) {
         console.log("UPLOAD IMAGE ERR: ", error);
       }

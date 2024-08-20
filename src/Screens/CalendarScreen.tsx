@@ -121,6 +121,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("ReviewEvents");
   }, []);
 
+  const handleShowArtwork = React.useCallback(() => {
+    navigation.push("Artwork");
+  }, []);
+
   const handleAddEvent = React.useCallback(() => {
     // (async () => {
     //   const wallet = await getWallet();
@@ -279,6 +283,11 @@ const CalendarScreen = ({ navigation }) => {
               onPress={handleReviewEvents}
               type={IconTypes.MaterialIcons}
               name={"create-new-folder"}
+            />
+            <RoundButton
+              onPress={handleShowArtwork}
+              type={IconTypes.MaterialIcons}
+              name={"share"}
             />
             {/* <RoundButton
               onPress={handleShowAccount}

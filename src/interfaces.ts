@@ -11,6 +11,27 @@ export interface DAUser {
   organization: string | null;
   updated_at: string;
 }
+
+export interface DAContent {
+  artwork?: DAArtwork;
+  caption: string;
+  data: any;
+  id: number;
+  timestamp?: string;
+  user: DAUser;
+}
+
+export interface DAArtwork {
+  slug: string;
+  created_at: string;
+  title: string;
+  id: number;
+  artist: any;
+  data: any;
+  meta: any;
+  content: DAContent[];
+  updated_at: string;
+}
 export interface DAVenue {
   id: number; // 583,
   author: string; // "2",
