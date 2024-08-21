@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DAEvent } from "./interfaces";
 import { createFormData } from "./utils/uploadImage";
-// import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system';
 
 interface UserAttribution {
   id: number;
@@ -192,8 +192,7 @@ export const saveEvent = async (event: DAEvent) => {
 };
 
 export const uploadImage = async (image) => {
-  // const info = await FileSystem.getInfoAsync(image.uri as string);
-  const info = {};
+  const info = await FileSystem.getInfoAsync(image.uri as string);
   const exif = image.exif
     ? image.exif
     : { ...info, width: image.width, height: image.height };
