@@ -275,7 +275,7 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
-{/* 
+
         {artworks && artworks?.length > 0 && (
           <View>
             <SectionTitle>GODS WORK</SectionTitle>
@@ -315,7 +315,7 @@ const CalendarScreen = ({ navigation }) => {
               })}
             </ScrollView>
           </View>
-        )} */}
+        )}
 
         {/* {flyers?.length > 0 && (
           <View
@@ -348,9 +348,9 @@ const CalendarScreen = ({ navigation }) => {
       <SectionList
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
-        // renderSectionHeader={({ section: { title, subtitle } }) => (
-        //   <SectionHeader title={title} subtitle={subtitle} />
-        // )}
+        renderSectionHeader={({ section: { title, subtitle } }) => (
+          <SectionHeader title={title} subtitle={subtitle} />
+        )}
         renderItem={({ item }) => {
           const imageHeight = item.image_data?.width
             ? (item.image_data?.height / item.image_data?.width) *
