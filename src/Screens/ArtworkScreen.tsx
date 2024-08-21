@@ -1,28 +1,62 @@
 import React from "react";
-import { StyleSheet, Image, Text, View, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
-import { ArtworkView } from "../Components/ArtworkView";
-import { Button } from "../Components/Button";
+// import { ArtworkView } from "../Components/ArtworkView";
+// import { Button } from "../Components/Button";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
-import { darkGrey, lightGreen } from "../colors";
+import { darkGrey } from "../colors";
 import { useArtwork } from "../hooks/useArtwork";
 import { Title } from "react-native-paper";
 import moment from "moment";
 import { Video, ResizeMode } from "expo-av";
+import Icon, { IconTypes } from "../Components/Icon";
+import { useContact } from "../hooks/useContact";
 
-const ArtworkScreen = ({ navigation }) => {
+const ArtworkScreen = ({ navigation, route }) => {
+  const [contact] = useContact();
+
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
+    headerRight: () => (
+      <>
+        {artwork?.data.collaborators.includes(contact?.id) && (
+          <TouchableOpacity
+            onPress={handleAddContent}
+            style={{ marginRight: 16 }}
+          >
+            <Icon
+              type={IconTypes.Ionicons}
+              size={20}
+              color="black"
+              name={"cloud-upload-outline"}
+            />
+          </TouchableOpacity>
+        )}
+      </>
+    ),
   });
+
+  const handleAddContent = React.useCallback(() => {
+    navigation.push("AddContent", {
+      artwork,
+    });
+  }, []);
 
   const handleShowCamera = React.useCallback(() => {
     navigation.push("Camera");
   }, []);
 
   // getArtwork
-  const [artwork] = useArtwork(1);
+  const [artwork] = useArtwork(route.params.artwork.id);
 
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});

@@ -10,7 +10,6 @@ import {
 } from "react-native";
 
 import { HeroBanner } from "../Components/HeroBanner";
-import FilterBubble from "../Components/FilterBubble";
 
 import { getProvider } from "../utils/web3";
 
@@ -24,7 +23,7 @@ import { SectionTitle } from "../Components/SectionTitle";
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
-import { DAEvent, DAFlyer, Weather } from "../interfaces";
+import { DAArtwork, DAEvent, DAFlyer, Weather } from "../interfaces";
 import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
@@ -36,6 +35,8 @@ import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
 import { FlyerCard } from "../Components/FlyerCard";
+import { SectionHeader } from "../Components/SectionHeader";
+import { useArtworks } from "../hooks/useArtwork";
 
 const { height, width } = Dimensions.get("window");
 
@@ -49,6 +50,7 @@ const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
   const [contact] = useContact();
   const [flyers] = useFlyers();
+  const [artworks] = useArtworks();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -121,8 +123,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("ReviewEvents");
   }, []);
 
-  const handleShowArtwork = React.useCallback(() => {
-    navigation.push("Artwork");
+  const handleShowArtwork = React.useCallback((artwork: DAArtwork) => {
+    navigation.push("Artwork", {
+      artwork,
+    });
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
@@ -269,26 +273,28 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
             />
-            <RoundButton
+            {/* <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
               name={"chat"}
-            />
+            /> */}
             <RoundButton
               onPress={handleSharePress}
               type={IconTypes.Ionicons}
               name={"share"}
             />
-            <RoundButton
-              onPress={handleReviewEvents}
-              type={IconTypes.MaterialIcons}
-              name={"create-new-folder"}
-            />
-            <RoundButton
+            {contact?.id === 1 && (
+              <RoundButton
+                onPress={handleReviewEvents}
+                type={IconTypes.MaterialIcons}
+                name={"create-new-folder"}
+              />
+            )}
+            {/* <RoundButton
               onPress={handleShowArtwork}
               type={IconTypes.MaterialIcons}
               name={"share"}
-            />
+            /> */}
             {/* <RoundButton
               onPress={handleShowAccount}
               type={IconTypes.Ionicons}
@@ -312,60 +318,47 @@ const CalendarScreen = ({ navigation }) => {
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
 
-        {/* <ScrollView
-          style={{
-            paddingHorizontal: 16,
-            paddingTop: 8,
-            borderBottomColor: "#eee",
-            borderBottomWidth: 1,
-          }}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-        >
-          <FilterBubble
-            flat={true}
-            active={filter === "all"}
-            name="All"
-            onPress={() => setFilter("all")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "art"}
-            name="Art"
-            onPress={() => setFilter("art")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "music"}
-            name="Music"
-            onPress={() => setFilter("music")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "sports"}
-            name="Sports"
-            onPress={() => setFilter("sports")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "fitness"}
-            name="Fitness"
-            onPress={() => setFilter("fitness")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "tech"}
-            name="Tech"
-            onPress={() => setFilter("tech")}
-          />
-          <FilterBubble
-            flat={true}
-            active={filter === "networking"}
-            name="Networking"
-            onPress={() => setFilter("networking")}
-          />
-          <View style={{ width: 16, height: 16 }} />
-        </ScrollView> */}
+        {artworks && artworks?.length > 0 && (
+          <View>
+            <SectionTitle>GODS WORK</SectionTitle>
+            <ScrollView
+              style={{
+                paddingHorizontal: 16,
+                paddingTop: 8,
+                paddingBottom: 8,
+              }}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            >
+              {artworks?.map((artwork) => {
+                if (!artwork.data?.image) return <View />;
+                return (
+                  <TouchableOpacity
+                    style={{ marginRight: 16 }}
+                    onPress={() => handleShowArtwork(artwork)}
+                  >
+                    {artwork.data?.image && (
+                      <Image
+                        source={{
+                          uri: artwork.data.image,
+                        }}
+                        style={{
+                          height: 160,
+                          width: 160,
+                          borderRadius: 4,
+                          resizeMode: "cover",
+                          marginBottom: 8,
+                        }}
+                      />
+                    )}
+                    <Text>{artwork.title}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         {flyers?.length > 0 && (
           <View
             style={{
@@ -374,18 +367,7 @@ const CalendarScreen = ({ navigation }) => {
               borderColor: "#aaa",
             }}
           >
-            <Text
-              style={{
-                margin: 16,
-                marginTop: 32,
-                marginBottom: 0,
-                fontSize: 18,
-                fontWeight: "bold",
-                color: "#666",
-              }}
-            >
-              FEATURED EVENTS
-            </Text>
+            <SectionTitle>FEATURED EVENTS</SectionTitle>
             {flyers.map((flyer: DAFlyer, f) => {
               return (
                 <FlyerCard
@@ -397,18 +379,8 @@ const CalendarScreen = ({ navigation }) => {
             })}
           </View>
         )}
-        <Text
-          style={{
-            margin: 16,
-            marginTop: 32,
-            marginBottom: 0,
-            fontSize: 18,
-            fontWeight: "bold",
-            color: "#999",
-          }}
-        >
-          EVENT CALENDAR
-        </Text>
+
+        <SectionTitle>EVENT CALENDAR</SectionTitle>
       </View>
     );
   };
@@ -419,45 +391,7 @@ const CalendarScreen = ({ navigation }) => {
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
         renderSectionHeader={({ section: { title, subtitle } }) => (
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "baseline",
-              marginBottom: 4,
-              marginTop: 0,
-              paddingBottom: 4,
-              paddingHorizontal: 16,
-              backgroundColor: "white",
-            }}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontSize: 22,
-                paddingRight: 6,
-                fontWeight: "bold",
-                textAlign: "left",
-                paddingTop: 32,
-              }}
-            >
-              {title}
-            </Text>
-            {subtitle && (
-              <Text
-                style={{
-                  color: "#999",
-                  fontSize: 16,
-                  paddingRight: 12,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                  paddingTop: 16,
-                }}
-              >
-                / {subtitle}
-              </Text>
-            )}
-          </View>
+          <SectionHeader title={title} subtitle={subtitle} />
         )}
         renderItem={({ item }) => {
           const imageHeight = item.image_data?.width
