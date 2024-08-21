@@ -69,33 +69,7 @@ const CalendarScreen = ({ navigation }) => {
     title: "Home",
     headerTitle: () => <HeaderTitleImage />,
     headerShown: false,
-    // headerRight: () => (
-    //     <>
-    //         <TouchableOpacity onPress={handleToggleDisplay} style={{ marginRight: 16, opacity: 0 }}>
-    //             <Icon type={IconTypes.Ionicons} size={20} color="black" name={display === 'list' ? 'map-outline' : 'list-outline'} />
-    //         </TouchableOpacity>
-    //         <TouchableOpacity onPress={pickImage} style={{ marginRight: 16, paddingBottom: 12 }}>
-    //             <Icon type={IconTypes.MaterialCommunityIcons} size={24} color="black" name={'plus-box-multiple'} />
-    //         </TouchableOpacity>
-    //     </>
-    // ),
   });
-
-  // const pickImage = async () => {
-  //   // No permissions request is necessary for launching the image library
-  //   let result = await ImagePicker.launchImageLibraryAsync({
-  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
-  //     allowsEditing: true,
-  //     aspect: [4, 3],
-  //     quality: 1,
-  //   });
-
-  //   console.log(result);
-
-  //   if (!result.cancelled) {
-  //     setImage(result.uri);
-  //   }
-  // };
 
   const handleToggleDisplay = React.useCallback(() => {
     navigation.push("BrowseMap");
@@ -226,7 +200,6 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Event", {
       event,
     });
-    // setSelectedEvent(event);
   }, []);
 
   // const [username, setUsername] = React.useState("wiredinsamurai");
@@ -290,21 +263,6 @@ const CalendarScreen = ({ navigation }) => {
                 name={"create-new-folder"}
               />
             )}
-            {/* <RoundButton
-              onPress={handleShowArtwork}
-              type={IconTypes.MaterialIcons}
-              name={"share"}
-            /> */}
-            {/* <RoundButton
-              onPress={handleShowAccount}
-              type={IconTypes.Ionicons}
-              name={"person"}
-            />
-            <RoundButton
-              onPress={handleShowProposals}
-              type={IconTypes.Ionicons}
-              name={"document-text-outline"}
-            /> */}
           </View>
         </HeroBanner>
 
@@ -317,7 +275,7 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
-
+{/* 
         {artworks && artworks?.length > 0 && (
           <View>
             <SectionTitle>GODS WORK</SectionTitle>
@@ -357,7 +315,7 @@ const CalendarScreen = ({ navigation }) => {
               })}
             </ScrollView>
           </View>
-        )}
+        )} */}
 
         {flyers?.length > 0 && (
           <View

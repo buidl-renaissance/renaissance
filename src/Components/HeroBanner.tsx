@@ -2,17 +2,11 @@ import React from "react";
 import { Animated, ImageBackground, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getContact, Contact } from "../dpop";
+import { useContact } from "../hooks/useContact";
 
 export const HeroBanner = ({ children, handleLogin }) => {
 
-  const [ contact, setContact ] = React.useState<Contact>();
-
-  React.useEffect(() => {
-    (async () => {
-      const contact = await getContact();
-      setContact(contact);
-    })();
-  }, []);
+  const [contact] = useContact();
 
   return (
     <View>
