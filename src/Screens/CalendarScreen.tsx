@@ -246,11 +246,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
             />
-            {/* <RoundButton
+            <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
               name={"chat"}
-            /> */}
+            />
             <RoundButton
               onPress={handleSharePress}
               type={IconTypes.Ionicons}
@@ -317,7 +317,7 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )} */}
 
-        {flyers?.length > 0 && (
+        {/* {flyers?.length > 0 && (
           <View
             style={{
               backgroundColor: "#eee",
@@ -336,7 +336,7 @@ const CalendarScreen = ({ navigation }) => {
               );
             })}
           </View>
-        )}
+        )} */}
 
         <SectionTitle>EVENT CALENDAR</SectionTitle>
       </View>
@@ -348,9 +348,9 @@ const CalendarScreen = ({ navigation }) => {
       <SectionList
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
-        renderSectionHeader={({ section: { title, subtitle } }) => (
-          <SectionHeader title={title} subtitle={subtitle} />
-        )}
+        // renderSectionHeader={({ section: { title, subtitle } }) => (
+        //   <SectionHeader title={title} subtitle={subtitle} />
+        // )}
         renderItem={({ item }) => {
           const imageHeight = item.image_data?.width
             ? (item.image_data?.height / item.image_data?.width) *
