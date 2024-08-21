@@ -4533,6 +4533,11 @@ expo-updates@~0.16.4:
     fbemitter "^3.0.0"
     resolve-from "^5.0.0"
 
+expo-video@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/expo-video/-/expo-video-1.2.4.tgz#787342aded4295a1b6864f59227d178b93e1bb53"
+  integrity sha512-pBK9mt7vYAbuPQjCSQxHQ7xrNjbmRheJep7JIStEg57O183/JRfP2blKuXniiSt1HBdZYPdoQnGRa3jGMXB9pg==
+
 expo@~48.0.18:
   version "48.0.20"
   resolved "https://registry.yarnpkg.com/expo/-/expo-48.0.20.tgz#098a19b1eba81a15062fa853ae6941fdf9aef1f4"

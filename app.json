@@ -15,8 +15,7 @@
       "**/*"
     ],
     "plugins": [
-      "@react-native-google-signin/google-signin",
-      "expo-video"
+      "@react-native-google-signin/google-signin"
     ],
     "ios": {
       "supportsTablet": true,
