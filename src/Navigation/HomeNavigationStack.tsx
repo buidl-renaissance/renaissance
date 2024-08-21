@@ -9,7 +9,7 @@ import CalendarScreen from "../Screens/CalendarScreen";
 // import CameraScreen from '../Screens/CameraScreen';
 // import CollectScreen from '../Screens/CollectScreen';
 import ActivityScreen from "../Screens/ActivityScreen";
-// import AddContentScreen from "../Screens/AddContentScreen";
+import AddContentScreen from "../Screens/AddContentScreen";
 import CreateEventScreen from "../Screens/CreateEventScreen";
 import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
@@ -33,7 +33,7 @@ type HomeNavigationStackParamList = {
   Activity: undefined;
   Artist: undefined;
   Artwork: undefined;
-  // AddContent: undefined;
+  AddContent: undefined;
   Bookmarks: undefined;
   BrowseMap: undefined;
   Calendar: undefined;
@@ -262,7 +262,7 @@ const HomeNavigationStack = () => {
           headerTintColor: "#000",
         }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
         component={AddContentScreen}
         name="AddContent"
         options={{
@@ -271,7 +271,7 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
         }}
-      /> */}
+      />
     </Stack.Navigator>
   );
 };
