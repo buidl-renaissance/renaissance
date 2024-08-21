@@ -50,7 +50,7 @@ export const HeroBanner = ({ children, handleLogin }) => {
               marginTop: 8,
             }}
           >
-            Welcome to the Renaissance City
+            Welcome to the Renaissance City!
           </Text>
           <Text
             style={{
