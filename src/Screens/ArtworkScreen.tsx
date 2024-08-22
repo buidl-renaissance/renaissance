@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  StyleSheet,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, Image, Text, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
 // import { ArtworkView } from "../Components/ArtworkView";
@@ -20,6 +13,7 @@ import moment from "moment";
 import { Video, ResizeMode } from "expo-av";
 import Icon, { IconTypes } from "../Components/Icon";
 import { useContact } from "../hooks/useContact";
+import { ContentView } from "../Components/ContentView";
 
 const ArtworkScreen = ({ navigation, route }) => {
   const [contact] = useContact();
@@ -99,7 +93,6 @@ const ArtworkScreen = ({ navigation, route }) => {
           </View>
         </View>
         {artwork?.content.map((content, i: number) => {
-          const w = Dimensions.get("window").width - 64;
           return (
             <View
               style={{
@@ -148,61 +141,7 @@ const ArtworkScreen = ({ navigation, route }) => {
                   "dddd MMMM Do, YYYY – h:mm a"
                 )}
               </Text>
-              <View style={{ marginTop: 8, paddingHorizontal: 16 }}>
-                {/* <View style={{ marginVertical: 4 }}>
-                  {true && (
-                    <Text
-                      style={{
-                        fontWeight: "bold",
-                        color: "#333",
-                        fontSize: 10,
-                      }}
-                    >
-                      {content.artwork?.title}
-                    </Text>
-                  )}
-                </View> */}
-                {content.data.type === "image/jpeg" && (
-                  <Image
-                    source={{
-                      uri: content.data.url,
-                    }}
-                    style={{
-                      height:
-                        content.data.height *
-                        ((Dimensions.get("window").width - 64) /
-                          content.data.width),
-                      width: w,
-                      borderRadius: 4,
-                      resizeMode: "cover",
-                      marginBottom: 16,
-                    }}
-                  />
-                )}
-                {content.data.type === "video/mp4" && (
-                  <Video
-                    ref={video}
-                    style={{
-                      height:
-                        content.data.height *
-                        ((Dimensions.get("window").width - 64) /
-                          content.data.width),
-                      width: w,
-                      borderRadius: 4,
-                      marginBottom: 16,
-                    }}
-                    shouldPlay={true}
-                    source={{
-                      uri: content.data.url,
-                    }}
-                    isMuted={true}
-                    volume={1}
-                    useNativeControls
-                    resizeMode={ResizeMode.CONTAIN}
-                    onPlaybackStatusUpdate={(status) => setStatus(() => status)}
-                  />
-                )}
-              </View>
+              <ContentView content={content} />
             </View>
           );
         })}
