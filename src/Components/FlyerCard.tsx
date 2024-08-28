@@ -34,7 +34,7 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
         isLooping
         onPlaybackStatusUpdate={status => setStatus(() => status)}
       /> */}
-      <TouchableOpacity onPress={() => onSelectEvent(flyer.event)}>
+      {/* <TouchableOpacity onPress={() => onSelectEvent(flyer.event)}>
         <Image
           source={{
             uri: flyer.data.imageUrl,
@@ -45,7 +45,7 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
             resizeMode: "cover",
           }}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       {flyer.event && (
         <EventCard
           event={flyer.event}
@@ -53,7 +53,7 @@ export const FlyerCard = ({ flyer, onSelectEvent }: FlyerCardProps) => {
             showBookmark: true,
             showDate: true,
             showVenue: true,
-            showImage: false,
+            showImage: true,
           }}
           onSelectEvent={() => onSelectEvent(flyer.event)}
         >

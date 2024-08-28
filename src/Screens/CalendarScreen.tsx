@@ -278,8 +278,7 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
 
         {artworks && artworks?.length > 0 && (
-          <View>
-            <SectionTitle>GODS WORK</SectionTitle>
+          <View style={{ marginTop: 12 }}>
             <ScrollView
               style={{
                 paddingHorizontal: 16,
@@ -289,51 +288,58 @@ const CalendarScreen = ({ navigation }) => {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             >
-              {artworks?.map((artwork) => {
-                if (!artwork.data?.image) return <View />;
-                return (
-                  <TouchableOpacity
-                    style={{ marginRight: 16 }}
-                    onPress={() => handleShowArtwork(artwork)}
-                  >
-                    {artwork.data?.image && (
-                      <Image
-                        source={{
-                          uri: artwork.data.image,
-                        }}
-                        style={{
-                          height: 160,
-                          width: 160,
-                          borderRadius: 4,
-                          resizeMode: "cover",
-                          marginBottom: 8,
-                        }}
-                      />
-                    )}
-                    <Text>{artwork.title}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <View style={{ padding: 16, paddingVertical: 4 }}>
-              <Text>
-                Our mission is to empower artistic communities to create by
-                providing opportunities for collaboration, growth, and financial
-                sustainability.
-              </Text>
               <View>
-                <Button
-                  title="Learn More"
-                  onPress={() => {
-                    Linking.openURL("https://gods.work/about");
-                  }}
-                />
+                {artworks?.map((artwork) => {
+                  if (!artwork.data?.image) return <View />;
+                  return (
+                    <TouchableOpacity
+                      style={{ marginRight: 16 }}
+                      onPress={() => handleShowArtwork(artwork)}
+                    >
+                      {artwork.data?.image && (
+                        <Image
+                          source={{
+                            uri: artwork.data.image,
+                          }}
+                          style={{
+                            height: 160,
+                            width: 160,
+                            borderRadius: 4,
+                            resizeMode: "cover",
+                            marginBottom: 8,
+                          }}
+                        />
+                      )}
+                      <Text>{artwork.title}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            <View>
+              <Text style={{ textAlign: "center", fontSize: 22 }}>
+                GODS WORK
+              </Text>
+              <View style={{ padding: 16, paddingVertical: 4 }}>
+                <Text style={{ textAlign: "center" }}>
+                  Our mission is to empower artistic communities to create by
+                  providing opportunities for collaboration, growth, and
+                  financial sustainability.
+                </Text>
+                <View style={{ paddingHorizontal: 96 }}>
+                  <Button
+                    title="Learn More"
+                    onPress={() => {
+                      Linking.openURL("https://gods.work/about");
+                    }}
+                  />
+                </View>
               </View>
             </View>
           </View>
         )}
 
-        {/* {flyers?.length > 0 && (
+        {flyers?.length > 0 && (
           <View
             style={{
               backgroundColor: "#eee",
@@ -341,7 +347,7 @@ const CalendarScreen = ({ navigation }) => {
               borderColor: "#aaa",
             }}
           >
-            <SectionTitle>FEATURED EVENTS</SectionTitle>
+            <SectionTitle>COMMUNITY EVENTS</SectionTitle>
             {flyers.map((flyer: DAFlyer, f) => {
               return (
                 <FlyerCard
@@ -352,7 +358,7 @@ const CalendarScreen = ({ navigation }) => {
               );
             })}
           </View>
-        )} */}
+        )}
 
         <SectionTitle>EVENT CALENDAR</SectionTitle>
       </View>
