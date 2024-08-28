@@ -11,7 +11,9 @@ import { FFmpegKit } from "ffmpeg-kit-react-native";
 import { uploadVideo } from "../dpop";
 import * as FileSystem from "expo-file-system";
 
-const AddMedia = () => {
+const AddMedia = ({
+  onConvertedMedia
+}) => {
   const { pickImage, image, uploadedImageUrl } = useImagePicker({
     allowsEditing: false,
   });
@@ -48,6 +50,7 @@ const AddMedia = () => {
           info
         );
         console.log("video upload: ", result);
+        onConvertedMedia(result);
       }
     })();
   }, [image]);

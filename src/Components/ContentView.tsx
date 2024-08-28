@@ -19,19 +19,9 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
 
   return (
     <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
-      {/* <View style={{ marginVertical: 4 }}>
-  {true && (
-    <Text
-      style={{
-        fontWeight: "bold",
-        color: "#333",
-        fontSize: 10,
-      }}
-    >
-      {content.artwork?.title}
-    </Text>
-  )}
-</View> */}
+      {content.caption?.length > 0 && (
+        <Text style={{ marginBottom: 8 }}>{content.caption}</Text>
+      )}
       {content.data.type === "image/jpeg" && (
         <Image
           source={{
@@ -69,10 +59,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
           onPlaybackStatusUpdate={(status) => setStatus(() => status)}
         />
       )}
-      {content.caption?.length > 0 && (
-        <Text style={{ marginBottom: 8 }}>{content.caption}</Text>
-      )}
-      <View style={{ flex: 1, flexDirection: "row" }}>
+      {/* <View style={{ flex: 1, flexDirection: "row" }}>
         <RoundButton
           color="#666"
           onPress={handleCommentPress}
@@ -85,7 +72,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
           type={IconTypes.Ionicons}
           name={"chatbubble-outline"}
         />
-      </View>
+      </View> */}
     </View>
   );
 };
