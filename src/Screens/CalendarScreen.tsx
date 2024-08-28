@@ -37,6 +37,7 @@ import { useFlyers } from "../hooks/useFlyers";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import { useArtworks } from "../hooks/useArtwork";
+import * as Linking from "expo-linking";
 
 const { height, width } = Dimensions.get("window");
 
@@ -314,6 +315,21 @@ const CalendarScreen = ({ navigation }) => {
                 );
               })}
             </ScrollView>
+            <View style={{ padding: 16, paddingVertical: 4 }}>
+              <Text>
+                Our mission is to empower artistic communities to create by
+                providing opportunities for collaboration, growth, and financial
+                sustainability.
+              </Text>
+              <View>
+                <Button
+                  title="Learn More"
+                  onPress={() => {
+                    Linking.openURL("https://gods.work/about");
+                  }}
+                />
+              </View>
+            </View>
           </View>
         )}
 

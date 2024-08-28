@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DAEvent } from "./interfaces";
-import { createFormData } from "./utils/uploadImage";
+import { createFormData, createFormDataForVideo } from "./utils/uploadImage";
 import * as FileSystem from 'expo-file-system';
 
 interface UserAttribution {
@@ -209,6 +209,23 @@ export const uploadImage = async (image) => {
     })
   ).json();
   console.log("uploadImage: ", result);
+  return result;
+};
+
+export const uploadVideo = async (video, meta) => {
+  const form = createFormDataForVideo(video, {
+    exif: JSON.stringify(meta),
+  });
+  const result = await (
+    await fetch(`${hostname}/api/upload-media`, {
+      body: form,
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  ).json();
+  console.log("uploadVideo: ", result);
   return result;
 };
 

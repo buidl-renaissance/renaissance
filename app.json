@@ -16,7 +16,9 @@
     ],
     "plugins": [
       "@react-native-google-signin/google-signin",
-      "expo-secure-store"
+      "@config-plugins/ffmpeg-kit-react-native",
+      "expo-secure-store",
+      "expo-build-properties"
     ],
     "ios": {
       "supportsTablet": true,

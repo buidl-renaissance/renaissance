@@ -15,14 +15,6 @@ export const ArtworkView: React.FC<ArtworkViewProps>= ({
 }) => {
   return (
     <View>
-        <Image
-            source={image}
-            style={{
-                height: 500,
-                width: 'auto',
-                // borderRadius: 40,
-            }}
-        />
         <View style={{ padding: 8 }}>
             <View>
                 <Text style={styles.title}>{name}</Text>
@@ -31,6 +23,14 @@ export const ArtworkView: React.FC<ArtworkViewProps>= ({
                 <Text style={styles.subtitle}>{description}</Text>
             </View>
         </View>
+        <Image
+            source={image}
+            style={{
+                height: 500,
+                width: 'auto',
+                // borderRadius: 40,
+            }}
+        />
     </View>
   );
 };

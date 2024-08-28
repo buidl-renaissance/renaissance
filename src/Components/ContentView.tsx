@@ -1,11 +1,8 @@
 import React from "react";
-import {
-  StyleSheet,
-  Image,
-  View,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, Image, View, Text, Dimensions } from "react-native";
 import { Video, ResizeMode } from "expo-av";
+import { RoundButton } from "./RoundButton";
+import { IconTypes } from "./Icon";
 
 interface ContentViewProps {
   content: any;
@@ -16,8 +13,12 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
   const [status, setStatus] = React.useState({});
   const w = Dimensions.get("window").width - 64;
 
+  const handleCommentPress = React.useCallback(() => {
+    console.log("ADD COMMENT");
+  }, []);
+
   return (
-    <View style={{ marginTop: 8, paddingHorizontal: 16 }}>
+    <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
       {/* <View style={{ marginVertical: 4 }}>
   {true && (
     <Text
@@ -43,7 +44,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
             width: w,
             borderRadius: 4,
             resizeMode: "cover",
-            marginBottom: 16,
+            marginBottom: 8,
           }}
         />
       )}
@@ -56,7 +57,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
               ((Dimensions.get("window").width - 64) / content.data.width),
             width: w,
             borderRadius: 4,
-            marginBottom: 16,
+            marginBottom: 8,
           }}
           source={{
             uri: content.data.url,
@@ -68,6 +69,23 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
           onPlaybackStatusUpdate={(status) => setStatus(() => status)}
         />
       )}
+      {content.caption?.length > 0 && (
+        <Text style={{ marginBottom: 8 }}>{content.caption}</Text>
+      )}
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        <RoundButton
+          color="#666"
+          onPress={handleCommentPress}
+          type={IconTypes.Ionicons}
+          name={"heart-outline"}
+        />
+        <RoundButton
+          color="#666"
+          onPress={handleCommentPress}
+          type={IconTypes.Ionicons}
+          name={"chatbubble-outline"}
+        />
+      </View>
     </View>
   );
 };
