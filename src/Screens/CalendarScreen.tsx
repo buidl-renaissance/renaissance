@@ -247,11 +247,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
             />
-            <RoundButton
+            {/* <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
               name={"chat"}
-            />
+            /> */}
             <RoundButton
               onPress={handleSharePress}
               type={IconTypes.Ionicons}
