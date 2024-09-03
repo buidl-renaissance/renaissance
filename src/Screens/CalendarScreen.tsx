@@ -38,6 +38,7 @@ import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import { useArtworks } from "../hooks/useArtwork";
 import * as Linking from "expo-linking";
+import { ArtworkCard } from "../Components/ArtworkCard";
 
 const { height, width } = Dimensions.get("window");
 
@@ -296,21 +297,11 @@ const CalendarScreen = ({ navigation }) => {
                       style={{ marginRight: 16 }}
                       onPress={() => handleShowArtwork(artwork)}
                     >
-                      {artwork.data?.image && (
-                        <Image
-                          source={{
-                            uri: artwork.data.image,
-                          }}
-                          style={{
-                            height: 160,
-                            width: 160,
-                            borderRadius: 4,
-                            resizeMode: "cover",
-                            marginBottom: 8,
-                          }}
-                        />
-                      )}
-                      <Text>{artwork.title}</Text>
+                      <ArtworkCard
+                        image={artwork.data?.image}
+                        name={artwork.title}
+                        description={artwork.description}
+                      />
                     </TouchableOpacity>
                   );
                 })}
@@ -326,9 +317,10 @@ const CalendarScreen = ({ navigation }) => {
                   providing opportunities for collaboration, growth, and
                   financial sustainability.
                 </Text>
-                <View style={{ paddingHorizontal: 96 }}>
+                <View style={{ paddingHorizontal: 128, marginTop: 8 }}>
                   <Button
                     title="Learn More"
+                    size="small"
                     onPress={() => {
                       Linking.openURL("https://gods.work/about");
                     }}

@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, Image, ImageSourcePropType, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, Text, View } from 'react-native';
 
 
 interface ArtworkCardProps {
     name: string;
     description: string;
-    image: ImageSourcePropType;
+    image: string;
 }
 
 export const ArtworkCard: React.FC<ArtworkCardProps>= ({
@@ -17,11 +17,12 @@ export const ArtworkCard: React.FC<ArtworkCardProps>= ({
     <View>
         <View style={{ overflow: 'hidden' }}>
             <Image
-                source={image}
+                source={{ uri: image }}
                 style={{
-                    height: 120,
-                    width: '100%',
+                    height: 160,
+                    width: 160,
                     resizeMode: 'cover',
+                    borderRadius: 4,
                 }}
             />
         </View>

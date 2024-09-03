@@ -25,6 +25,7 @@ export interface DAArtwork {
   slug: string;
   created_at: string;
   title: string;
+  description: string;
   id: number;
   artist: any;
   data: any;
