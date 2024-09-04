@@ -103,7 +103,7 @@ const AddMedia = ({
           )}
         </TouchableOpacity>
       )}
-      <Button title="Upload Image" variant="hollow" onPress={pickImage} />
+      <Button title="Upload" variant="hollow" onPress={pickImage} />
     </ScrollView>
   );
 };

@@ -6,6 +6,8 @@ import AddMedia from "../Components/AddMedia";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { TextInput } from "../Components/Styled/TextInput";
 import { Button } from "../Components/Button";
+import moment from "moment";
+import { createContent } from "../dpop";
 
 const AddContentScreen = ({ navigation, route }) => {
   const [artwork] = React.useState(route?.params?.artwork ?? null);
@@ -17,34 +19,34 @@ const AddContentScreen = ({ navigation, route }) => {
   });
 
   const handleAddContent = React.useCallback(() => {
-    console.log("ADD CONTENT", {
-      text,
-      media,
-      artwork: artwork?.id,
-    });
+    (async () => {
+      const result = await createContent(text, moment(media?.exif.modificationTime * 1000).format("YYYY-MM-DD HH:mm:ss"), media?.url, artwork?.id ?? 1, media?.width ?? 1080, media?.height ?? 1920);
+      console.log("result", result);
+    })();
   }, [text, media, artwork]);
 
   return (
     <View style={styles.container}>
       <View>
+        {media && (
+          <View style={{ padding: 16 }}>
+            <View style={{ marginBottom: 8 }}>
+              <Text style={{ marginBottom: 8 }}>Caption</Text>
+              <TextInput
+                placeholder="What Up Doe?..."
+                value={text}
+                onChangeText={(text) => setText(text)}
+                style={styles.input}
+              />
+            </View>
+            <Button title="Add Content" onPress={handleAddContent} />
+          </View>
+        )}
         <AddMedia
           onConvertedMedia={(media) => {
             setMedia(media);
           }}
         />
-        <View style={{ padding: 16 }}>
-          <View style={{ marginBottom: 8 }}>
-            <Text style={{ marginBottom: 8 }}>Caption</Text>
-            <TextInput
-              placeholder="What Up Doe?..."
-              value={text}
-              onChangeText={(text) => setText(text)}
-              style={styles.input}
-            />
-          </View>
-
-          <Button title="Add Content" onPress={handleAddContent} />
-        </View>
       </View>
     </View>
   );

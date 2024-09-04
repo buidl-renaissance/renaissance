@@ -229,6 +229,32 @@ export const uploadVideo = async (video, meta) => {
   return result;
 };
 
+export const createContent = async (
+  caption,
+  timestamp,
+  url,
+  artwork,
+  width,
+  height
+) => {
+  const result = await (
+    await fetch(`${hostname}/api/content`, {
+      method: "POST",
+      body: JSON.stringify({
+        caption,
+        timestamp,
+        url,
+        artwork,
+        width,
+        height,
+      }),
+      headers: { "content-type": "application/json" },
+    })
+  ).json();
+  console.log("SAVED CONTENT: ", result);
+  return result;
+};
+
 export const createEvent = async (
   title,
   description,
