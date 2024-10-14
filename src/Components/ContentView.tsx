@@ -37,6 +37,12 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
 
     const { sound } = await Audio.Sound.createAsync({ uri: content.data.audio });
 
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+    });
+
+    await sound.setVolumeAsync(1);
+
     console.log('Playing Sound');
     await sound.playAsync();
     // console.log('Stop Sound');

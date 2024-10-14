@@ -22,7 +22,12 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "tech.dpop.renaissance"
+      "bundleIdentifier": "tech.dpop.renaissance",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
