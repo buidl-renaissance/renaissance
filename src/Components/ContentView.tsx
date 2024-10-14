@@ -1,8 +1,10 @@
 import React from "react";
-import { StyleSheet, Image, View, Text, Dimensions } from "react-native";
+import { StyleSheet, Image, View, Text, Dimensions, TouchableOpacity } from "react-native";
 import { Video, ResizeMode } from "expo-av";
+import YoutubePlayer from "react-native-youtube-iframe";
 import { RoundButton } from "./RoundButton";
 import { IconTypes } from "./Icon";
+import { Audio, } from 'expo-av';
 
 interface ContentViewProps {
   content: any;
@@ -12,10 +14,36 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
   const w = Dimensions.get("window").width - 64;
+  const [playing, setPlaying] = React.useState(false);
 
   const handleCommentPress = React.useCallback(() => {
     console.log("ADD COMMENT");
   }, []);
+
+  const onStateChange = React.useCallback((state) => {
+    if (state === "ended") {
+      setPlaying(false);
+    }
+  }, []);
+
+  const togglePlaying = React.useCallback(() => {
+    setPlaying((prev) => !prev);
+  }, []);
+
+  async function playSound() {
+    console.log('Loading Sound');
+
+    console.log('uri', content);
+
+    const { sound } = await Audio.Sound.createAsync({ uri: content.data.audio });
+
+    console.log('Playing Sound');
+    await sound.playAsync();
+    // console.log('Stop Sound');
+    // await sound.stopAsync();
+    // console.log('Unload Sound');
+    // await sound.unloadAsync();
+  }
 
   return (
     <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
@@ -36,6 +64,33 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
             resizeMode: "cover",
             marginBottom: 8,
           }}
+        />
+      )}
+      {content.data.type === "audio" && (
+        <TouchableOpacity onPress={playSound}>
+          <Image
+            source={{
+              uri: content.data.image,
+            }}
+            style={{
+              height:
+                content.data.height *
+                ((Dimensions.get("window").width - 64) / content.data.width),
+              width: w,
+              borderRadius: 4,
+              resizeMode: "cover",
+              marginBottom: 8,
+            }}
+          />
+        </TouchableOpacity>
+
+      )}
+      {content.data.type === "youtube" && (
+        <YoutubePlayer
+          height={200}
+          play={playing}
+          videoId={content.data.youtubeId}
+          onChangeState={onStateChange}
         />
       )}
       {content.data.type === "video/mp4" && (

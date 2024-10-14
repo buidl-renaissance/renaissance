@@ -1,6 +1,7 @@
 import React from "react";
 
-import { DAArtwork } from "../interfaces";
+import { DAArtwork, DAContent } from "../interfaces";
+import { EventRegister } from "react-native-event-listeners";
 
 export const useArtworks = () => {
   const [artworks, setArtworks] = React.useState<DAArtwork[] | null>(null);
@@ -38,4 +39,38 @@ export const useArtwork = (artworkId: number) => {
   }, []);
 
   return [ artwork ];
+};
+
+export const updateContent = () => {
+  EventRegister.emitEvent("update-content", {});
+};
+
+export const useContent = (type?: string) => {
+  const [content, setContent] = React.useState<DAContent[]>();
+
+  React.useEffect(() => {
+    if (!content) updateContent();
+  }, [content]);
+
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener("update-content", async (data) => {
+      await updateContent();
+    });
+    return () => {
+      if (typeof listener === "string")
+        EventRegister.removeEventListener(listener);
+    };
+  });
+
+
+  const updateContent = React.useCallback(() => {
+    (async () => {
+      console.log("UPDATE CONTENT");
+      const req = await fetch(`https://api.detroiter.network/api/content?type=post`);
+      const result = await req.json();
+      setContent(result.data);
+    })();
+  }, []);
+
+  return [ content ];
 };

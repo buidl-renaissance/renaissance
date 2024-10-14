@@ -20,8 +20,44 @@ const AddContentScreen = ({ navigation, route }) => {
 
   const handleAddContent = React.useCallback(() => {
     (async () => {
-      const result = await createContent(text, moment(media?.exif.modificationTime * 1000).format("YYYY-MM-DD HH:mm:ss"), media?.url, artwork?.id ?? 1, media?.width ?? 1080, media?.height ?? 1920);
-      console.log("result", result);
+      console.log("media!: ", media);
+      if (media?.exif.modificationTime) {
+        try {
+          const result = await createContent({
+            artwork: artwork?.id ?? 1,
+            caption: text,
+            data: {
+              height: media?.height ?? 1920,
+              type: 'video/mp4',
+              url: media?.url,
+              width: media?.width ?? 1080,
+            },
+            timestamp: moment(media?.exif.modificationTime * 1000).format("YYYY-MM-DD HH:mm:ss"),
+          });
+          console.log("result", result);
+        } catch (error) {
+          console.log("error: ", error);
+        }
+      } else if (media?.exif.DateTimeOriginal) {
+        try {
+          const result = await createContent({
+            artwork: artwork?.id ?? 1,
+            caption: text,
+            data: {
+              height: media?.height ?? 1920,
+              type: 'image/jpeg',
+              url: media?.url,
+              width: media?.width ?? 1080,
+            },
+            timestamp: moment(media?.exif.DateTimeOriginal, "YYYY:MM:DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss"),
+          });
+          console.log("result", result);
+        } catch (error) {
+          console.log("error: ", error);
+        }
+      } else {
+        console.log("media: ", media);
+      }
     })();
   }, [text, media, artwork]);
 
@@ -43,7 +79,7 @@ const AddContentScreen = ({ navigation, route }) => {
           </View>
         )}
         <AddMedia
-          onConvertedMedia={(media) => {
+          onLoadedMedia={(media) => {
             setMedia(media);
           }}
         />

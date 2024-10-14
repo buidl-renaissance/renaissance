@@ -36,9 +36,11 @@ import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
-import { useArtworks } from "../hooks/useArtwork";
+import { useArtworks, useContent } from "../hooks/useArtwork";
 import * as Linking from "expo-linking";
 import { ArtworkCard } from "../Components/ArtworkCard";
+import { AudioRecorder } from "../Components/AudioRecorder";
+import { ContentView } from "../Components/ContentView";
 
 const { height, width } = Dimensions.get("window");
 
@@ -53,6 +55,7 @@ const CalendarScreen = ({ navigation }) => {
   const [contact] = useContact();
   const [flyers] = useFlyers();
   const [artworks] = useArtworks();
+  const [content] = useContent();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -277,6 +280,12 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
+
+        <AudioRecorder />
+
+        {content?.map((content) => {
+          return <ContentView content={content} />
+        })}
 
         {artworks && artworks?.length > 0 && (
           <View style={{ marginTop: 12 }}>

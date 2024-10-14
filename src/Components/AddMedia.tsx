@@ -8,19 +8,22 @@ import { useImagePicker } from "../hooks/useImagePicker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Video, ResizeMode } from "expo-av";
 import { FFmpegKit } from "ffmpeg-kit-react-native";
-import { uploadVideo } from "../dpop";
+import { uploadImage, uploadVideo } from "../dpop";
 import * as FileSystem from "expo-file-system";
 
 const AddMedia = ({
-  onConvertedMedia
+  onLoadedMedia
 }) => {
-  const { pickImage, image, uploadedImageUrl } = useImagePicker({
+  const { pickImage, image } = useImagePicker({
     allowsEditing: false,
   });
 
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
   const [convertedVideoUri, setConvertedVideoUri] = React.useState<
+    string | null
+  >();
+  const [uploadedImageUrl, setUploadedImageUrl] = React.useState<
     string | null
   >();
 
@@ -34,9 +37,9 @@ const AddMedia = ({
   React.useEffect(() => {
     (async () => {
       const asset = image?.[0];
-      if (asset && !convertedVideoUri) {
+      if (asset && image[0].type === "video" && !convertedVideoUri) {
         const newFile = asset.uri.replace(".mov", ".mp4");
-        await FFmpegKit.execute(`-i ${asset.uri}  -vcodec hevc_videotoolbox -b:v 6000k -tag:v hvc1 -c:a eac3 -b:a 224k ${newFile}`);
+        await FFmpegKit.execute(`-i ${asset.uri} -vcodec hevc_videotoolbox -b:v 6000k -tag:v hvc1 -c:a eac3 -b:a 224k ${newFile}`);
         const info = await FileSystem.getInfoAsync(image[0].uri as string);
 
         console.log("CONVERTED: ", newFile);
@@ -50,7 +53,21 @@ const AddMedia = ({
           info
         );
         console.log("video upload: ", result);
-        onConvertedMedia(result);
+        onLoadedMedia(result);
+      } else if (asset && asset.type === "image" && !uploadedImageUrl) {
+        console.log("upload image! asset: ", asset);
+        onLoadedMedia(asset);
+        try {
+          let upload = await uploadImage(asset);   
+          setUploadedImageUrl(upload?.url);     
+          console.log("image upload: ", upload);
+          upload.type = 'image';
+          onLoadedMedia(upload);
+        } catch (error) {
+          console.log("UPLOAD IMAGE ERR: ", error);
+        }  
+      } else {
+        console.log("no asset", asset);
       }
     })();
   }, [image]);

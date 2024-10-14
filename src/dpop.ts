@@ -191,6 +191,25 @@ export const saveEvent = async (event: DAEvent) => {
   return result;
 };
 
+export const uploadAudioUri = async (uri) => {
+  const form = createFormData({ uri, fileName: 'audio.p4a', type: 'audio' });
+  try {
+    const result = await (
+      await fetch(`${hostname}/api/upload-media`, {
+        body: form,
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+    ).json();
+    console.log("uploadAudio: ", result);
+    return result;
+  } catch (error) {
+    console.log('audio upload err: ', error);    
+  }
+};
+
 export const uploadImage = async (image) => {
   const info = await FileSystem.getInfoAsync(image.uri as string);
   const exif = image.exif
@@ -229,24 +248,26 @@ export const uploadVideo = async (video, meta) => {
   return result;
 };
 
-export const createContent = async (
+export const createContent = async ({
+  artwork,
   caption,
   timestamp,
-  url,
-  artwork,
-  width,
-  height
-) => {
+  data,
+}) => {
+  console.log("data: ", {
+    artwork: artwork,
+    caption: caption,
+    timestamp,
+    data,
+  });
   const result = await (
     await fetch(`${hostname}/api/content`, {
       method: "POST",
       body: JSON.stringify({
-        caption,
-        timestamp,
-        url,
         artwork,
-        width,
-        height,
+        caption,
+        data,
+        timestamp,
       }),
       headers: { "content-type": "application/json" },
     })
