@@ -43,6 +43,10 @@ export interface Venue {
   };
 }
 
+export interface DAUpload {
+  url: string;
+}
+
 export interface DPoPEventRsvp {
   cid?: string;
   event_cid: string;
@@ -191,26 +195,22 @@ export const saveEvent = async (event: DAEvent) => {
   return result;
 };
 
-export const uploadAudioUri = async (uri) => {
+export const uploadAudioUri = async (uri): Promise<DAUpload> => {
   const form = createFormData({ uri, fileName: 'audio.p4a', type: 'audio' });
-  try {
-    const result = await (
-      await fetch(`${hostname}/api/upload-media`, {
-        body: form,
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-    ).json();
-    console.log("uploadAudio: ", result);
-    return result;
-  } catch (error) {
-    console.log('audio upload err: ', error);    
-  }
+  const result = await (
+    await fetch(`${hostname}/api/upload-media`, {
+      body: form,
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  ).json();
+  console.log("uploadAudio: ", result);
+  return result;
 };
 
-export const uploadImage = async (image) => {
+export const uploadImage = async (image): Promise<DAUpload> => {
   const info = await FileSystem.getInfoAsync(image.uri as string);
   const exif = image.exif
     ? image.exif
@@ -231,7 +231,7 @@ export const uploadImage = async (image) => {
   return result;
 };
 
-export const uploadVideo = async (video, meta) => {
+export const uploadVideo = async (video, meta): Promise<DAUpload> => {
   const form = createFormDataForVideo(video, {
     exif: JSON.stringify(meta),
   });

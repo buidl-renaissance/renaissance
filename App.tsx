@@ -15,6 +15,7 @@ export const navigationRef = React.createRef();
 
 import { NavigationContainer } from '@react-navigation/native';
 import { checkForUpdates } from './src/utils/checkForUpdate';
+import { AudioPlayerProvider } from './src/context/AudioPlayer';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -64,18 +65,20 @@ export default function App() {
       subscription.remove()
     };
   }, []);
-  
+
   return (
     <>
       <StatusBar barStyle="default" />
-      <NavigationContainer
-        onReady={() => {
-          isReadyRef.current = true;
-        }}
-        ref={navigationRef}
-      >
-        <HomeNavigationStack />
-      </NavigationContainer>
+      <AudioPlayerProvider>
+        <NavigationContainer
+          onReady={() => {
+            isReadyRef.current = true;
+          }}
+          ref={navigationRef}
+        >
+          <HomeNavigationStack />
+        </NavigationContainer>
+      </AudioPlayerProvider>
     </>
   );
 }

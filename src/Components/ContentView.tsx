@@ -2,15 +2,14 @@ import React from "react";
 import { StyleSheet, Image, View, Text, Dimensions, TouchableOpacity } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import YoutubePlayer from "react-native-youtube-iframe";
-import { RoundButton } from "./RoundButton";
-import { IconTypes } from "./Icon";
-import { Audio, } from 'expo-av';
+import { useAudioPlayer } from '../context/AudioPlayer';
 
 interface ContentViewProps {
   content: any;
 }
 
 export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
+  const { playSound, stopSound } = useAudioPlayer();
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
   const w = Dimensions.get("window").width - 64;
@@ -30,26 +29,9 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
     setPlaying((prev) => !prev);
   }, []);
 
-  async function playSound() {
-    console.log('Loading Sound');
-
-    console.log('uri', content);
-
-    const { sound } = await Audio.Sound.createAsync({ uri: content.data.audio });
-
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-    });
-
-    await sound.setVolumeAsync(1);
-
-    console.log('Playing Sound');
-    await sound.playAsync();
-    // console.log('Stop Sound');
-    // await sound.stopAsync();
-    // console.log('Unload Sound');
-    // await sound.unloadAsync();
-  }
+  const play = React.useCallback(async () => {
+    await playSound(content.data.audio);
+  }, [content.data.audio, playSound]);
 
   return (
     <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
@@ -73,7 +55,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
         />
       )}
       {content.data.type === "audio" && (
-        <TouchableOpacity onPress={playSound}>
+        <TouchableOpacity onPress={play}>
           <Image
             source={{
               uri: content.data.image,

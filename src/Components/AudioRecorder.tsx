@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Animated, Button, StyleSheet, Text, Image, Dimensions, View } from 'react-native';
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
-import { createContent, uploadAudioUri, uploadImage } from '../dpop';
+import { createContent, DAUpload, uploadAudioUri, uploadImage } from '../dpop';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import moment from 'moment';
 import { updateContent } from '../hooks/useArtwork';
+import { useAudioPlayer } from '../context/AudioPlayer';
 
 export const AudioRecorder = () => {
+    const { playSound, stopSound } = useAudioPlayer();
     const [recording, setRecording] = useState<Audio.Recording>();
     const [isRecording, setIsRecording] = useState(false);
     const [transcription, setTranscription] = useState('');
@@ -18,7 +20,7 @@ export const AudioRecorder = () => {
     const [permission, requestPermission] = useCameraPermissions();
 
     const [photo, setPhoto] = useState();
-    const [upload, setUpload] = useState();
+    const [upload, setUpload] = useState<DAUpload>();
     const [sound, setSound] = useState();
 
     const [camera, setCamera] = React.useState();
@@ -36,36 +38,20 @@ export const AudioRecorder = () => {
         return () => clearInterval(intervalRef.current ?? 0);
     }, [isRecording]);
 
-
-    async function playSound() {
-        console.log('Loading Sound');
+    const play = React.useCallback(async () => {
         const uri = recording?.getURI();
         if (!uri) return;
-
-        console.log('uri', uri);
-
-        const { sound } = await Audio.Sound.createAsync({ uri });
-        setSound(sound);
-
-        console.log('Playing Sound');
-        await sound.playAsync();
-        // console.log('Stop Sound');
-        // await sound.stopAsync();
-        // console.log('Unload Sound');
-        // await sound.unloadAsync();
-    }
-
-    // React.useEffect(() => {
-    //     return sound
-    //         ? () => {
-    //             console.log('Unloading Sound');
-    //             sound.unloadAsync();
-    //         }
-    //         : undefined;
-    // }, [sound]);
+        await playSound(uri);
+    }, [recording, playSound]);
 
     async function startRecording() {
         try {
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+
             console.log('Requesting permissions..');
             await Audio.requestPermissionsAsync();
             await Audio.setAudioModeAsync({
@@ -90,11 +76,10 @@ export const AudioRecorder = () => {
 
             // Monitor input levels for the visualization
             recording.setOnRecordingStatusUpdate((status) => {
-                setAudioLevel(status.metering);
+                setAudioLevel(status.metering ?? 0);
                 if (status.metering) {
                     animatePulse(status.metering);
                 }
-                // animateAudioLevel(status.metering ?? 0);
             });
 
             console.log('Recording started');
@@ -108,13 +93,13 @@ export const AudioRecorder = () => {
         setIsRecording(false);
         setRecording(undefined)
         setElapsedTime(0);
-        await recording.stopAndUnloadAsync();
-        const uri = recording.getURI();
+        await recording?.stopAndUnloadAsync();
+        const uri = recording?.getURI();
         console.log('Recording stopped and stored at', uri);
 
         // Send the recorded audio to the server
         const result = await uploadAudioUri(uri);
-        await playSound();
+        await play();
         await createContent({
             artwork: 1,
             caption: "text",
@@ -129,15 +114,6 @@ export const AudioRecorder = () => {
         });
         updateContent();
         setPhoto(undefined);
-    }
-
-    // Animate the audio level (for the visual effect)
-    function animateAudioLevel(level) {
-        Animated.timing(animation, {
-            toValue: level,  // Animate based on the input audio level
-            duration: 100,
-            useNativeDriver: false,
-        }).start();
     }
 
     // Animate the pulsing circle based on audio level
