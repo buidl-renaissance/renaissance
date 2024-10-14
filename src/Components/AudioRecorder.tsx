@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Animated, Button, StyleSheet, Text, Image, Dimensions, View } from 'react-native';
-import { Audio, } from 'expo-av';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
 import { createContent, uploadAudioUri, uploadImage } from '../dpop';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import moment from 'moment';
@@ -22,13 +22,6 @@ export const AudioRecorder = () => {
     const [sound, setSound] = useState();
 
     const [camera, setCamera] = React.useState();
-
-    React.useEffect(() => {
-        Audio.setAudioModeAsync({
-            allowsRecordingIOS: true,
-            playsInSilentModeIOS: true,
-        });
-    }, []);
 
     // Update elapsed time every second
     React.useEffect(() => {
@@ -78,6 +71,11 @@ export const AudioRecorder = () => {
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
+                staysActiveInBackground: true,
+                interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+                interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+                shouldDuckAndroid: true,
+                playThroughEarpieceAndroid: true,
             });
             console.log('Starting recording..');
             const { recording } = await Audio.Recording.createAsync(
