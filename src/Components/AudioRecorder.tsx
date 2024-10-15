@@ -6,12 +6,15 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import moment from 'moment';
 import { updateContent } from '../hooks/useArtwork';
 import { useAudioPlayer } from '../context/AudioPlayer';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import Icon, { IconTypes } from "../Components/Icon";
 
 export const AudioRecorder = () => {
     const { playSound, stopSound } = useAudioPlayer();
     const [recording, setRecording] = useState<Audio.Recording>();
     const [isRecording, setIsRecording] = useState(false);
     const [transcription, setTranscription] = useState('');
+    const [facing, setFacing] = useState<CameraType>('back');
     const [audioLevel, setAudioLevel] = useState<number>(0);  // Represents the input level of audio
     const [elapsedTime, setElapsedTime] = useState<number>(0);  // Time in seconds
     const intervalRef = React.useRef(null);
@@ -43,6 +46,10 @@ export const AudioRecorder = () => {
         if (!uri) return;
         await playSound(uri);
     }, [recording, playSound]);
+
+    const flipCamera = React.useCallback(() => {
+        setFacing(facing === 'back' ? 'front' : 'back');
+    }, [facing]);
 
     async function startRecording() {
         try {
@@ -104,11 +111,11 @@ export const AudioRecorder = () => {
             artwork: 1,
             caption: "text",
             data: {
-              height: photo?.height ?? 1920,
-              type: 'audio',
-              image: upload?.url,
-              audio: result.url,
-              width: photo?.width ?? 1080,
+                height: photo?.height ?? 1920,
+                type: 'audio',
+                image: upload?.url,
+                audio: result.url,
+                width: photo?.width ?? 1080,
             },
             timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
         });
@@ -162,8 +169,31 @@ export const AudioRecorder = () => {
     return (
         <View style={styles.container}>
 
-            <View style={{ width: '90%', height: 500 }}>
-                {!photo && <CameraView autofocus='on' style={styles.camera} ref={(ref) => { setCamera(ref) }} />}
+            <View style={{ width: '100%', height: Dimensions.get('window').height - 200 }}>
+                {!photo && <CameraView autofocus='on' facing={facing} style={styles.camera} ref={(ref) => { setCamera(ref) }}>
+                    <View style={{ position: 'absolute', top: 10, left: 10 }}>
+                        <TouchableOpacity onPress={flipCamera}>
+                            <Icon
+                                type={IconTypes.Ionicons}
+                                size={36}
+                                color="white"
+                                name="camera-reverse"
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ position: 'absolute', bottom: 15, flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
+                        <TouchableOpacity onPress={takePicture}>
+                            <View style={{ padding: 10, borderRadius: 100, borderWidth: 2, borderColor: 'white' }}>
+                                <Icon
+                                    type={IconTypes.Ionicons}
+                                    size={36}
+                                    color="white"
+                                    name="camera"
+                                />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </CameraView>}
                 {photo && (
                     <Image
                         source={{ uri: photo.uri }}
@@ -178,13 +208,6 @@ export const AudioRecorder = () => {
                     />
                 )}
             </View>
-
-            {!photo && (
-                <Button
-                    title='Snap Photo'
-                    onPress={takePicture}
-                />
-            )}
 
             {photo && (
                 <View>
