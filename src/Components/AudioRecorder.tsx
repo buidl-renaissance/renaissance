@@ -26,6 +26,8 @@ export const AudioRecorder = () => {
     const [upload, setUpload] = useState<DAUpload>();
     const [sound, setSound] = useState();
 
+    const [media, setMedia] = useState<DAUpload[]>([]);
+
     const [camera, setCamera] = React.useState();
 
     // Update elapsed time every second
@@ -106,16 +108,19 @@ export const AudioRecorder = () => {
 
         // Send the recorded audio to the server
         const result = await uploadAudioUri(uri);
-        await play();
+
+        const firstMedia = media.length > 0 ? media[0] : upload;
+            
         await createContent({
             artwork: 1,
             caption: "text",
             data: {
-                height: photo?.height ?? 1920,
+                height: firstMedia?.height ?? 1920,
                 type: 'audio',
-                image: upload?.url,
+                image: firstMedia?.url,
                 audio: result.url,
-                width: photo?.width ?? 1080,
+                width: firstMedia?.width ?? 1080,
+                media: media,
             },
             timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
         });
@@ -137,19 +142,28 @@ export const AudioRecorder = () => {
         console.log("TAKE Picture", camera);
         if (camera) {
             camera.takePictureAsync({ onPictureSaved: onPictureSaved });
+            if (!isRecording) {
+                startRecording();
+            }
         }
-    }, [camera]);
+    }, [camera, isRecording, startRecording]);
 
-    async function onPictureSaved(photo) {
+    const onPictureSaved = React.useCallback(async (photo) => {
         console.log(photo);
         photo.fileName = 'cover.jpeg';
         photo.type = 'image';
         setPhoto(photo);
-        startRecording();
+
+        setTimeout(() => {
+            setPhoto(undefined);
+        }, 5000);
+
         const upload = await uploadImage(photo);
+        upload.elapsedTime = elapsedTime;
         setUpload(upload);
+        setMedia([...media, upload]);
         console.log("image upload: ", upload);
-    }
+    }, [camera, isRecording, elapsedTime, media, upload, photo, setUpload, setMedia, setPhoto, startRecording]);
 
     if (!permission) {
         // Camera permissions are still loading.
@@ -209,24 +223,21 @@ export const AudioRecorder = () => {
                 )}
             </View>
 
-            {photo && (
-                <View>
-                    <Animated.View
-                        style={[
-                            styles.pulsingCircle,
-                            {
-                                transform: [{ scale: animation }],  // Scale animation for pulse effect
-                            },
-                        ]}
-                    />
+            <View>
+                {isRecording && (<Animated.View
+                    style={[
+                        styles.pulsingCircle,
+                        {
+                            transform: [{ scale: animation }],  // Scale animation for pulse effect
+                        },
+                    ]}
+                />)}
 
-                    <Button
-                        title={recording ? 'Stop Recording' : 'Start Recording'}
-                        onPress={recording ? stopRecording : startRecording}
-                    />
-                </View>
-            )
-            }
+                <Button
+                    title={recording ? 'Stop Recording' : 'Start Recording'}
+                    onPress={recording ? stopRecording : startRecording}
+                />
+            </View>
         </View>
     );
 }

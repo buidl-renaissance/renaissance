@@ -9,7 +9,7 @@ interface ContentViewProps {
 }
 
 export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
-  const { playSound, stopSound } = useAudioPlayer();
+  const { currentUri, playSound, stopSound, elapsedTime } = useAudioPlayer();
   const video = React.useRef(null);
   const [status, setStatus] = React.useState({});
   const w = Dimensions.get("window").width - 64;
@@ -32,6 +32,25 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
   const play = React.useCallback(async () => {
     await playSound(content.data.audio);
   }, [content.data.audio, playSound]);
+
+  const getCurrentImage = React.useCallback(() => {
+    if (currentUri === content.data.audio) {
+      if (content.data.media?.length > 0) {
+        let uri = content.data.image;
+        for (let i = 0; i < content.data.media.length; i++) {
+          if (content.data.media[i].elapsedTime <= elapsedTime) {
+            console.log("GetCurrentImage", elapsedTime, content.data.media[i].elapsedTime);
+            uri = content.data.media[i].url;
+          }
+        }
+        return uri;
+      }
+      if (content.data.media?.length > 0) {
+        return content.data.media[0].url;
+      }
+    }
+    return content.data.image;
+  }, [content.data.media, elapsedTime, content.data.image, currentUri]);
 
   return (
     <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
@@ -58,7 +77,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
         <TouchableOpacity onPress={play}>
           <Image
             source={{
-              uri: content.data.image,
+              uri: getCurrentImage(),
             }}
             style={{
               height:

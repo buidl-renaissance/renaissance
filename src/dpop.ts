@@ -45,6 +45,9 @@ export interface Venue {
 
 export interface DAUpload {
   url: string;
+  elapsedTime?: number;
+  width?: number;
+  height?: number;
 }
 
 export interface DPoPEventRsvp {

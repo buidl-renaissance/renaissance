@@ -7,6 +7,7 @@ export interface AudioPlayerContextType {
     sound?: Audio.Sound;
     playSound: (uri: string) => void;
     stopSound: () => void;
+    elapsedTime: number;
 }
 
 export const AudioPlayerContext = React.createContext<AudioPlayerContextType>({
@@ -17,7 +18,8 @@ export const AudioPlayerContext = React.createContext<AudioPlayerContextType>({
     },
     stopSound: () => {
         return null;
-    }
+    },
+    elapsedTime: 0
 });
 
 export const AudioPlayerProvider = (props: { children: React.ReactElement }) => {
@@ -25,12 +27,29 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [currentUri, setCurrentUri] = React.useState<string>();
   const [currentSound, setCurrentSound] = React.useState<Audio.Sound>();
+  const [elapsedTime, setElapsedTime] = React.useState<number>(0);  // Time in seconds
+  const intervalRef = React.useRef(null);
+
+//   // Update elapsed time every second
+//   React.useEffect(() => {
+//       if (isPlaying) {
+//           intervalRef.current = setInterval(() => {
+//               setElapsedTime((prevTime) => prevTime + 1);
+//           }, 1000);
+//       } else {
+//           clearInterval(intervalRef.current ?? 0);
+//       }
+
+//       return () => clearInterval(intervalRef.current ?? 0);
+//   }, [isPlaying]);
+
 
   const defaultTheme = {
     // Chaning color schemes according to theme
     isPlaying,
     currentUri,
     sound: currentSound,
+    elapsedTime,
     playSound: async (uri: string) => {
 
         if (isPlaying && currentSound) {
@@ -40,6 +59,7 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
 
         setIsPlaying(true);
         setCurrentUri(uri);
+        setElapsedTime(0);
 
         const { sound } = await Audio.Sound.createAsync({ uri });
         setCurrentSound(sound);
@@ -58,9 +78,18 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
 
         console.log('Playing Sound');
         await sound.playAsync();
+
+        sound.setOnPlaybackStatusUpdate((status) => {
+            // console.log("PlaybackStatusUpdate", status);
+            setElapsedTime(status.positionMillis / 1000);
+            if(status.didJustFinish) {
+                setIsPlaying(false);
+            }
+        });
     },
     stopSound: async () => {
         setIsPlaying(false);
+        setElapsedTime(0);
         await currentSound?.stopAsync();
     }
   };
