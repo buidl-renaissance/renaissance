@@ -199,7 +199,10 @@ export const saveEvent = async (event: DAEvent) => {
 };
 
 export const uploadAudioUri = async (uri): Promise<DAUpload> => {
-  const form = createFormData({ uri, fileName: 'audio.p4a', type: 'audio' });
+  const info = await FileSystem.getInfoAsync(uri);
+  const form = createFormData({ uri, fileName: 'audio.p4a', type: 'audio' }, {
+    exif: JSON.stringify(info),
+  });
   const result = await (
     await fetch(`${hostname}/api/upload-media`, {
       body: form,

@@ -41,6 +41,7 @@ import * as Linking from "expo-linking";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
+import Files from "../Components/Files";
 
 const { height, width } = Dimensions.get("window");
 
@@ -280,6 +281,8 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
+
+        <Files />
 
         <AudioRecorder />
 
