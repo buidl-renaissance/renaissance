@@ -41,7 +41,6 @@ import * as Linking from "expo-linking";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
-import Files from "../Components/Files";
 
 const { height, width } = Dimensions.get("window");
 
@@ -208,6 +207,10 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
+  const handleFilesPress = React.useCallback(() => {
+    navigation.push("Files");
+  }, []);
+
   // const [username, setUsername] = React.useState("wiredinsamurai");
   // const [pub, setPub] = React.useState("test");
   // const [sig, setSig] = React.useState("test");
@@ -252,6 +255,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
             />
+            <RoundButton
+              onPress={handleFilesPress}
+              type={IconTypes.Ionicons}
+              name={"folder-open-outline"}
+            />
             {/* <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
@@ -281,8 +289,6 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SuggestedActivities /> */}
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
-
-        <Files />
 
         <AudioRecorder />
 

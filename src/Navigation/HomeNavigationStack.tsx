@@ -11,6 +11,7 @@ import CalendarScreen from "../Screens/CalendarScreen";
 import ActivityScreen from "../Screens/ActivityScreen";
 import AddContentScreen from "../Screens/AddContentScreen";
 import CreateEventScreen from "../Screens/CreateEventScreen";
+import FilesScreen from "../Screens/FilesScreen";
 import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
 import ProposalListScreen from "../Screens/ProposalListScreen";
@@ -45,6 +46,7 @@ type HomeNavigationStackParamList = {
   CreateProposal: undefined;
   Event: undefined;
   EventEdit: undefined;
+  Files: undefined;
   GetStarted: undefined;
   GrantCreate: undefined;
   Home: undefined;
@@ -145,6 +147,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CreateFlyerScreen}
         name="CreateFlyer"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={FilesScreen}
+        name="Files"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

@@ -5,15 +5,12 @@ import { createContent, DAUpload, uploadAudioUri, uploadImage } from '../dpop';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import moment from 'moment';
 import { updateContent } from '../hooks/useArtwork';
-import { useAudioPlayer } from '../context/AudioPlayer';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon, { IconTypes } from "../Components/Icon";
 
 export const AudioRecorder = () => {
-    const { playSound, stopSound } = useAudioPlayer();
     const [recording, setRecording] = useState<Audio.Recording>();
     const [isRecording, setIsRecording] = useState(false);
-    const [transcription, setTranscription] = useState('');
     const [facing, setFacing] = useState<CameraType>('back');
     const [audioLevel, setAudioLevel] = useState<number>(0);  // Represents the input level of audio
     const [elapsedTime, setElapsedTime] = useState<number>(0);  // Time in seconds
@@ -24,7 +21,6 @@ export const AudioRecorder = () => {
 
     const [photo, setPhoto] = useState();
     const [upload, setUpload] = useState<DAUpload>();
-    const [sound, setSound] = useState();
 
     const [media, setMedia] = useState<DAUpload[]>([]);
 
@@ -39,15 +35,8 @@ export const AudioRecorder = () => {
         } else {
             clearInterval(intervalRef.current ?? 0);
         }
-
         return () => clearInterval(intervalRef.current ?? 0);
     }, [isRecording]);
-
-    const play = React.useCallback(async () => {
-        const uri = recording?.getURI();
-        if (!uri) return;
-        await playSound(uri);
-    }, [recording, playSound]);
 
     const flipCamera = React.useCallback(() => {
         setFacing(facing === 'back' ? 'front' : 'back');
@@ -126,6 +115,7 @@ export const AudioRecorder = () => {
         });
         updateContent();
         setPhoto(undefined);
+        setMedia([]);
     }
 
     // Animate the pulsing circle based on audio level

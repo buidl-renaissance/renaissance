@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button, Image } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { useAudioPlayer } from '../context/AudioPlayer';
 import moment from 'moment';
-import { uploadAudioUri } from '../dpop';
+import { uploadAudioUri, uploadImage } from '../dpop';
+import Icon from '../Components/Icon';
+import { IconTypes } from '../Components/Icon';
 
 interface FileInfo {
   name: string;
@@ -13,8 +15,16 @@ interface FileInfo {
   size?: number;
 }
 
-const Files = () => {
-  const [currentPath, setCurrentPath] = React.useState<string>(FileSystem.cacheDirectory ?? "");
+interface FilesProps {
+  directory: string;
+  onFilePress: (file: FileInfo) => void;
+}
+
+const Files: React.FC<FilesProps> = ({
+  directory,
+  onFilePress,
+}) => {
+  const [currentPath, setCurrentPath] = React.useState<string>(directory ?? FileSystem.cacheDirectory ?? "");
   const [files, setFiles] = React.useState<FileInfo[]>([]);
   const { playSound } = useAudioPlayer();
 
@@ -50,38 +60,54 @@ const Files = () => {
 
   const handleFilePress = async (file: FileInfo) => {
     if (file.isDirectory) {
-      setCurrentPath(file.path + '/');
+      // setCurrentPath(file.path + '/');
+      onFilePress(file);
     } else {
       console.log("This is a file:", file.name);
       if (file.name.endsWith('.mp3') || file.name.endsWith('.m4a') || file.name.endsWith('.wav')) {
-        playSound(file.path);
+        await playSound(file.path);
+      } else if (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.gif')) {
+        // For image files, we don't need to do anything here as they will be displayed in the renderItem function
+        console.log("This is an image file");
       }
     }
   };
 
   const handleUpload = async (file: FileInfo) => {
-    // Implement your upload logic here
-    await uploadAudioUri(file.path);
+    if (file.name.endsWith('.mp3') || file.name.endsWith('.m4a') || file.name.endsWith('.wav')) {
+      await uploadAudioUri(file.path);
+    } else if (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.gif')) {
+      await uploadImage(file.path);
+    } else {
+      console.error('Unsupported file type for upload');
+    }
   };
 
   const renderItem = ({ item }: { item: FileInfo }) => (
     <View style={styles.fileItem}>
-      <TouchableOpacity onPress={() => handleFilePress(item)}>
-        <Text style={styles.fileName}>{item.name}</Text>
+      <TouchableOpacity onPress={() => handleFilePress(item)} style={styles.fileContent}>
+        <View style={styles.fileDetails}>
+          <Text style={styles.fileName}>{item.name}</Text>
+          {!item.isDirectory && (
+            <View>
+              <Text style={styles.fileInfo}>
+                Modified: {moment(Number(item.modificationTime) * 1000).format('MMMM Do YYYY, h:mm:ss a')}
+              </Text>
+              <Text style={styles.fileInfo}>
+                Size: {((item.size ?? 0) / 1024 / 1024).toFixed(2)} MB
+              </Text>
+            </View>
+          )}
+          {!item.isDirectory && (item.name.endsWith('.jpg') || item.name.endsWith('.png') || item.name.endsWith('.gif')) && (
+            <Image source={{ uri: item.path }} style={styles.imagePreview} />
+          )}
+        </View>
         {!item.isDirectory && (
-          <View>
-            <Text style={styles.fileInfo}>
-              Recorded: {moment(Number(item.modificationTime) * 1000).format('MMMM Do YYYY, h:mm:ss a')}
-            </Text>
-            <Text style={styles.fileInfo}>
-              Size: {((item.size ?? 0) / 1024 / 1024).toFixed(2)} MB
-            </Text>
-          </View>
+          <TouchableOpacity onPress={() => handleUpload(item)} style={styles.uploadIcon}>
+            <Icon name="upload" type={IconTypes.Feather} size={24} color="#007AFF" />
+          </TouchableOpacity>
         )}
       </TouchableOpacity>
-      {!item.isDirectory && (
-        <Button title="Upload" onPress={() => handleUpload(item)} />
-      )}
     </View>
   );
 
@@ -103,7 +129,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   currentPath: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 10,
   },
@@ -111,8 +137,14 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
+  },
+  fileContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  fileDetails: {
+    flex: 1,
   },
   fileName: {
     fontSize: 16,
@@ -121,6 +153,15 @@ const styles = StyleSheet.create({
   fileInfo: {
     fontSize: 12,
     color: '#666',
+  },
+  imagePreview: {
+    width: 100,
+    height: 100,
+    resizeMode: 'cover',
+    marginTop: 10,
+  },
+  uploadIcon: {
+    padding: 10,
   },
 });
 

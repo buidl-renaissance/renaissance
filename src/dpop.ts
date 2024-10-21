@@ -43,6 +43,13 @@ export interface Venue {
   };
 }
 
+export interface DAContent {
+  id: number;
+  caption: string;
+  timestamp: string;
+  data: any;
+}
+
 export interface DAUpload {
   url: string;
   elapsedTime?: number;
@@ -281,6 +288,20 @@ export const createContent = async ({
   console.log("SAVED CONTENT: ", result);
   return result;
 };
+
+export const updateContent = async (content: DAContent) => {
+  console.log("Updating content: ", content);
+  const result = await (
+    await fetch(`${hostname}/api/content/${content.id}`, {
+      method: "PUT",
+      body: JSON.stringify(content),
+      headers: { "content-type": "application/json" },
+    })
+  ).json();
+  console.log("UPDATED CONTENT: ", result);
+  return result;
+};
+
 
 export const createEvent = async (
   title,
