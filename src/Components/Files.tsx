@@ -36,7 +36,7 @@ const Files: React.FC<FilesProps> = ({
     try {
       const result = await FileSystem.readDirectoryAsync(path);
       const fileInfoPromises = result.map(async (item) => {
-        const fullPath = `${path}${item}`;
+        const fullPath = `${path}/${item}`;
         const info = await FileSystem.getInfoAsync(fullPath);
         return {
           name: item,
