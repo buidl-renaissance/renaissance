@@ -90,6 +90,7 @@ export const AudioRecorder = () => {
         console.log('Stopping recording..');
         setIsRecording(false);
         setRecording(undefined)
+        const duration = elapsedTime;
         setElapsedTime(0);
         await recording?.stopAndUnloadAsync();
         const uri = recording?.getURI();
@@ -110,6 +111,7 @@ export const AudioRecorder = () => {
                 audio: result.url,
                 width: firstMedia?.width ?? 1080,
                 media: media,
+                duration: duration,  // Add duration to the saved audio file
             },
             timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
         });
@@ -125,7 +127,7 @@ export const AudioRecorder = () => {
         Animated.timing(animation, {
             toValue: scale,
             duration: 100,
-            useNativeDriver: false,  // Set to true if you’re not modifying layout properties
+            useNativeDriver: false,  // Set to true if you're not modifying layout properties
         }).start();
     }
     const takePicture = React.useCallback(() => {

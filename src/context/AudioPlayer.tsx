@@ -8,6 +8,8 @@ export interface AudioPlayerContextType {
     playSound: (uri: string) => void;
     stopSound: () => void;
     elapsedTime: number;
+    seekToTime: (time: number) => void;
+    duration: number;
 }
 
 export const AudioPlayerContext = React.createContext<AudioPlayerContextType>({
@@ -19,7 +21,11 @@ export const AudioPlayerContext = React.createContext<AudioPlayerContextType>({
     stopSound: () => {
         return null;
     },
-    elapsedTime: 0
+    elapsedTime: 0,
+    seekToTime: (time: number) => {
+        return null;
+    },
+    duration: 0
 });
 
 export const AudioPlayerProvider = (props: { children: React.ReactElement }) => {
@@ -28,28 +34,15 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
   const [currentUri, setCurrentUri] = React.useState<string>();
   const [currentSound, setCurrentSound] = React.useState<Audio.Sound>();
   const [elapsedTime, setElapsedTime] = React.useState<number>(0);  // Time in seconds
+  const [duration, setDuration] = React.useState<number>(0);  // Duration in seconds
   const intervalRef = React.useRef(null);
 
-//   // Update elapsed time every second
-//   React.useEffect(() => {
-//       if (isPlaying) {
-//           intervalRef.current = setInterval(() => {
-//               setElapsedTime((prevTime) => prevTime + 1);
-//           }, 1000);
-//       } else {
-//           clearInterval(intervalRef.current ?? 0);
-//       }
-
-//       return () => clearInterval(intervalRef.current ?? 0);
-//   }, [isPlaying]);
-
-
   const defaultTheme = {
-    // Chaning color schemes according to theme
     isPlaying,
     currentUri,
     sound: currentSound,
     elapsedTime,
+    duration,
     playSound: async (uri: string) => {
 
         if (isPlaying && currentSound) {
@@ -80,10 +73,12 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
         await sound.playAsync();
 
         sound.setOnPlaybackStatusUpdate((status) => {
-            // console.log("PlaybackStatusUpdate", status);
-            setElapsedTime(status.positionMillis / 1000);
-            if(status.didJustFinish) {
-                setIsPlaying(false);
+            if (status.isLoaded) {
+                setElapsedTime(status.positionMillis / 1000);
+                setDuration(status.durationMillis ?? 0 / 1000);
+                if(status.didJustFinish) {
+                    setIsPlaying(false);
+                }
             }
         });
     },
@@ -91,6 +86,12 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
         setIsPlaying(false);
         setElapsedTime(0);
         await currentSound?.stopAsync();
+    },
+    seekToTime: async (time: number) => {
+        if (currentSound) {
+            await currentSound.setPositionAsync(time * 1000);
+            setElapsedTime(time);
+        }
     }
   };
   return <AudioPlayerContext.Provider value={defaultTheme}>{props.children}</AudioPlayerContext.Provider>;
