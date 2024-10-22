@@ -424,7 +424,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      {contact?.id && <FloatingButton onPress={handleAddEvent} />}
+      {/* {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />} */}
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );

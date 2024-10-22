@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Animated, Button, StyleSheet, Text, Image, Dimensions, View } from 'react-native';
+import { Animated, StyleSheet, Text, Image, Dimensions, View, ScrollView } from 'react-native';
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
 import { createContent, DAUpload, uploadAudioUri, uploadImage } from '../dpop';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
@@ -15,7 +15,7 @@ export const AudioRecorder = () => {
     const [audioLevel, setAudioLevel] = useState<number>(0);  // Represents the input level of audio
     const [elapsedTime, setElapsedTime] = useState<number>(0);  // Time in seconds
     const intervalRef = React.useRef(null);
-    const animation = React.useRef(new Animated.Value(0)).current;  // For the visual animation
+    const animation = React.useRef(new Animated.Value(1)).current;  // For the visual animation
 
     const [permission, requestPermission] = useCameraPermissions();
 
@@ -23,7 +23,7 @@ export const AudioRecorder = () => {
     const [upload, setUpload] = useState<DAUpload>();
 
     const [media, setMedia] = useState<DAUpload[]>([]);
-
+    const [photos, setPhotos] = useState<{ uri: string; elapsedTime: number }[]>([]);
     const [camera, setCamera] = React.useState();
 
     // Update elapsed time every second
@@ -44,7 +44,6 @@ export const AudioRecorder = () => {
 
     async function startRecording() {
         try {
-
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
@@ -100,7 +99,7 @@ export const AudioRecorder = () => {
         const result = await uploadAudioUri(uri);
 
         const firstMedia = media.length > 0 ? media[0] : upload;
-            
+
         await createContent({
             artwork: 1,
             caption: "text",
@@ -118,18 +117,20 @@ export const AudioRecorder = () => {
         updateContent();
         setPhoto(undefined);
         setMedia([]);
+        setPhotos([]);
     }
 
     // Animate the pulsing circle based on audio level
     function animatePulse(level) {
         console.log('LEVEL: ', level)
-        const scale = Math.max(0, 1 - (Math.abs(level) / 80));  // Normalize dB values to a usable scale
+        const scale = Math.max(1, 1 + (Math.abs(level) / 160));  // Normalize dB values to a usable scale
         Animated.timing(animation, {
             toValue: scale,
             duration: 100,
-            useNativeDriver: false,  // Set to true if you're not modifying layout properties
+            useNativeDriver: true,
         }).start();
     }
+
     const takePicture = React.useCallback(() => {
         console.log("TAKE Picture", camera);
         if (camera) {
@@ -146,15 +147,18 @@ export const AudioRecorder = () => {
         photo.type = 'image';
         setPhoto(photo);
 
-        setTimeout(() => {
-            setPhoto(undefined);
-        }, 5000);
+        setPhotos([...photos, { uri: photo.uri, elapsedTime }]);
 
         const upload = await uploadImage(photo);
         upload.elapsedTime = elapsedTime;
         setUpload(upload);
         setMedia([...media, upload]);
         console.log("image upload: ", upload);
+
+        setTimeout(() => {
+            setPhoto(undefined);
+        }, 5000);
+
     }, [camera, isRecording, elapsedTime, media, upload, photo, setUpload, setMedia, setPhoto, startRecording]);
 
     if (!permission) {
@@ -167,68 +171,80 @@ export const AudioRecorder = () => {
         return (
             <View style={styles.container}>
                 <Text style={styles.message}>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="grant permission" />
+                <TouchableOpacity onPress={requestPermission} style={styles.button}>
+                    <Text style={styles.buttonText}>Grant Permission</Text>
+                </TouchableOpacity>
             </View>
         );
     }
 
     return (
         <View style={styles.container}>
-
             <View style={{ width: '100%', height: Dimensions.get('window').height - 200 }}>
-                {!photo && <CameraView autofocus='on' facing={facing} style={styles.camera} ref={(ref) => { setCamera(ref) }}>
-                    <View style={{ position: 'absolute', top: 10, left: 10 }}>
-                        <TouchableOpacity onPress={flipCamera}>
-                            <Icon
-                                type={IconTypes.Ionicons}
-                                size={36}
-                                color="white"
-                                name="camera-reverse"
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{ position: 'absolute', bottom: 15, flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
-                        <TouchableOpacity onPress={takePicture}>
-                            <View style={{ padding: 10, borderRadius: 100, borderWidth: 2, borderColor: 'white' }}>
+                {!photo && (
+                    <CameraView autofocus='on' facing={facing} style={styles.camera} ref={(ref) => { setCamera(ref) }}>
+                        <View style={{ position: 'absolute', top: 10, left: 10 }}>
+                            <TouchableOpacity onPress={flipCamera}>
                                 <Icon
                                     type={IconTypes.Ionicons}
                                     size={36}
                                     color="white"
-                                    name="camera"
+                                    name="camera-reverse"
                                 />
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </CameraView>}
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ position: 'absolute', bottom: 15, flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
+                            <TouchableOpacity onPress={takePicture}>
+                                <View style={{ padding: 10, borderRadius: 100, borderWidth: 2, borderColor: 'white' }}>
+                                    <Icon
+                                        type={IconTypes.Ionicons}
+                                        size={36}
+                                        color="white"
+                                        name="camera"
+                                    />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </CameraView>
+                )}
                 {photo && (
-                    <Image
-                        source={{ uri: photo.uri }}
-                        style={{
-                            height:
-                                photo.height *
-                                (Dimensions.get("window").width / photo.width),
-                            width: "100%",
-                            backgroundColor: "#ddd",
-                            marginBottom: 32,
-                        }}
-                    />
+                    <Image source={{ uri: photo.uri }} style={{
+                        height: Dimensions.get('window').height - 200,
+                        width: "100%",
+                        backgroundColor: "#ddd",
+                        marginBottom: 32,
+                    }} />
                 )}
             </View>
 
-            <View>
-                {isRecording && (<Animated.View
-                    style={[
-                        styles.pulsingCircle,
-                        {
-                            transform: [{ scale: animation }],  // Scale animation for pulse effect
-                        },
-                    ]}
-                />)}
+            <ScrollView horizontal={true} style={styles.imageTileContainer}>
+                {photos.map((item, index) => (
+                    <View key={index} style={styles.imageTile}>
+                        <Image
+                            source={{ uri: item.uri }}
+                            style={styles.tileImage}
+                        />
+                        <Text style={styles.tileText}>{item.elapsedTime}s</Text>
+                    </View>
+                ))}
+            </ScrollView>
 
-                <Button
-                    title={recording ? 'Stop Recording' : 'Start Recording'}
-                    onPress={recording ? stopRecording : startRecording}
-                />
+            <View style={styles.recordButtonContainer}>
+                <TouchableOpacity onPress={isRecording ? stopRecording : startRecording}>
+                    <Animated.View
+                        style={[
+                            styles.recordButton,
+                            isRecording && { transform: [{ scale: animation }] }
+                        ]}
+                    >
+                        <Icon
+                            type={IconTypes.Ionicons}
+                            size={36}
+                            color="white"
+                            name={isRecording ? 'radio-button-on' : 'mic'}
+                        />
+                    </Animated.View>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -237,8 +253,8 @@ export const AudioRecorder = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
         padding: 16,
     },
     message: {
@@ -257,17 +273,45 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginBottom: 20,
     },
-    visualizer: {
-        width: 100,
-        backgroundColor: '#FF6347',  // Customize color
+    recordButtonContainer: {
+        width: '100%',
+        alignItems: 'center',
+    },
+    recordButton: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#FF6347',
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: 20,
     },
-    pulsingCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 75,  // Makes the shape a circle
-        backgroundColor: '#FF6347',  // Customize your circle color
-        marginBottom: 20,
-        padding: 20,
+    button: {
+        backgroundColor: '#007AFF',
+        padding: 10,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: 'white',
+        textAlign: 'center',
+    },
+    imageTileContainer: {
+        flexDirection: 'row',
+        marginBottom: 10,
+        marginTop: 10,
+        alignSelf: 'flex-start',
+    },
+    imageTile: {
+        marginRight: 10,
+        alignItems: 'center',
+    },
+    tileImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 5,
+    },
+    tileText: {
+        marginTop: 5,
+        fontSize: 12,
     },
 });

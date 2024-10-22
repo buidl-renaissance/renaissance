@@ -3,17 +3,19 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import Icon, { IconTypes } from "./Icon";
 
 interface FloatingButtonProps {
+  icon?: string;
+  type?: IconTypes;
   onPress?: () => void;
 }
 
-export const FloatingButton = ({ onPress }: FloatingButtonProps) => {
+export const FloatingButton = ({ icon = "add", type = IconTypes.Ionicons, onPress }: FloatingButtonProps) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.button}>
       <Icon
-        type={IconTypes.Ionicons}
+        type={type}
         size={36}
         color={"white"}
-        name={"add"}
+        name={icon}
       />
     </TouchableOpacity>
   );

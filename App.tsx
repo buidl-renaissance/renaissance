@@ -17,6 +17,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { checkForUpdates } from './src/utils/checkForUpdate';
 import { AudioPlayerProvider } from './src/context/AudioPlayer';
 
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
