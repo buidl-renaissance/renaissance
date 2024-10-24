@@ -16,8 +16,9 @@ import moment from "moment";
 import { updateContent } from "../hooks/useArtwork";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Icon, { IconTypes } from "../Components/Icon";
+import { DAEvent } from "../interfaces";
 
-export const AudioRecorder = () => {
+export const AudioRecorder = ({ event }: { event: DAEvent }) => {
   const [recording, setRecording] = useState<Audio.Recording>();
   const [isRecording, setIsRecording] = useState(false);
   const [facing, setFacing] = useState<CameraType>("back");
@@ -114,6 +115,7 @@ export const AudioRecorder = () => {
 
     await createContent({
       artwork: 1,
+      event: event?.id,
       caption: caption, // Use the caption from state
       data: {
         height: firstMedia?.height ?? 1920,

@@ -263,6 +263,7 @@ export const uploadVideo = async (video, meta): Promise<DAUpload> => {
 
 export const createContent = async ({
   artwork,
+  event,
   caption,
   timestamp,
   data,
@@ -270,6 +271,7 @@ export const createContent = async ({
   console.log("data: ", {
     artwork: artwork,
     caption: caption,
+    event: event,
     timestamp,
     data,
   });
@@ -280,6 +282,7 @@ export const createContent = async ({
         artwork,
         caption,
         data,
+        event,
         timestamp,
       }),
       headers: { "content-type": "application/json" },

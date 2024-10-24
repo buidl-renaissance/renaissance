@@ -45,7 +45,7 @@ export const updateContent = () => {
   EventRegister.emitEvent("update-content", {});
 };
 
-export const useContent = (type?: string) => {
+export const useContent = (type: string = 'post') => {
   const [content, setContent] = React.useState<DAContent[]>();
 
   React.useEffect(() => {
@@ -65,8 +65,8 @@ export const useContent = (type?: string) => {
 
   const updateContent = React.useCallback(() => {
     (async () => {
-      console.log("UPDATE CONTENT");
-      const req = await fetch(`https://api.detroiter.network/api/content?type=post`);
+      console.log("UPDATE CONTENT", `https://api.detroiter.network/api/content?type=${type}`);
+      const req = await fetch(`https://api.detroiter.network/api/content?type=${type}`);
       const result = await req.json();
       setContent(result.data);
     })();

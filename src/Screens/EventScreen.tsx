@@ -23,10 +23,14 @@ import { DAComment } from "../interfaces";
 import { EventBookmarkButton } from "../Components/EventBookmarkButton";
 import { RoundButton } from "../Components/RoundButton";
 import QRCode from "react-qr-code";
+import { useContent } from "../hooks/useArtwork";
+import { ContentView } from "../Components/ContentView";
+import { AudioRecorder } from "../Components/AudioRecorder";
 
 const EventScreen = ({ navigation, route }) => {
   const [event, setEvent] = React.useState(route?.params?.event ?? null);
   const [comments, setComments] = React.useState<DAComment[]>([]);
+  const [content] = useContent(`event-${event?.slug}`);
 
   navigation.setOptions({
     headerTitle: () => <HeaderTitleImage />,
@@ -90,13 +94,13 @@ const EventScreen = ({ navigation, route }) => {
     [event]
   );
 
-  const handleChatPress = React.useCallback(() => {}, []);
+  const handleChatPress = React.useCallback(() => { }, []);
 
-  const handleSharePress = React.useCallback(() => {}, []);
+  const handleSharePress = React.useCallback(() => { }, []);
 
   const imageHeight = event.image_data?.width
     ? (event.image_data?.height / event.image_data?.width) *
-      Dimensions.get("window").width
+    Dimensions.get("window").width
     : 360;
 
   return (
@@ -126,13 +130,20 @@ const EventScreen = ({ navigation, route }) => {
           <RenderHTML html={event.content} style={{ padding: 16 }} />
         )}
         <ChatBox comments={comments} handleSubmit={handleSubmitComment} />
+
+        <AudioRecorder event={event} />
+
+        {content?.map((item) => (
+          <ContentView content={item} />
+        ))}
+
         <View
-            style={{
-              borderColor: "#eee",
-              borderWidth: 5,
-              padding: 44,
-            }}
-          >
+          style={{
+            borderColor: "#eee",
+            borderWidth: 5,
+            padding: 44,
+          }}
+        >
           <QRCode
             value={`https://dpop.tech/event/${event.slug}`}
             size={Dimensions.get("window").width - 52 * 2}
