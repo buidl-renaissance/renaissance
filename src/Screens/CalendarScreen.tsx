@@ -214,6 +214,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("AudioContent");
   }, []);
 
+  const handleContentUploadPress = React.useCallback(() => {
+    navigation.push("ContentUpload");
+  }, []);
+
   // const [username, setUsername] = React.useState("wiredinsamurai");
   // const [pub, setPub] = React.useState("test");
   // const [sig, setSig] = React.useState("test");
@@ -260,6 +264,11 @@ const CalendarScreen = ({ navigation }) => {
             />
             <RoundButton
               onPress={handleFilesPress}
+              type={IconTypes.Ionicons}
+              name={"folder-open-outline"}
+            />
+            <RoundButton
+              onPress={handleContentUploadPress}
               type={IconTypes.Ionicons}
               name={"folder-open-outline"}
             />
