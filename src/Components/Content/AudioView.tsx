@@ -26,7 +26,7 @@ interface AudioViewProps {
 }
 
 const AudioView: React.FC<AudioViewProps> = ({ content }) => {
-  const { currentUri, playSound, elapsedTime, seekToTime, isPlaying } =
+  const { currentUri, playSound, elapsedTime, seekToTime, isPlaying, stopSound } =
     useAudioPlayer();
   const w = Dimensions.get("window").width - 64;
 
@@ -62,7 +62,7 @@ const AudioView: React.FC<AudioViewProps> = ({ content }) => {
 
   return (
     <View>
-      <TouchableOpacity onPress={play}>
+      <TouchableOpacity onPress={isThisAudioPlaying ? stopSound : play}>
         <Image
           source={{ uri: getCurrentImage()?.replace("/uploads", "/uploads/resized/800w") }}
           style={[
@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tileImage: {
-    width: 60,
-    height: 60,
+    width: 100,
+    height: 100,
     borderRadius: 4,
   },
   tileText: {

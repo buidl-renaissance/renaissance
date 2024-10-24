@@ -105,9 +105,7 @@ export const AudioPlayerProvider = (props: { children: React.ReactElement }) => 
         stopSound: stopSound,
         seekToTime: async (uri: string, time: number) => {
             if (currentUri === uri) {
-                // if (!isPlaying) {
-                //     await playSound(uri);
-                // }
+                setSeekPosition(time);
                 await currentSound?.setPositionAsync(time * 1000);
                 setElapsedTime(time);
             } else {
