@@ -18,6 +18,7 @@ import ProposalListScreen from "../Screens/ProposalListScreen";
 import ProposalDetailScreen from "../Screens/ProposalDetailScreen";
 import ReviewEventsScreen from "../Screens/ReviewEventsScreen";
 import EventEditScreen from "../Screens/EventEditScreen";
+import AudioContentScreen from "../Screens/AudioContentScreen";
 // import GetStartedScreen from "../Screens/GetStartedScreen";
 import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
@@ -32,6 +33,7 @@ import CreateFlyerScreen from "../Screens/CreateFlyerScreen";
 type HomeNavigationStackParamList = {
   Account: undefined;
   Activity: undefined;
+  AudioContent: undefined;
   Artist: undefined;
   Artwork: undefined;
   AddContent: undefined;
@@ -267,6 +269,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={ArtworkScreen}
         name="Artwork"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={AudioContentScreen}
+        name="AudioContent"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

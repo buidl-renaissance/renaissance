@@ -55,7 +55,6 @@ const CalendarScreen = ({ navigation }) => {
   const [contact] = useContact();
   const [flyers] = useFlyers();
   const [artworks] = useArtworks();
-  const [content] = useContent();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -211,6 +210,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Files");
   }, []);
 
+  const handleAudioPress = React.useCallback(() => {
+    navigation.push("AudioContent");
+  }, []);
+
   // const [username, setUsername] = React.useState("wiredinsamurai");
   // const [pub, setPub] = React.useState("test");
   // const [sig, setSig] = React.useState("test");
@@ -260,6 +263,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"folder-open-outline"}
             />
+            <RoundButton
+              onPress={handleAudioPress}
+              type={IconTypes.Ionicons}
+              name={"mic"}
+            />
             {/* <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
@@ -291,10 +299,6 @@ const CalendarScreen = ({ navigation }) => {
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
 
         <AudioRecorder />
-
-        {content?.map((content) => {
-          return <ContentView content={content} />
-        })}
 
         {artworks && artworks?.length > 0 && (
           <View style={{ marginTop: 12 }}>
