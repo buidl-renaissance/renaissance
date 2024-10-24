@@ -40,7 +40,7 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
       {content.data.type === "image/jpeg" && (
         <Image
           source={{
-            uri: content.data.url,
+            uri: content.data.url.replace("/uploads", "/uploads/resized/800w"),
           }}
           style={{
             height:

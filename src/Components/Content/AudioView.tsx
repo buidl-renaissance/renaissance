@@ -53,10 +53,7 @@ const AudioView: React.FC<AudioViewProps> = ({ content }) => {
 
   const handleTilePress = React.useCallback(
     (time: number) => {
-      seekToTime(time);
-      if (!isPlaying) {
-        playSound(content.data.audio);
-      }
+      seekToTime(content.data.audio, time);
     },
     [seekToTime, playSound, content.data.audio, isPlaying]
   );
@@ -67,7 +64,7 @@ const AudioView: React.FC<AudioViewProps> = ({ content }) => {
     <View>
       <TouchableOpacity onPress={play}>
         <Image
-          source={{ uri: getCurrentImage() }}
+          source={{ uri: getCurrentImage()?.replace("/uploads", "/uploads/resized/800w") }}
           style={[
             styles.image,
             {
@@ -92,7 +89,7 @@ const AudioView: React.FC<AudioViewProps> = ({ content }) => {
               onPress={() => handleTilePress(item.elapsedTime)}
             >
               <View style={styles.tile}>
-                <Image source={{ uri: item.url }} style={styles.tileImage} />
+                <Image source={{ uri: item.url?.replace("/uploads", "/uploads/resized/tiles") }} style={styles.tileImage} />
                 <Text style={styles.tileText}>
                   {formatTime(item.elapsedTime)}
                 </Text>

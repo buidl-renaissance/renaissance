@@ -7,6 +7,7 @@ import {
   Dimensions,
   View,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
 import { createContent, DAUpload, uploadAudioUri, uploadImage } from "../dpop";
@@ -24,6 +25,7 @@ export const AudioRecorder = () => {
   const [elapsedTime, setElapsedTime] = useState<number>(0); // Time in seconds
   const intervalRef = React.useRef(null);
   const animation = React.useRef(new Animated.Value(1)).current; // For the visual animation
+  const [caption, setCaption] = useState<string>(""); // New state for caption
 
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -112,7 +114,7 @@ export const AudioRecorder = () => {
 
     await createContent({
       artwork: 1,
-      caption: "text",
+      caption: caption, // Use the caption from state
       data: {
         height: firstMedia?.height ?? 1920,
         type: "audio",
@@ -128,6 +130,7 @@ export const AudioRecorder = () => {
     setPhoto(undefined);
     setMedia([]);
     setPhotos([]);
+    setCaption(""); // Clear the caption after saving
   }
 
   // Animate the pulsing circle based on audio level
@@ -284,6 +287,14 @@ export const AudioRecorder = () => {
         ))}
       </ScrollView>
 
+      <TextInput
+        style={styles.captionInput}
+        onChangeText={setCaption}
+        value={caption}
+        placeholder="Enter caption for your audio"
+        placeholderTextColor="#999"
+      />
+
       <View style={styles.recordButtonContainer}>
         <TouchableOpacity
           onPress={isRecording ? stopRecording : startRecording}
@@ -370,5 +381,15 @@ const styles = StyleSheet.create({
   tileText: {
     marginTop: 5,
     fontSize: 12,
+  },
+  captionInput: {
+    width: "100%",
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: "black",
   },
 });
