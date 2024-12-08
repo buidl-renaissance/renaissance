@@ -1,34 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import Icon, { IconTypes } from './Icon';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import Icon, { IconTypes } from "./Icon";
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'other';
+  sender: "user" | "other";
   timestamp: Date;
 }
 
 export const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const scrollViewRef = React.useRef<ScrollView>(null);
 
+  React.useEffect(() => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: "Hello, how can I help you today?",
+      sender: "other",
+      timestamp: new Date(),
+    };
+    setMessages([newMessage]);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, []);
+
   const sendMessage = React.useCallback(() => {
-    if (inputText.trim() === '') return;
+    if (inputText.trim() === "") return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
       text: inputText,
-      sender: 'user',
-      timestamp: new Date()
+      sender: "user",
+      timestamp: new Date(),
     };
 
     const newMessages = [...messages, newMessage];
 
     setMessages(newMessages);
-    setInputText('');
-    
+    setInputText("");
+
     // Scroll to bottom after sending message
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -43,37 +65,45 @@ export const Chat = () => {
     const newMessage: Message = {
       id: Date.now().toString(),
       text: "This is a fake response",
-      sender: 'other',
-      timestamp: new Date()
+      sender: "other",
+      timestamp: new Date(),
     };
     setMessages([...currentMessages, newMessage]);
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
-  }
+  };
 
   const renderMessage = (message: Message) => {
-    const isUser = message.sender === 'user';
+    const isUser = message.sender === "user";
     return (
       <View
         key={message.id}
         style={[
           styles.messageContainer,
-          isUser ? styles.userMessage : styles.otherMessage
+          isUser ? styles.userMessage : styles.otherMessage,
         ]}
       >
-        <Text style={[styles.messageText, isUser ? styles.userMessageText : styles.otherMessageText]}>
+        <Text
+          style={[
+            styles.messageText,
+            isUser ? styles.userMessageText : styles.otherMessageText,
+          ]}
+        >
           {message.text}
         </Text>
         <Text style={styles.timestamp}>
-          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {message.timestamp.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </Text>
       </View>
     );
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
       keyboardVerticalOffset={100}
@@ -85,7 +115,7 @@ export const Chat = () => {
       >
         {messages.map(renderMessage)}
       </ScrollView>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -94,10 +124,10 @@ export const Chat = () => {
           placeholder="Type a message..."
           multiline
         />
-        <TouchableOpacity 
-          style={styles.sendButton} 
+        <TouchableOpacity
+          style={styles.sendButton}
           onPress={sendMessage}
-          disabled={inputText.trim() === ''}
+          disabled={inputText.trim() === ""}
         >
           <Icon type={IconTypes.Ionicons} name="send" size={24} color="#fff" />
         </TouchableOpacity>
@@ -109,53 +139,55 @@ export const Chat = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+    marginBottom: 32,
   },
   messagesContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   scrollContent: {
     padding: 10,
   },
   messageContainer: {
-    maxWidth: '80%',
+    maxWidth: "80%",
     marginVertical: 5,
     padding: 10,
     borderRadius: 15,
   },
   userMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
+    alignSelf: "flex-end",
+    backgroundColor: "#007AFF",
   },
   otherMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#E5E5EA',
+    alignSelf: "flex-start",
+    backgroundColor: "#E5E5EA",
   },
   messageText: {
     fontSize: 16,
   },
   userMessageText: {
-    color: '#fff',
+    color: "#fff",
   },
   otherMessageText: {
-    color: '#000',
+    color: "#000",
   },
   timestamp: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
     marginTop: 4,
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    alignItems: 'center',
+    borderTopColor: "#ddd",
+    alignItems: "center",
   },
   input: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
@@ -164,11 +196,11 @@ const styles = StyleSheet.create({
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 25,
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
