@@ -14,7 +14,7 @@ export const Chat = () => {
   const [inputText, setInputText] = useState('');
   const scrollViewRef = React.useRef<ScrollView>(null);
 
-  const sendMessage = () => {
+  const sendMessage = React.useCallback(() => {
     if (inputText.trim() === '') return;
 
     const newMessage: Message = {
@@ -24,14 +24,33 @@ export const Chat = () => {
       timestamp: new Date()
     };
 
-    setMessages([...messages, newMessage]);
+    const newMessages = [...messages, newMessage];
+
+    setMessages(newMessages);
     setInputText('');
     
     // Scroll to bottom after sending message
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
-  };
+
+    setTimeout(() => {
+      addFakeResponse(newMessages);
+    }, 800);
+  }, [messages, setMessages, inputText]);
+
+  const addFakeResponse = (currentMessages: Message[]) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: "This is a fake response",
+      sender: 'other',
+      timestamp: new Date()
+    };
+    setMessages([...currentMessages, newMessage]);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }
 
   const renderMessage = (message: Message) => {
     const isUser = message.sender === 'user';
