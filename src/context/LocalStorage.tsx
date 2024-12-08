@@ -1,20 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { uploadAudioUri, uploadImage } from '../dpop'; // Assuming these functions are in dpop.ts
-
-interface ContentUpload {
-  id: string;
-  uri: string;
-  type: 'audio' | 'image';
-  timestamp: number;
-  elapsedTime?: number;
-  metadata?: any;
-  uploadStatus: 'pending' | 'uploading' | 'success' | 'error';
-  remoteUrl?: string;
-}
+import { uploadAudioUri, uploadImage, createContent } from '../dpop';
+import { ContentUpload, DAContent } from '../interfaces';
+import moment from 'moment';
 
 interface LocalStorageContextType {
   contentUploads: ContentUpload[];
+  pendingContent: DAContent[];
   addContentUpload: (upload: Omit<ContentUpload, 'uploadStatus'>) => Promise<void>;
   removeContentUpload: (id: string) => Promise<void>;
   clearAllContentUploads: () => Promise<void>;
@@ -22,15 +14,19 @@ interface LocalStorageContextType {
   uploadContentToServer: (id: string) => Promise<void>;
   uploadAllPendingContent: () => Promise<void>;
   getUnuploadedContent: () => ContentUpload[];
+  addPendingContent: (content: DAContent) => Promise<void>;
+  uploadPendingContent: () => Promise<void>;
 }
 
 const LocalStorageContext = createContext<LocalStorageContextType | undefined>(undefined);
 
 export const LocalStorageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contentUploads, setContentUploads] = useState<ContentUpload[]>([]);
+  const [pendingContent, setPendingContent] = useState<DAContent[]>([]);
 
   useEffect(() => {
     loadContentUploads();
+    loadPendingContent();
   }, []);
 
   const loadContentUploads = async () => {
@@ -44,11 +40,30 @@ export const LocalStorageProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const loadPendingContent = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('pendingContent');
+      if (stored) {
+        setPendingContent(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error('Error loading pending content:', error);
+    }
+  };
+
   const saveContentUploads = async (uploads: ContentUpload[]) => {
     try {
       await AsyncStorage.setItem('contentUploads', JSON.stringify(uploads));
     } catch (error) {
       console.error('Error saving content uploads:', error);
+    }
+  };
+
+  const savePendingContent = async (content: DAContent[]) => {
+    try {
+      await AsyncStorage.setItem('pendingContent', JSON.stringify(content));
+    } catch (error) {
+      console.error('Error saving pending content:', error);
     }
   };
 
@@ -59,6 +74,12 @@ export const LocalStorageProvider: React.FC<{ children: React.ReactNode }> = ({ 
     await saveContentUploads(updatedUploads);
   };
 
+  const addPendingContent = async (content: DAContent) => {
+    const updatedContent = [...pendingContent, content];
+    setPendingContent(updatedContent);
+    await savePendingContent(updatedContent);
+  };
+
   const removeContentUpload = async (id: string) => {
     const updatedUploads = contentUploads.filter(upload => upload.id !== id);
     setContentUploads(updatedUploads);
@@ -67,7 +88,9 @@ export const LocalStorageProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const clearAllContentUploads = async () => {
     setContentUploads([]);
+    setPendingContent([]);
     await AsyncStorage.removeItem('contentUploads');
+    await AsyncStorage.removeItem('pendingContent');
   };
 
   const getContentUploadsForEvent = (eventId: string) => {
@@ -101,27 +124,63 @@ export const LocalStorageProvider: React.FC<{ children: React.ReactNode }> = ({ 
     await saveContentUploads(contentUploads);
   };
 
+  const uploadPendingContent = async () => {
+    for (const content of pendingContent) {
+      try {
+        // Upload any media files first
+        if (content.data.media) {
+          const uploadedMedia = await Promise.all(
+            content.data.media.map(async (media: any) => {
+              const result = await uploadImage({ uri: media.uri, type: 'image/jpeg' });
+              return { ...media, url: result.url };
+            })
+          );
+          content.data.media = uploadedMedia;
+        }
+
+        // Upload audio if present
+        if (content.data.audio) {
+          const audioResult = await uploadAudioUri(content.data.audio);
+          content.data.audio = audioResult.url;
+        }
+
+        // Create the content on the server with required timestamp
+        await createContent(content);
+
+        // Remove from pending after successful upload
+        setPendingContent(prev => prev.filter(c => c !== content));
+        await savePendingContent(pendingContent);
+      } catch (error) {
+        console.error('Error uploading pending content:', error);
+      }
+    }
+  };
+
   const uploadAllPendingContent = async () => {
     const pendingUploads = contentUploads.filter(u => u.uploadStatus === 'pending');
     for (const upload of pendingUploads) {
       await uploadContentToServer(upload.id);
     }
+    await uploadPendingContent();
   };
 
-  const getUnuploadedContent = () => {
+  const getUnuploadedContent = (): ContentUpload[] => {
     return contentUploads.filter(upload => upload.uploadStatus !== 'success');
   };
 
   return (
     <LocalStorageContext.Provider value={{ 
-      contentUploads, 
-      addContentUpload, 
-      removeContentUpload, 
+      contentUploads,
+      pendingContent,
+      addContentUpload,
+      removeContentUpload,
       clearAllContentUploads,
       getContentUploadsForEvent,
       uploadContentToServer,
       uploadAllPendingContent,
-      getUnuploadedContent
+      getUnuploadedContent,
+      addPendingContent,
+      uploadPendingContent
     }}>
       {children}
     </LocalStorageContext.Provider>

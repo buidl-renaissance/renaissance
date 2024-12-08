@@ -17,6 +17,7 @@ import { updateContent } from "../hooks/useArtwork";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
+import { useLocalStorage } from "../context/LocalStorage";
 
 export const AudioRecorder = ({ event }: { event: DAEvent }) => {
   const [recording, setRecording] = useState<Audio.Recording>();
@@ -38,6 +39,8 @@ export const AudioRecorder = ({ event }: { event: DAEvent }) => {
     []
   );
   const [camera, setCamera] = React.useState();
+
+  const { addPendingContent } = useLocalStorage();
 
   // Update elapsed time every second
   React.useEffect(() => {
@@ -108,15 +111,34 @@ export const AudioRecorder = ({ event }: { event: DAEvent }) => {
     const uri = recording?.getURI();
     console.log("Recording stopped and stored at", uri);
 
+    // addContentUpload({
+    //   uri: uri,
+    //   type: "audio",
+    //   timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
+    // });
+
     // Send the recorded audio to the server
     const result = await uploadAudioUri(uri);
 
     const firstMedia = media.length > 0 ? media[0] : upload;
 
+    await addPendingContent({
+      event,
+      caption,
+      data: {
+        height: firstMedia?.height ?? 1920,
+        type: "audio",
+        image: firstMedia?.url,
+        audio: result.url,
+        width: firstMedia?.width ?? 1080,
+        media: media,
+        duration: duration, // Add duration to the saved audio file
+      },
+    });
+
     await createContent({
-      artwork: 1,
-      event: event?.id,
-      caption: caption, // Use the caption from state
+      event,
+      caption,
       data: {
         height: firstMedia?.height ?? 1920,
         type: "audio",

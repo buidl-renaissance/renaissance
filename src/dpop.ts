@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DAEvent } from "./interfaces";
+import { DAEvent, DAArtwork } from "./interfaces";
 import { createFormData, createFormDataForVideo } from "./utils/uploadImage";
 import * as FileSystem from 'expo-file-system';
 
@@ -44,7 +44,17 @@ export interface Venue {
 }
 
 export interface DAContent {
-  id: number;
+  id?: number;
+  artwork?: DAArtwork;
+  event?: DAEvent;
+  caption: string;
+  timestamp: string;
+  data: any;
+}
+
+export interface DAContentUploadParams {
+  artwork_id: number;
+  event_id: number;
   caption: string;
   timestamp: string;
   data: any;
@@ -98,8 +108,8 @@ export const isAuthorized = async () => {
 };
 
 export const isAdmin = async () => {
-  const contact = getContact();
-  return contact.id === 1 ? true : false;
+  const contact = await getContact();
+  return contact?.id === 1 ? true : false;
 };
 
 export const getContact = async (): Promise<Contact> => {
@@ -132,8 +142,8 @@ const setDPoPToken = async (token: string) => {
   AsyncStorage.setItem("DPoPToken", token);
 };
 
-export const getUser = (): User => {
-  const u = AsyncStorage.getItem("DPoPUser");
+export const getUser = async (): Promise<User> => {
+  const u = await AsyncStorage.getItem("DPoPUser");
   return u ? JSON.parse(u) : null;
 };
 
@@ -261,30 +271,12 @@ export const uploadVideo = async (video, meta): Promise<DAUpload> => {
   return result;
 };
 
-export const createContent = async ({
-  artwork,
-  event,
-  caption,
-  timestamp,
-  data,
-}) => {
-  console.log("data: ", {
-    artwork: artwork,
-    caption: caption,
-    event: event,
-    timestamp,
-    data,
-  });
+export const createContent = async (content: DAContent) => {
+  console.log("data: ", content);
   const result = await (
     await fetch(`${hostname}/api/content`, {
       method: "POST",
-      body: JSON.stringify({
-        artwork,
-        caption,
-        data,
-        event,
-        timestamp,
-      }),
+      body: JSON.stringify(content),
       headers: { "content-type": "application/json" },
     })
   ).json();

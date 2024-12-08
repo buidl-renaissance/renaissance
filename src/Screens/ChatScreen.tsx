@@ -5,6 +5,7 @@ import { HeaderTitleImage } from '../Components/HeaderTitleImage';
 import { EventCard } from '../Components/EventCard';
 // import { RenderHTML } from '../Components/RenderHTML';
 import { darkGrey, lightGreen } from '../colors';
+import { Chat } from '../Components/Chat';
 
 const ChatScreen = ({
     navigation,
@@ -19,9 +20,7 @@ const ChatScreen = ({
 
     return (
         <View style={styles.container}>
-            <ScrollView>
-
-            </ScrollView>
+            <Chat />
         </View>
     );
 }

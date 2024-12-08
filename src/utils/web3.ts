@@ -16,7 +16,7 @@ export const loadWallet = (pk: string) => {
   const wallet = new ethers.Wallet(pk);
   console.log('address:', wallet.address)
   // console.log('mnemonic:', wallet.mnemonic.phrase)
-  // console.log('privateKey:', wallet.privateKey)
+  console.log('privateKey:', wallet.privateKey)
   return wallet;
 };
 

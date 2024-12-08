@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalStorage } from '../context/LocalStorage';
-import Icon from '../Components/Icon';
+import Icon, { IconTypes } from '../Components/Icon';
+import { ContentUpload } from '../interfaces';
 
 const ContentUploadScreen: React.FC = () => {
   const { 
@@ -10,8 +11,8 @@ const ContentUploadScreen: React.FC = () => {
     uploadAllPendingContent 
   } = useLocalStorage();
 
-  const [unuploadedContent, setUnuploadedContent] = useState([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [unuploadedContent, setUnuploadedContent] = useState<ContentUpload[]>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   useEffect(() => {
     refreshUnuploadedContent();
@@ -44,7 +45,7 @@ const ContentUploadScreen: React.FC = () => {
         {item.uploadStatus === 'uploading' ? (
           <ActivityIndicator size="small" color="#0000ff" />
         ) : (
-          <Icon name="upload" size={24} color="#0000ff" />
+          <Icon type={IconTypes.Ionicons} name="upload" size={24} color="#0000ff" />
         )}
       </TouchableOpacity>
     </View>

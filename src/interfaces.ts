@@ -12,6 +12,17 @@ export interface DAUser {
   updated_at: string;
 }
 
+export interface ContentUpload {
+  id: string;
+  uri: string;
+  type: 'audio' | 'image';
+  timestamp: number;
+  elapsedTime?: number;
+  metadata?: any;
+  uploadStatus: 'pending' | 'uploading' | 'success' | 'error';
+  remoteUrl?: string;
+}
+
 export interface DAContent {
   artwork?: DAArtwork;
   caption: string;

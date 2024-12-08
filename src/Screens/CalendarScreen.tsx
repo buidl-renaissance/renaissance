@@ -108,14 +108,14 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleAddEvent = React.useCallback(() => {
-    // (async () => {
-    //   const wallet = await getWallet();
-    //   console.log("address:", wallet.address);
-    //   const signature = await wallet.signMessage('Hello World!');
-    //   console.log('signature: ', signature);
-    // })();
+    (async () => {
+      const wallet = await getWallet();
+      console.log("address:", wallet.address);
+      const signature = await wallet.signMessage('Hello World!');
+      console.log('signature: ', signature);
+    })();
     // navigation.push("CreateEvent");
-    navigation.push("CreateFlyer");
+    // navigation.push("CreateFlyer");
   }, []);
 
   const handleChatPress = React.useCallback(() => {
@@ -277,11 +277,11 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"mic"}
             />
-            {/* <RoundButton
+            <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
               name={"chat"}
-            /> */}
+            />
             <RoundButton
               onPress={handleSharePress}
               type={IconTypes.Ionicons}
@@ -437,7 +437,7 @@ const CalendarScreen = ({ navigation }) => {
           );
         }}
       />
-      {/* {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />} */}
+      {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
       {selectedEvent && <EventPopup event={selectedEvent} />}
     </View>
   );
