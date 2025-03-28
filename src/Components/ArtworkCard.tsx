@@ -14,13 +14,13 @@ export const ArtworkCard: React.FC<ArtworkCardProps>= ({
     image,
 }) => {
   return (
-    <View>
+    <View style={{ width: 150 }}>
         <View style={{ overflow: 'hidden' }}>
             <Image
                 source={{ uri: image }}
                 style={{
-                    height: 160,
-                    width: 160,
+                    height: 150,
+                    width: 150,
                     resizeMode: 'cover',
                     borderRadius: 4,
                 }}

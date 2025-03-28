@@ -21,7 +21,69 @@ interface Message {
 export const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
+  const [previousMessageId, setPreviousMessageId] = useState<string | undefined>();
   const scrollViewRef = React.useRef<ScrollView>(null);
+
+  const sendMessageToBackend = async (text: string, parentMessageId?: string) => {
+    try {
+      const response = await fetch('https://builddetroit.xyz/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, parentMessageId }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return 'Sorry, there was an error processing your message.';
+    }
+  };
+
+  const sendMessage = React.useCallback(async () => {
+    if (inputText.trim() === "") return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText,
+      sender: "user", 
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputText("");
+
+    // Scroll to bottom after sending message
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+
+    try {
+      const response = await sendMessageToBackend(inputText, previousMessageId);
+      setPreviousMessageId(response.id);
+      
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: response.detail.choices[0].message.content,
+        sender: "other",
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+      
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (error) {
+      console.error('Error in chat exchange:', error);
+    }
+  }, [inputText]);
 
   React.useEffect(() => {
     const newMessage: Message = {
@@ -36,43 +98,43 @@ export const Chat = () => {
     }, 100);
   }, []);
 
-  const sendMessage = React.useCallback(() => {
-    if (inputText.trim() === "") return;
+  // const sendMessage = React.useCallback(() => {
+  //   if (inputText.trim() === "") return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText,
-      sender: "user",
-      timestamp: new Date(),
-    };
+  //   const newMessage: Message = {
+  //     id: Date.now().toString(),
+  //     text: inputText,
+  //     sender: "user",
+  //     timestamp: new Date(),
+  //   };
 
-    const newMessages = [...messages, newMessage];
+  //   const newMessages = [...messages, newMessage];
 
-    setMessages(newMessages);
-    setInputText("");
+  //   setMessages(newMessages);
+  //   setInputText("");
 
-    // Scroll to bottom after sending message
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+  //   // Scroll to bottom after sending message
+  //   setTimeout(() => {
+  //     scrollViewRef.current?.scrollToEnd({ animated: true });
+  //   }, 100);
 
-    setTimeout(() => {
-      addFakeResponse(newMessages);
-    }, 800);
-  }, [messages, setMessages, inputText]);
+  //   setTimeout(() => {
+  //     addFakeResponse(newMessages);
+  //   }, 800);
+  // }, [messages, setMessages, inputText]);
 
-  const addFakeResponse = (currentMessages: Message[]) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: "This is a fake response",
-      sender: "other",
-      timestamp: new Date(),
-    };
-    setMessages([...currentMessages, newMessage]);
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
+  // const addFakeResponse = (currentMessages: Message[]) => {
+  //   const newMessage: Message = {
+  //     id: Date.now().toString(),
+  //     text: "This is a fake response",
+  //     sender: "other",
+  //     timestamp: new Date(),
+  //   };
+  //   setMessages([...currentMessages, newMessage]);
+  //   setTimeout(() => {
+  //     scrollViewRef.current?.scrollToEnd({ animated: true });
+  //   }, 100);
+  // };
 
   const renderMessage = (message: Message) => {
     const isUser = message.sender === "user";

@@ -307,10 +307,11 @@ const CalendarScreen = ({ navigation }) => {
 
         {/* <SectionTitle>What Up Doe?</SectionTitle> */}
 
-        <AudioRecorder />
+        {/* <AudioRecorder /> */}
 
         {artworks && artworks?.length > 0 && (
           <View style={{ marginTop: 12 }}>
+            <SectionTitle>FEATURED ARTWORK</SectionTitle>
             <ScrollView
               style={{
                 paddingHorizontal: 16,
@@ -320,7 +321,7 @@ const CalendarScreen = ({ navigation }) => {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             >
-              <View>
+              <View style={{ flexDirection: 'row' }}>
                 {artworks?.map((artwork) => {
                   if (!artwork.data?.image) return <View />;
                   return (
@@ -338,7 +339,16 @@ const CalendarScreen = ({ navigation }) => {
                 })}
               </View>
             </ScrollView>
-            <View>
+            <View style={{ paddingHorizontal: 16 }}>
+              <Button
+                title="Explore Artwork"
+                size="small"
+                onPress={() => {
+                  Linking.openURL("https://art.gods.work/");
+                }}
+              />
+            </View>
+            {/* <View>
               <Text style={{ textAlign: "center", fontSize: 22 }}>
                 GODS WORK
               </Text>
@@ -358,7 +368,7 @@ const CalendarScreen = ({ navigation }) => {
                   />
                 </View>
               </View>
-            </View>
+            </View> */}
           </View>
         )}
 

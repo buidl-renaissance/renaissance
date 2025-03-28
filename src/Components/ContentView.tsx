@@ -27,25 +27,35 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
     }
   }, []);
 
+  // Format timestamp safely to prevent malformed calls from JS
+  const formatTimestamp = React.useCallback((timestamp) => {
+    try {
+      return moment(timestamp).format("MMMM D, YYYY [at] h:mm A");
+    } catch (error) {
+      console.error("Error formatting timestamp:", error);
+      return "Invalid date";
+    }
+  }, []);
+
   return (
     <View style={{ marginTop: 8, paddingHorizontal: 16, marginBottom: 16 }}>
       {content.timestamp && (
         <Text style={styles.timestamp}>
-          {moment(content.timestamp).format("MMMM D, YYYY [at] h:mm A")}
+          {formatTimestamp(content.timestamp)}
         </Text>
       )}
       {content.caption?.length > 0 && (
         <Text style={styles.caption}>{content.caption}</Text>
       )}
-      {content.data.type === "image/jpeg" && (
+      {content.data?.type === "image/jpeg" && content.data?.url && (
         <Image
           source={{
             uri: content.data.url.replace("/uploads", "/uploads/resized/800w"),
           }}
           style={{
             height:
-              content.data.height *
-              ((Dimensions.get("window").width - 64) / content.data.width),
+              (content.data.height ?? 4) *
+              ((Dimensions.get("window").width - 64) / (content.data.width ?? 3)),
             width: w,
             borderRadius: 4,
             resizeMode: "cover",
@@ -53,10 +63,10 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
           }}
         />
       )}
-      {content.data.type === "audio" && (
+      {content.data?.type === "audio" && (
         <AudioView content={content} />
       )}
-      {content.data.type === "youtube" && (
+      {content.data?.type === "youtube" && content.data?.youtubeId && (
         <YoutubePlayer
           height={200}
           play={playing}
@@ -64,13 +74,13 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
           onChangeState={onStateChange}
         />
       )}
-      {content.data.type === "video/mp4" && (
+      {content.data?.type === "video/mp4" && content.data?.url && (
         <Video
           ref={video}
           style={{
             height:
-              content.data.height *
-              ((Dimensions.get("window").width - 64) / content.data.width),
+              (content.data.height ?? 4) *
+              ((Dimensions.get("window").width - 64) / (content.data.width ?? 3)),
             width: w,
             borderRadius: 4,
             marginBottom: 8,
