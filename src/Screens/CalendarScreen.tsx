@@ -97,6 +97,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Share");
   }, []);
 
+  const handleDPoPAuthPress = React.useCallback(() => {
+    navigation.push("DPoPAuth");
+  }, []);
+
   const handleReviewEvents = React.useCallback(() => {
     navigation.push("ReviewEvents");
   }, []);
@@ -218,6 +222,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("ContentUpload");
   }, []);
 
+  const handleVerifyPress = React.useCallback(() => {
+    navigation.push("Verify");
+  }, []);
+
   // const [username, setUsername] = React.useState("wiredinsamurai");
   // const [pub, setPub] = React.useState("test");
   // const [sig, setSig] = React.useState("test");
@@ -261,6 +269,16 @@ const CalendarScreen = ({ navigation }) => {
               onPress={handleBookmarkPress}
               type={IconTypes.Ionicons}
               name={"bookmark-outline"}
+            />
+            <RoundButton
+              onPress={handleDPoPAuthPress}
+              type={IconTypes.Ionicons}
+              name={"qr-code-outline"}
+            />
+            <RoundButton
+              onPress={handleVerifyPress}
+              type={IconTypes.Ionicons}
+              name={"qr-code-outline"}
             />
             <RoundButton
               onPress={handleFilesPress}

@@ -505,3 +505,23 @@ const parseJwt = (token) => {
   );
   return JSON.parse(jsonPayload);
 };
+
+export interface DPoPAuthData {
+  client_id: string;
+  client_sig: string;
+  auth_id: string;
+  auth_sig: string;
+}
+
+export const submitDPoPAuth = async (authData: DPoPAuthData) => {
+  console.log('DPoP Auth data', authData, JSON.stringify(authData));
+  const result = await authorizedRequest('dpop/auth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(authData),
+  });
+  console.log('DPoP Auth result', result);
+  return result;
+};

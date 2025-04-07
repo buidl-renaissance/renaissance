@@ -2,41 +2,41 @@ import React from 'react';
 import { StyleSheet, Image, Text, View, Dimensions } from 'react-native';
 import { Button } from '../Components/Button';
 import { FadeInView } from '../Components/AnimatedDisplay';
-import { generateWallet, loadWallet } from '../utils/web3';
-import * as SecureStore from 'expo-secure-store';
+// import { generateWallet, loadWallet } from '../utils/web3';
+// import * as SecureStore from 'expo-secure-store';
 
-async function save(key, value) {
-    await SecureStore.setItemAsync(key, value);
-}
+// async function save(key, value) {
+//     await SecureStore.setItemAsync(key, value);
+// }
 
-async function getValueFor(key) {
-    return SecureStore.getItemAsync(key);
-}
+// async function getValueFor(key) {
+//     return SecureStore.getItemAsync(key);
+// }
 
 const SplashScreen = ({
     navigation
 }) => {
 
-    const [wallet, setWallet] = React.useState<any>();
+    // const [wallet, setWallet] = React.useState<any>();
   
     navigation.setOptions({
         headerTitle: () => null,
     });
 
-    React.useEffect(() => {
-        const fetchWallet = async () => {
-            const pk = await getValueFor('WALLET_PK');
-            if (pk) {
-                const existingWallet = loadWallet(pk);
-                setWallet(existingWallet);
-                console.log(existingWallet);
-            } else {
-                const newWallet = generateWallet();
-                save('WALLET_PK', newWallet.privateKey);    
-            }
-        };        
-        fetchWallet();
-    }, [ setWallet ]);
+    // React.useEffect(() => {
+    //     const fetchWallet = async () => {
+    //         const pk = await getValueFor('WALLET_PK');
+    //         if (pk) {
+    //             const existingWallet = loadWallet(pk);
+    //             setWallet(existingWallet);
+    //             console.log(existingWallet);
+    //         } else {
+    //             const newWallet = generateWallet();
+    //             save('WALLET_PK', newWallet.privateKey);    
+    //         }
+    //     };        
+    //     fetchWallet();
+    // }, [ setWallet ]);
 
     const handleGetStarted = React.useCallback(() => {
         navigation.push('Home');

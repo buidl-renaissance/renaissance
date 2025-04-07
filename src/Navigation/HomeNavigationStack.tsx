@@ -29,6 +29,8 @@ import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
 import ContentUploadScreen from "../Screens/ContentUploadScreen";
 import CreateFlyerScreen from "../Screens/CreateFlyerScreen";
+import DPoPAuthScreen from "../Screens/DPoPAuthScreen";
+import VerifyScreen from "../Screens/VerifyScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -48,6 +50,7 @@ type HomeNavigationStackParamList = {
   CreateEvent: undefined;
   CreateFlyer: undefined;
   CreateProposal: undefined;
+  DPoPAuth: undefined;
   Event: undefined;
   EventEdit: undefined;
   Files: undefined;
@@ -61,6 +64,7 @@ type HomeNavigationStackParamList = {
   Search: undefined;
   Share: undefined;
   Splash: undefined;
+  Verify: undefined;
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -81,6 +85,26 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CalendarScreen}
         name="Calendar"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={DPoPAuthScreen}
+        name="DPoPAuth"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={VerifyScreen}
+        name="Verify"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",
