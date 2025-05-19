@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { HeroBanner } from "../Components/HeroBanner";
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 
 import { getProvider } from "../utils/web3";
 
@@ -111,12 +112,28 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
+  React.useEffect(() => {
+    (async () => {
+
+      const client = new SuiClient({
+        url: getFullnodeUrl('testnet'),
+      });
+      
+      const objects = await client.getOwnedObjects({
+        owner: '0xa1a8bd32c9f0d621919d365a04e8ada5e4ac11016896c987d65f3996f4d0796d',
+        options: { showType: true, showContent: true },
+      });
+
+      console.log("object", objects.data[0].data.objectId, objects.data[1].data.content);
+    })();
+  }, []);
+
   const handleAddEvent = React.useCallback(() => {
     (async () => {
       const wallet = await getWallet();
       console.log("address:", wallet.address);
-      const signature = await wallet.signMessage('Hello World!');
-      console.log('signature: ', signature);
+      const signature = await wallet.signMessage("Hello World!");
+      console.log("signature: ", signature);
     })();
     // navigation.push("CreateEvent");
     // navigation.push("CreateFlyer");
@@ -339,7 +356,7 @@ const CalendarScreen = ({ navigation }) => {
               horizontal={true}
               showsHorizontalScrollIndicator={false}
             >
-              <View style={{ flexDirection: 'row' }}>
+              <View style={{ flexDirection: "row" }}>
                 {artworks?.map((artwork) => {
                   if (!artwork.data?.image) return <View />;
                   return (
