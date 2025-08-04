@@ -271,6 +271,11 @@ const CalendarScreen = ({ navigation }) => {
               name={"bookmark-outline"}
             />
             <RoundButton
+              onPress={() => navigation.push("NFC")}
+              type={IconTypes.Ionicons}
+              name={"nfc"}
+            />
+            <RoundButton
               onPress={handleDPoPAuthPress}
               type={IconTypes.Ionicons}
               name={"qr-code-outline"}

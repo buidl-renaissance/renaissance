@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { darkGrey } from "../colors";
-import AddMedia from "../Components/AddMedia";
+// import AddMedia from "../Components/AddMedia";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { TextInput } from "../Components/Styled/TextInput";
 import { Button } from "../Components/Button";
@@ -78,11 +78,11 @@ const AddContentScreen = ({ navigation, route }) => {
             <Button title="Add Content" onPress={handleAddContent} />
           </View>
         )}
-        <AddMedia
+        {/* <AddMedia
           onLoadedMedia={(media) => {
             setMedia(media);
           }}
-        />
+        /> */}
       </View>
     </View>
   );

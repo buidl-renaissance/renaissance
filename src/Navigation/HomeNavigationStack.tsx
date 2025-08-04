@@ -2,28 +2,22 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import AccountScreen from "../Screens/AccountScreen";
-// import ArtistScreen from '../Screens/ArtistScreen';
 import ArtworkScreen from '../Screens/ArtworkScreen';
 import BookmarksScreen from "../Screens/BookmarksScreen";
 import CalendarScreen from "../Screens/CalendarScreen";
-// import CameraScreen from '../Screens/CameraScreen';
-// import CollectScreen from '../Screens/CollectScreen';
 import ActivityScreen from "../Screens/ActivityScreen";
 import AddContentScreen from "../Screens/AddContentScreen";
 import CreateEventScreen from "../Screens/CreateEventScreen";
 import FilesScreen from "../Screens/FilesScreen";
-import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
 import ProposalListScreen from "../Screens/ProposalListScreen";
-import ProposalDetailScreen from "../Screens/ProposalDetailScreen";
 import ReviewEventsScreen from "../Screens/ReviewEventsScreen";
 import EventEditScreen from "../Screens/EventEditScreen";
 import AudioContentScreen from "../Screens/AudioContentScreen";
-// import GetStartedScreen from "../Screens/GetStartedScreen";
+import NFCScreen from "../Screens/NFCScreen";
 import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
 import BrowseMap from "../Screens/BrowseMapScreen";
-// import HomeScreen from '../Screens/HomeScreen';
 import ChatScreen from "../Screens/ChatScreen";
 import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
@@ -50,6 +44,8 @@ type HomeNavigationStackParamList = {
   CreateEvent: undefined;
   CreateFlyer: undefined;
   CreateProposal: undefined;
+  NFC: undefined;
+  CreateGrant: undefined;
   DPoPAuth: undefined;
   Event: undefined;
   EventEdit: undefined;
@@ -203,18 +199,8 @@ const HomeNavigationStack = () => {
         }}
       />
       <Stack.Screen
-        component={GrantCreationScreen}
-        name="CreateGrant"
-        options={{
-          headerStyle: {
-            backgroundColor: "#d2e4dd",
-          },
-          headerTintColor: "#000",
-        }}
-      />
-      <Stack.Screen
-        component={ProposalDetailScreen}
-        name="ProposalDetail"
+        component={NFCScreen}
+        name="NFC"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",
