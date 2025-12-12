@@ -16,7 +16,6 @@
     ],
     "plugins": [
       "@react-native-google-signin/google-signin",
-      "@config-plugins/ffmpeg-kit-react-native",
       "expo-secure-store",
       "expo-build-properties"
     ],

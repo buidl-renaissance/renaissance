@@ -9,7 +9,6 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@config-plugins/ffmpeg-kit-react-native": "^8.0.0",
     "@cosmjs/amino": "^0.33.1",
     "@cosmjs/proto-signing": "^0.33.1",
     "@cosmjs/stargate": "^0.33.1",
@@ -49,7 +48,6 @@
     "expo-splash-screen": "~0.27.5",
     "expo-status-bar": "~1.12.1",
     "expo-updates": "~0.25.23",
-    "ffmpeg-kit-react-native": "^6.0.2",
     "html-entities": "^2.3.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.37",

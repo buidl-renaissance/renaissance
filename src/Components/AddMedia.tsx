@@ -7,7 +7,7 @@ import { darkGrey } from "../colors";
 import { useImagePicker } from "../hooks/useImagePicker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Video, ResizeMode } from "expo-av";
-import { FFmpegKit } from "ffmpeg-kit-react-native";
+// ffmpeg-kit-react-native has been retired - video conversion disabled
 import { uploadImage, uploadVideo } from "../dpop";
 import * as FileSystem from "expo-file-system";
 
@@ -38,17 +38,17 @@ const AddMedia = ({
     (async () => {
       const asset = image?.[0];
       if (asset && image[0].type === "video" && !convertedVideoUri) {
-        const newFile = asset.uri.replace(".mov", ".mp4");
-        await FFmpegKit.execute(`-i ${asset.uri} -vcodec hevc_videotoolbox -b:v 6000k -tag:v hvc1 -c:a eac3 -b:a 224k ${newFile}`);
+        // ffmpeg-kit retired - upload video without conversion
         const info = await FileSystem.getInfoAsync(image[0].uri as string);
-
-        console.log("CONVERTED: ", newFile);
-        setConvertedVideoUri(newFile);
+        const videoUri = asset.uri;
+        
+        console.log("Uploading video (no conversion): ", videoUri);
+        setConvertedVideoUri(videoUri);
         const result = await uploadVideo(
           {
             fileName: image[0].fileName,
-            type: 'video/mp4',
-            uri: newFile,
+            type: image[0].fileName?.endsWith('.mov') ? 'video/quicktime' : 'video/mp4',
+            uri: videoUri,
           },
           info
         );
