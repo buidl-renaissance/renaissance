@@ -2,6 +2,7 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import AccountScreen from "../Screens/AccountScreen";
+import AdminScreen from "../Screens/AdminScreen";
 // import ArtistScreen from '../Screens/ArtistScreen';
 import ArtworkScreen from '../Screens/ArtworkScreen';
 import BookmarksScreen from "../Screens/BookmarksScreen";
@@ -19,7 +20,7 @@ import ProposalDetailScreen from "../Screens/ProposalDetailScreen";
 import ReviewEventsScreen from "../Screens/ReviewEventsScreen";
 import EventEditScreen from "../Screens/EventEditScreen";
 import AudioContentScreen from "../Screens/AudioContentScreen";
-// import GetStartedScreen from "../Screens/GetStartedScreen";
+import GetStartedScreen from "../Screens/GetStartedScreen";
 import ShareScreen from "../Screens/ShareScreen";
 import MapScreen from "../Screens/MapScreen";
 import BrowseMap from "../Screens/BrowseMapScreen";
@@ -31,11 +32,14 @@ import ContentUploadScreen from "../Screens/ContentUploadScreen";
 import CreateFlyerScreen from "../Screens/CreateFlyerScreen";
 import DPoPAuthScreen from "../Screens/DPoPAuthScreen";
 import VerifyScreen from "../Screens/VerifyScreen";
+import MiniAppScreen from "../Screens/MiniAppScreen";
+import MiniAppsScreen from "../Screens/MiniAppsScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
   Account: undefined;
   Activity: undefined;
+  Admin: undefined;
   AudioContent: undefined;
   Artist: undefined;
   Artwork: undefined;
@@ -55,9 +59,11 @@ type HomeNavigationStackParamList = {
   EventEdit: undefined;
   Files: undefined;
   GetStarted: undefined;
-  GrantCreate: undefined;
+  CreateGrant: undefined;
   Home: undefined;
   Map: undefined;
+  MiniApp: { url?: string; title?: string } | undefined;
+  MiniApps: undefined;
   ProposalList: undefined;
   ProposalDetail: undefined;
   ReviewEvents: undefined;
@@ -233,6 +239,27 @@ const HomeNavigationStack = () => {
         }}
       />
       <Stack.Screen
+        component={AdminScreen}
+        name="Admin"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={GetStartedScreen}
+        name="GetStarted"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Get Connected",
+        }}
+      />
+      <Stack.Screen
         component={BookmarksScreen}
         name="Bookmarks"
         options={{
@@ -330,6 +357,28 @@ const HomeNavigationStack = () => {
             backgroundColor: "#d2e4dd",
           },
           headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={MiniAppsScreen}
+        name="MiniApps"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Mini Apps",
+        }}
+      />
+      <Stack.Screen
+        component={MiniAppScreen}
+        name="MiniApp"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Mini App",
         }}
       />
     </Stack.Navigator>

@@ -97,12 +97,12 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Share");
   }, []);
 
-  const handleDPoPAuthPress = React.useCallback(() => {
-    navigation.push("DPoPAuth");
+  const handleMiniAppsPress = React.useCallback(() => {
+    navigation.push("MiniApps");
   }, []);
 
-  const handleReviewEvents = React.useCallback(() => {
-    navigation.push("ReviewEvents");
+  const handleAdminPress = React.useCallback(() => {
+    navigation.push("Admin");
   }, []);
 
   const handleShowArtwork = React.useCallback((artwork: DAArtwork) => {
@@ -210,21 +210,6 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
-  const handleFilesPress = React.useCallback(() => {
-    navigation.push("Files");
-  }, []);
-
-  const handleAudioPress = React.useCallback(() => {
-    navigation.push("AudioContent");
-  }, []);
-
-  const handleContentUploadPress = React.useCallback(() => {
-    navigation.push("ContentUpload");
-  }, []);
-
-  const handleVerifyPress = React.useCallback(() => {
-    navigation.push("Verify");
-  }, []);
 
   // const [username, setUsername] = React.useState("wiredinsamurai");
   // const [pub, setPub] = React.useState("test");
@@ -271,31 +256,6 @@ const CalendarScreen = ({ navigation }) => {
               name={"bookmark-outline"}
             />
             <RoundButton
-              onPress={handleDPoPAuthPress}
-              type={IconTypes.Ionicons}
-              name={"qr-code-outline"}
-            />
-            <RoundButton
-              onPress={handleVerifyPress}
-              type={IconTypes.Ionicons}
-              name={"qr-code-outline"}
-            />
-            <RoundButton
-              onPress={handleFilesPress}
-              type={IconTypes.Ionicons}
-              name={"folder-open-outline"}
-            />
-            <RoundButton
-              onPress={handleContentUploadPress}
-              type={IconTypes.Ionicons}
-              name={"folder-open-outline"}
-            />
-            <RoundButton
-              onPress={handleAudioPress}
-              type={IconTypes.Ionicons}
-              name={"mic"}
-            />
-            <RoundButton
               onPress={handleChatPress}
               type={IconTypes.MaterialIcons}
               name={"chat"}
@@ -305,11 +265,16 @@ const CalendarScreen = ({ navigation }) => {
               type={IconTypes.Ionicons}
               name={"share"}
             />
+            <RoundButton
+              onPress={handleMiniAppsPress}
+              type={IconTypes.Ionicons}
+              name={"apps-outline"}
+            />
             {contact?.id === 1 && (
               <RoundButton
-                onPress={handleReviewEvents}
-                type={IconTypes.MaterialIcons}
-                name={"create-new-folder"}
+                onPress={handleAdminPress}
+                type={IconTypes.Ionicons}
+                name={"settings-outline"}
               />
             )}
           </View>

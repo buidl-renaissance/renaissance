@@ -26,6 +26,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { checkForUpdates } from "./src/utils/checkForUpdate";
 import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
+import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -87,16 +88,18 @@ export default function App() {
     <>
       <StatusBar barStyle="default" />
       <LocalStorageProvider>
-        <AudioPlayerProvider>
-          <NavigationContainer
-            onReady={() => {
-              isReadyRef.current = true;
-            }}
-            ref={navigationRef}
-          >
-            <HomeNavigationStack />
-          </NavigationContainer>
-        </AudioPlayerProvider>
+        <FarcasterFrameProvider>
+          <AudioPlayerProvider>
+            <NavigationContainer
+              onReady={() => {
+                isReadyRef.current = true;
+              }}
+              ref={navigationRef}
+            >
+              <HomeNavigationStack />
+            </NavigationContainer>
+          </AudioPlayerProvider>
+        </FarcasterFrameProvider>
       </LocalStorageProvider>
     </>
   );
