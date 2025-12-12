@@ -34,10 +34,12 @@ import DPoPAuthScreen from "../Screens/DPoPAuthScreen";
 import VerifyScreen from "../Screens/VerifyScreen";
 import MiniAppScreen from "../Screens/MiniAppScreen";
 import MiniAppsScreen from "../Screens/MiniAppsScreen";
+import AccountManagementScreen from "../Screens/AccountManagementScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
   Account: undefined;
+  AccountManagement: undefined;
   Activity: undefined;
   Admin: undefined;
   AudioContent: undefined;
@@ -379,6 +381,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
           title: "Mini App",
+        }}
+      />
+      <Stack.Screen
+        component={AccountManagementScreen}
+        name="AccountManagement"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Account",
         }}
       />
     </Stack.Navigator>

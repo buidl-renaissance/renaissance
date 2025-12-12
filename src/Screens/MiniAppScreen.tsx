@@ -10,11 +10,13 @@ import {
 import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
 import { useFarcasterFrame } from "../context/FarcasterFrame";
+import { useAuth } from "../context/Auth";
 import { Ionicons } from "@expo/vector-icons";
 
 const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) => {
   const webViewRef = useRef<WebView>(null);
   const { state, createSdk, setIsLoading, setFrameUrl, setPrimaryButtonClickHandler, onPrimaryButtonClick } = useFarcasterFrame();
+  const { state: authState } = useAuth();
   
   const frameUrl = route.params?.url || state.currentFrameUrl;
   const title = route.params?.title || "Mini App";
@@ -31,8 +33,21 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     }
   }, [frameUrl]);
   
-  // Memoize SDK instance to prevent infinite re-renders
+  // Memoize SDK instance - but note context is now a dynamic getter
   const sdk = useMemo(() => createSdk(), [createSdk]);
+  
+  // Log current auth state for debugging
+  useEffect(() => {
+    console.log("[MiniAppScreen] Auth state changed:", {
+      isAuthenticated: authState.isAuthenticated,
+      user: authState.user ? {
+        fid: authState.user.fid,
+        username: authState.user.username,
+        type: authState.user.type,
+      } : null,
+    });
+    console.log("[MiniAppScreen] SDK context.user:", sdk.context?.user);
+  }, [authState.user, sdk]);
 
   // Set up the WebView RPC adapter
   const { onMessage, emit } = useWebViewRpcAdapter({
@@ -85,6 +100,32 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   useEffect(() => {
     emitRef.current = emit;
   }, [emit]);
+
+  // Track previous auth state to detect changes
+  const prevAuthUserRef = useRef(authState.user);
+  
+  // Emit context update when auth state changes while mini app is open
+  useEffect(() => {
+    const prevUser = prevAuthUserRef.current;
+    const currentUser = authState.user;
+    
+    // Check if user changed (login/logout)
+    const userChanged = 
+      (prevUser === null && currentUser !== null) ||
+      (prevUser !== null && currentUser === null) ||
+      (prevUser?.fid !== currentUser?.fid);
+    
+    if (userChanged && emitRef.current) {
+      console.log("[MiniAppScreen] Auth changed, emitting context_updated event");
+      // Emit a custom event to notify the mini app that context has changed
+      emitRef.current({ 
+        event: "context_updated",
+        context: sdk.context,
+      });
+    }
+    
+    prevAuthUserRef.current = currentUser;
+  }, [authState.user, sdk]);
 
   // Set up primary button click handler to emit events
   useEffect(() => {

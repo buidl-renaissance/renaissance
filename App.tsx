@@ -27,6 +27,8 @@ import { checkForUpdates } from "./src/utils/checkForUpdate";
 import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
+import { AuthProvider } from "./src/context/Auth";
+import { setupFarcasterAuthListener } from "./src/utils/farcasterAuth";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -84,22 +86,30 @@ export default function App() {
     };
   }, []);
 
+  // Set up Farcaster auth deep link listener
+  React.useEffect(() => {
+    const cleanup = setupFarcasterAuthListener();
+    return cleanup;
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="default" />
       <LocalStorageProvider>
-        <FarcasterFrameProvider>
-          <AudioPlayerProvider>
-            <NavigationContainer
-              onReady={() => {
-                isReadyRef.current = true;
-              }}
-              ref={navigationRef}
-            >
-              <HomeNavigationStack />
-            </NavigationContainer>
-          </AudioPlayerProvider>
-        </FarcasterFrameProvider>
+        <AuthProvider>
+          <FarcasterFrameProvider>
+            <AudioPlayerProvider>
+              <NavigationContainer
+                onReady={() => {
+                  isReadyRef.current = true;
+                }}
+                ref={navigationRef}
+              >
+                <HomeNavigationStack />
+              </NavigationContainer>
+            </AudioPlayerProvider>
+          </FarcasterFrameProvider>
+        </AuthProvider>
       </LocalStorageProvider>
     </>
   );

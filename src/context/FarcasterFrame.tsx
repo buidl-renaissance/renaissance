@@ -7,7 +7,34 @@ import React, {
   ReactNode,
 } from "react";
 import { Linking, Vibration, Alert } from "react-native";
-import type { MiniAppHost, MiniAppContext, SetPrimaryButtonOptions } from "@farcaster/frame-host-react-native";
+import type { MiniAppHost, SetPrimaryButtonOptions } from "@farcaster/frame-host-react-native";
+
+// Define MiniAppContext type locally since it's not exported
+interface MiniAppContext {
+  client: {
+    platformType: "mobile" | "web";
+    clientFid: number;
+    added: boolean;
+    safeAreaInsets: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+    };
+  };
+  user: {
+    fid: number;
+    username?: string;
+    displayName?: string;
+    pfpUrl?: string;
+  };
+  features: {
+    haptics: boolean;
+    cameraAndMicrophoneAccess: boolean;
+  };
+}
+import { useAuth, AuthUser } from "./Auth";
+import { getWallet } from "../utils/wallet";
 
 // Types for the frame context
 interface FarcasterUser {
@@ -74,6 +101,39 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
 }) => {
   const [state, setState] = useState<FarcasterFrameState>(INITIAL_STATE);
   const [primaryButtonClickHandler, setPrimaryButtonClickHandlerState] = useState<(() => void) | null>(null);
+  const [signInResolver, setSignInResolver] = useState<{
+    resolve: (result: any) => void;
+    reject: (error: Error) => void;
+  } | null>(null);
+
+  // Get auth context
+  const auth = useAuth();
+
+  // Sync auth user to frame user
+  React.useEffect(() => {
+    if (auth.state.user) {
+      const frameUser: FarcasterUser = {
+        fid: auth.state.user.fid,
+        username: auth.state.user.username,
+        displayName: auth.state.user.displayName,
+        pfpUrl: auth.state.user.pfpUrl,
+      };
+      setState((prev) => ({ ...prev, user: frameUser }));
+      
+      // Resolve any pending signIn request
+      if (signInResolver) {
+        signInResolver.resolve({
+          fid: auth.state.user.fid,
+          username: auth.state.user.username,
+          displayName: auth.state.user.displayName,
+          pfpUrl: auth.state.user.pfpUrl,
+        });
+        setSignInResolver(null);
+      }
+    } else {
+      setState((prev) => ({ ...prev, user: null }));
+    }
+  }, [auth.state.user, signInResolver]);
 
   const setFrameUrl = useCallback((url: string | null) => {
     setState((prev) => ({ ...prev, currentFrameUrl: url, isLoading: !!url }));
@@ -109,38 +169,59 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
     }
   }, [primaryButtonClickHandler]);
 
+  // Use refs to always access current auth state in SDK methods
+  const authRef = React.useRef(auth);
+  const stateRef = React.useRef(state);
+  
+  React.useEffect(() => {
+    authRef.current = auth;
+  }, [auth]);
+  
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   // Create the SDK object that implements MiniAppHost interface
   const createSdk = useCallback((): Omit<MiniAppHost, "ethProviderRequestV2"> => {
-    const context: MiniAppContext = {
-      client: {
-        platformType: "mobile",
-        clientFid: 0, // Your app's FID - set to 0 for now
-        added: state.isFrameAdded,
-        safeAreaInsets: {
-          top: 44,
-          bottom: 34,
-          left: 0,
-          right: 0,
-        },
-      },
-      user: state.user
-        ? {
-            fid: state.user.fid,
-            username: state.user.username,
-            displayName: state.user.displayName,
-            pfpUrl: state.user.pfpUrl,
-          }
-        : {
-            fid: 0,
+    // Use a getter to dynamically return current context
+    const getContext = (): MiniAppContext => {
+      const currentUser = authRef.current.state.user;
+      const currentState = stateRef.current;
+      
+      return {
+        client: {
+          platformType: "mobile",
+          clientFid: 0, // Your app's FID - set to 0 for now
+          added: currentState.isFrameAdded,
+          safeAreaInsets: {
+            top: 44,
+            bottom: 34,
+            left: 0,
+            right: 0,
           },
-      features: {
-        haptics: true,
-        cameraAndMicrophoneAccess: true,
-      },
+        },
+        user: currentUser
+          ? {
+              fid: currentUser.fid,
+              username: currentUser.username,
+              displayName: currentUser.displayName,
+              pfpUrl: currentUser.pfpUrl,
+            }
+          : {
+              fid: 0,
+            },
+        features: {
+          haptics: true,
+          cameraAndMicrophoneAccess: true,
+        },
+      };
     };
 
     return {
-      context,
+      // Use Object.defineProperty to make context a dynamic getter
+      get context() {
+        return getContext();
+      },
 
       close: () => {
         console.log("[FarcasterFrame] close requested");
@@ -160,9 +241,67 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
 
       signIn: async (options) => {
         console.log("[FarcasterFrame] signIn requested", options);
-        // Implement your sign-in flow here
-        // This should integrate with your app's authentication
-        throw new Error("Sign-in not implemented");
+        
+        const currentUser = authRef.current.state.user;
+        
+        // Generate a signed response for authentication
+        // This works for both local accounts and Farcaster accounts
+        try {
+          const wallet = await getWallet();
+          const nonce = options?.nonce || `nonce-${Date.now()}`;
+          const notBefore = options?.notBefore;
+          const expirationTime = options?.expirationTime;
+          
+          // Create a SIWF-compatible message (based on EIP-4361 SIWE format)
+          const domain = "renaissance.app";
+          const uri = `https://${domain}`;
+          const statement = "Farcaster Auth";
+          const issuedAt = new Date().toISOString();
+          const chainId = 10; // Optimism (Farcaster uses Optimism)
+          const fid = currentUser?.fid || 0;
+          
+          // Build the message in EIP-4361 SIWE format
+          const messageParts = [
+            `${domain} wants you to sign in with your Ethereum account:`,
+            wallet.address,
+            "",
+            statement,
+            "",
+            `URI: ${uri}`,
+            `Version: 1`,
+            `Chain ID: ${chainId}`,
+            `Nonce: ${nonce}`,
+            `Issued At: ${issuedAt}`,
+          ];
+          
+          // Add optional fields if provided
+          if (notBefore) {
+            messageParts.push(`Not Before: ${notBefore}`);
+          }
+          if (expirationTime) {
+            messageParts.push(`Expiration Time: ${expirationTime}`);
+          }
+          
+          // Add Farcaster-specific resource
+          messageParts.push(`Resources:`);
+          messageParts.push(`- farcaster://fid/${fid}`);
+          
+          const message = messageParts.join("\n");
+          
+          // Sign the message with the wallet
+          const signature = await wallet.signMessage(message);
+          
+          console.log("[FarcasterFrame] signIn signed message for user:", currentUser?.username || "anonymous");
+          
+          return {
+            message,
+            signature,
+            authMethod: "custody" as const,
+          };
+        } catch (error) {
+          console.error("[FarcasterFrame] signIn signing error:", error);
+          throw new Error("Failed to sign authentication message");
+        }
       },
 
       signManifest: async () => {
@@ -245,12 +384,11 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
 
       requestCameraAndMicrophoneAccess: async () => {
         console.log("[FarcasterFrame] requestCameraAndMicrophoneAccess");
-        // Request permissions through Expo
-        return { camera: true, microphone: true };
+        // Request permissions through Expo - returns void per type definition
       },
 
       // Haptic feedback
-      impactOccurred: (style) => {
+      impactOccurred: async (style) => {
         console.log("[FarcasterFrame] impactOccurred", style);
         switch (style) {
           case "light":
@@ -267,7 +405,7 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
         }
       },
 
-      notificationOccurred: (type) => {
+      notificationOccurred: async (type) => {
         console.log("[FarcasterFrame] notificationOccurred", type);
         switch (type) {
           case "success":
@@ -284,7 +422,7 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
         }
       },
 
-      selectionChanged: () => {
+      selectionChanged: async () => {
         console.log("[FarcasterFrame] selectionChanged");
         Vibration.vibrate(5);
       },
@@ -310,11 +448,11 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
         return ["eip155:1", "eip155:8453", "eip155:10"]; // Ethereum, Base, Optimism
       },
 
-      updateBackState: (state) => {
+      updateBackState: async (state) => {
         console.log("[FarcasterFrame] updateBackState", state);
       },
     };
-  }, [state.user, state.isFrameAdded, setFrameUrl, setIsLoading, setPrimaryButton]);
+  }, [state.isFrameAdded, setFrameUrl, setIsLoading, setPrimaryButton]);
 
   const value = useMemo(
     () => ({

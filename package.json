@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@cosmjs/amino": "^0.33.1",
@@ -82,8 +83,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
-    "@types/react": "~17.0.21",
-    "@types/react-native": "~0.67.6"
+    "@types/react-native": "~0.67.6",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=20.18.0"
   },
   "private": true
 }

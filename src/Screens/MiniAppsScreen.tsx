@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { lightGreen } from "../colors";
+import { useAuth } from "../context/Auth";
 
 interface MiniApp {
   id: string;
@@ -37,11 +37,25 @@ interface MiniAppsScreenProps {
 }
 
 const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
+  const { state: authState } = useAuth();
+
   React.useEffect(() => {
     navigation.setOptions({
       title: "Mini Apps",
+      headerRight: () => (
+        <TouchableOpacity
+          style={styles.headerAccountButton}
+          onPress={() => navigation.navigate("AccountManagement")}
+        >
+          <Ionicons
+            name={authState.isAuthenticated ? "person-circle" : "person-circle-outline"}
+            size={28}
+            color={authState.isAuthenticated ? "#6366F1" : "#666"}
+          />
+        </TouchableOpacity>
+      ),
     });
-  }, [navigation]);
+  }, [navigation, authState.isAuthenticated]);
 
   const handleOpenApp = (app: MiniApp) => {
     navigation.navigate("MiniApp", {
@@ -50,9 +64,40 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
     });
   };
 
+  const getAuthStatusLabel = () => {
+    if (!authState.isAuthenticated) return "Not signed in";
+    if (authState.user?.type === "farcaster") return `@${authState.user.username || "farcaster"}`;
+    if (authState.user?.type === "local_email") return authState.user.local?.email || "Email user";
+    return "Guest";
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
+        {/* Auth Status Banner */}
+        <TouchableOpacity
+          style={[
+            styles.authBanner,
+            authState.isAuthenticated && styles.authBannerAuthenticated,
+          ]}
+          onPress={() => navigation.navigate("AccountManagement")}
+        >
+          <View style={styles.authBannerContent}>
+            <Ionicons
+              name={authState.isAuthenticated ? "checkmark-circle" : "alert-circle-outline"}
+              size={20}
+              color={authState.isAuthenticated ? "#10B981" : "#F59E0B"}
+            />
+            <View style={styles.authBannerText}>
+              <Text style={styles.authBannerTitle}>
+                {authState.isAuthenticated ? "Signed In" : "Sign in for full access"}
+              </Text>
+              <Text style={styles.authBannerSubtitle}>{getAuthStatusLabel()}</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#666" />
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <Ionicons name="apps" size={48} color="#6366F1" />
           <Text style={styles.headerTitle}>Farcaster Mini Apps</Text>
@@ -107,6 +152,42 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  headerAccountButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  authBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FEF3C7",
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 12,
+  },
+  authBannerAuthenticated: {
+    backgroundColor: "#D1FAE5",
+  },
+  authBannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  authBannerText: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  authBannerTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  authBannerSubtitle: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
   },
   header: {
     alignItems: "center",
