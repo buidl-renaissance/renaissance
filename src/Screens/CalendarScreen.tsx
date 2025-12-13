@@ -220,7 +220,7 @@ const CalendarScreen = ({ navigation }) => {
   // }, []);
 
   const handleLogin = React.useCallback(() => {
-    navigation.push("Account");
+    navigation.push("Login");
   }, []);
 
   const sectionHeader = () => {

@@ -2,6 +2,7 @@
   "expo": {
     "name": "Renaissance",
     "slug": "renaissance",
+    "scheme": "renaissance",
     "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,10 +25,12 @@
       "bundleIdentifier": "tech.dpop.renaissance",
       "infoPlist": {
         "UIBackgroundModes": [
-          "audio",
           "audio"
         ],
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "farcaster"
+        ]
       }
     },
     "android": {

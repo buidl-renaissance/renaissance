@@ -1,226 +1,242 @@
 import * as Linking from "expo-linking";
-import * as Crypto from "expo-crypto";
-import * as SecureStore from "expo-secure-store";
-import { getWallet } from "./wallet";
-import type { FarcasterUserData } from "../context/Auth";
+import { Alert, Platform } from "react-native";
+import { createAppClient, viemConnector } from "@farcaster/auth-client";
 
-// Storage keys
-const SIWF_NONCE_KEY = "SIWF_NONCE";
-const SIWF_STATE_KEY = "SIWF_STATE";
+// App configuration
+const APP_DOMAIN = "renaissance.app";
+const APP_NAME = "Renaissance";
 
-// Warpcast deep link URLs
-const WARPCAST_SIWF_URL = "https://warpcast.com/~/sign-in-with-farcaster";
+// Create the Farcaster auth client
+const appClient = createAppClient({
+  relay: "https://relay.farcaster.xyz",
+  ethereum: viemConnector(),
+});
 
-// Your app's URL scheme (configure in app.json)
-const APP_SCHEME = "renaissance";
-const CALLBACK_PATH = "auth/farcaster/callback";
-
-/**
- * Generate a cryptographically secure nonce
- */
-const generateNonce = async (): Promise<string> => {
-  const randomBytes = await Crypto.getRandomBytesAsync(32);
-  return Array.from(randomBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-};
-
-/**
- * Generate a state parameter for CSRF protection
- */
-const generateState = async (): Promise<string> => {
-  const randomBytes = await Crypto.getRandomBytesAsync(16);
-  return Array.from(randomBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-};
-
-/**
- * Build the callback URL for Warpcast to redirect back to
- */
-export const getCallbackUrl = (): string => {
-  return Linking.createURL(CALLBACK_PATH);
-};
-
-/**
- * Initiate Warpcast Sign-In With Farcaster flow
- * Opens Warpcast app with auth request
- */
-export const initiateWarpcastAuth = async (): Promise<void> => {
-  // Generate and store nonce and state for verification
-  const nonce = await generateNonce();
-  const state = await generateState();
-
-  await SecureStore.setItemAsync(SIWF_NONCE_KEY, nonce);
-  await SecureStore.setItemAsync(SIWF_STATE_KEY, state);
-
-  // Get the wallet for custody address
-  const wallet = await getWallet();
-  const custodyAddress = wallet.address;
-
-  // Build the callback URL
-  const callbackUrl = getCallbackUrl();
-
-  // Build the Warpcast SIWF URL with parameters
-  const params = new URLSearchParams({
-    channelToken: nonce, // Used as channel token for the auth flow
-    nonce,
-    state,
-    redirectUrl: callbackUrl,
-    custody: custodyAddress,
-  });
-
-  const authUrl = `${WARPCAST_SIWF_URL}?${params.toString()}`;
-
-  console.log("[FarcasterAuth] Opening Warpcast auth URL:", authUrl);
-
-  // Check if Warpcast is installed
-  const canOpen = await Linking.canOpenURL("warpcast://");
-
-  if (canOpen) {
-    // Open Warpcast directly
-    await Linking.openURL(authUrl);
-  } else {
-    // Fallback to web URL which will prompt to install or open web
-    await Linking.openURL(authUrl);
-  }
-};
-
-/**
- * Parse the callback URL from Warpcast
- */
-export const parseCallbackUrl = (
-  url: string
-): {
-  fid?: string;
+interface AuthResult {
+  fid: number;
   username?: string;
   displayName?: string;
   pfpUrl?: string;
   custodyAddress?: string;
-  state?: string;
-  signature?: string;
+  verifications?: string[];
   message?: string;
-  error?: string;
-} | null => {
-  try {
-    const parsed = Linking.parse(url);
+  signature?: string;
+}
 
-    if (!parsed.queryParams) {
-      return null;
+// Store the current auth session
+let currentAuthSession: {
+  channelToken: string;
+  pollInterval?: NodeJS.Timeout;
+  resolve?: (value: AuthResult) => void;
+  reject?: (reason: Error) => void;
+} | null = null;
+
+/**
+ * Initiate Farcaster authentication
+ */
+export async function initiateWarpcastAuth(): Promise<AuthResult> {
+  try {
+    console.log("[FarcasterAuth] Starting Farcaster auth flow...");
+
+    // Get the callback URL for our app
+    const callbackUrl = Linking.createURL("auth/farcaster");
+
+    // Create a Sign In With Farcaster channel
+    const channel = await appClient.createChannel({
+      siweUri: callbackUrl,
+      domain: APP_DOMAIN,
+      nonce: generateNonce(),
+      notBefore: new Date().toISOString(),
+      expirationTime: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 min expiry
+    });
+
+    console.log("[FarcasterAuth] Channel created:", {
+      channelToken: channel.data?.channelToken,
+      url: channel.data?.url,
+    });
+
+    if (!channel.data?.channelToken || !channel.data?.url) {
+      throw new Error("Failed to create auth channel");
     }
 
-    return {
-      fid: parsed.queryParams.fid as string | undefined,
-      username: parsed.queryParams.username as string | undefined,
-      displayName: parsed.queryParams.displayName as string | undefined,
-      pfpUrl: parsed.queryParams.pfpUrl as string | undefined,
-      custodyAddress: parsed.queryParams.custodyAddress as string | undefined,
-      state: parsed.queryParams.state as string | undefined,
-      signature: parsed.queryParams.signature as string | undefined,
-      message: parsed.queryParams.message as string | undefined,
-      error: parsed.queryParams.error as string | undefined,
-    };
+    const { channelToken, url: farcasterUrl } = channel.data;
+
+    console.log("[FarcasterAuth] Opening Farcaster with URL:", farcasterUrl);
+
+    // Check if Farcaster is installed
+    const canOpen = await Linking.canOpenURL("farcaster://");
+
+    if (!canOpen) {
+      // Fall back to web URL or show install prompt
+      Alert.alert(
+        "Farcaster Required",
+        "Please install the Farcaster app to sign in.",
+        [
+          {
+            text: "Install Farcaster",
+            onPress: () => {
+              const storeUrl = Platform.select({
+                ios: "https://apps.apple.com/app/farcaster/id1600555445",
+                android:
+                  "https://play.google.com/store/apps/details?id=com.farcaster.mobile",
+              });
+              if (storeUrl) Linking.openURL(storeUrl);
+            },
+          },
+          { text: "Cancel", style: "cancel" },
+        ]
+      );
+      throw new Error("Farcaster not installed");
+    }
+
+    // Open Farcaster
+    await Linking.openURL(farcasterUrl);
+
+    // Poll for completion
+    const result = await pollForCompletion(channelToken);
+    console.log("[FarcasterAuth] Auth completed:", result);
+
+    // Call the global callback to update auth state
+    if ((global as any).__authFarcasterCallback && result.fid) {
+      (global as any).__authFarcasterCallback({
+        fid: result.fid,
+        username: result.username,
+        displayName: result.displayName,
+        pfpUrl: result.pfpUrl,
+        custodyAddress: result.custodyAddress,
+        verifications: result.verifications,
+      });
+    }
+
+    return result;
   } catch (error) {
-    console.error("[FarcasterAuth] Error parsing callback URL:", error);
-    return null;
+    console.error("[FarcasterAuth] Auth error:", error);
+    throw error;
   }
-};
+}
 
 /**
- * Verify the state parameter matches what we sent
+ * Generate a random nonce
  */
-export const verifyState = async (receivedState: string): Promise<boolean> => {
-  const savedState = await SecureStore.getItemAsync(SIWF_STATE_KEY);
-  return savedState === receivedState;
-};
+function generateNonce(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let nonce = "";
+  for (let i = 0; i < 16; i++) {
+    nonce += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return nonce;
+}
 
 /**
- * Handle the callback from Warpcast
- * Returns the authenticated user data or throws an error
+ * Poll the channel for completion using the auth-client
  */
-export const handleWarpcastCallback = async (
-  url: string
-): Promise<FarcasterUserData> => {
-  const params = parseCallbackUrl(url);
+function pollForCompletion(
+  channelToken: string,
+  maxAttempts = 60
+): Promise<AuthResult> {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
 
-  if (!params) {
-    throw new Error("Invalid callback URL");
-  }
+    currentAuthSession = {
+      channelToken,
+      resolve,
+      reject,
+    };
 
-  if (params.error) {
-    throw new Error(`Warpcast auth error: ${params.error}`);
-  }
+    const poll = async () => {
+      attempts++;
 
-  // Verify state to prevent CSRF
-  if (params.state) {
-    const stateValid = await verifyState(params.state);
-    if (!stateValid) {
-      throw new Error("Invalid state parameter - possible CSRF attack");
-    }
-  }
-
-  if (!params.fid) {
-    throw new Error("No FID returned from Warpcast");
-  }
-
-  // Clear stored nonce and state
-  await SecureStore.deleteItemAsync(SIWF_NONCE_KEY);
-  await SecureStore.deleteItemAsync(SIWF_STATE_KEY);
-
-  const userData: FarcasterUserData = {
-    fid: parseInt(params.fid, 10),
-    username: params.username,
-    displayName: params.displayName,
-    pfpUrl: params.pfpUrl,
-    custodyAddress: params.custodyAddress,
-  };
-
-  console.log("[FarcasterAuth] Successfully authenticated:", userData);
-
-  // Call the global callback to update auth state
-  if ((global as any).__authFarcasterCallback) {
-    await (global as any).__authFarcasterCallback(userData);
-  }
-
-  return userData;
-};
-
-/**
- * Check if a URL is a Farcaster auth callback
- */
-export const isFarcasterCallback = (url: string): boolean => {
-  try {
-    const parsed = Linking.parse(url);
-    return parsed.path === CALLBACK_PATH || parsed.path?.includes("farcaster/callback") || false;
-  } catch {
-    return false;
-  }
-};
-
-/**
- * Setup deep link listener for Farcaster auth callbacks
- * Call this in your app's root component
- */
-export const setupFarcasterAuthListener = (): (() => void) => {
-  const handleUrl = async (event: { url: string }) => {
-    console.log("[FarcasterAuth] Received deep link:", event.url);
-
-    if (isFarcasterCallback(event.url)) {
-      try {
-        await handleWarpcastCallback(event.url);
-      } catch (error) {
-        console.error("[FarcasterAuth] Callback handling error:", error);
+      if (attempts > maxAttempts) {
+        clearInterval(currentAuthSession?.pollInterval);
+        currentAuthSession = null;
+        reject(new Error("Authentication timed out"));
+        return;
       }
+
+      try {
+        const status = await appClient.status({ channelToken });
+        console.log("[FarcasterAuth] Poll status:", status.data?.state);
+
+        if (status.data?.state === "completed") {
+          clearInterval(currentAuthSession?.pollInterval);
+          currentAuthSession = null;
+
+          const result: AuthResult = {
+            fid: status.data.fid!,
+            username: status.data.username,
+            displayName: status.data.displayName,
+            pfpUrl: status.data.pfpUrl,
+            custodyAddress: status.data.custody,
+            verifications: status.data.verifications,
+            message: status.data.message,
+            signature: status.data.signature,
+          };
+
+          resolve(result);
+        }
+      } catch (error) {
+        console.error("[FarcasterAuth] Poll error:", error);
+        // Continue polling despite errors
+      }
+    };
+
+    // Poll every 2 seconds
+    currentAuthSession.pollInterval = setInterval(poll, 2000);
+
+    // Initial poll
+    poll();
+  });
+}
+
+/**
+ * Cancel any ongoing auth session
+ */
+export function cancelAuth(): void {
+  if (currentAuthSession?.pollInterval) {
+    clearInterval(currentAuthSession.pollInterval);
+  }
+  if (currentAuthSession?.reject) {
+    currentAuthSession.reject(new Error("Authentication cancelled"));
+  }
+  currentAuthSession = null;
+}
+
+/**
+ * Handle deep link callback from Farcaster
+ * This is called when the user returns to the app after authenticating
+ */
+export function handleAuthCallback(url: string): void {
+  console.log("[FarcasterAuth] Received callback URL:", url);
+
+  // Parse the URL for any data
+  // The actual user data comes from polling the relay, not the callback URL
+  // The callback just indicates the user has returned to the app
+}
+
+/**
+ * Set up listener for Farcaster auth deep links
+ * Should be called once when the app starts
+ */
+export function setupFarcasterAuthListener(): () => void {
+  // Handle URLs when app is already running
+  const subscription = Linking.addEventListener("url", (event) => {
+    console.log("[FarcasterAuth] Deep link received:", event.url);
+
+    if (
+      event.url.includes("auth/farcaster") ||
+      event.url.includes("farcaster")
+    ) {
+      handleAuthCallback(event.url);
     }
-  };
+  });
 
-  // Listen for incoming links
-  const subscription = Linking.addEventListener("url", handleUrl);
-
-  // Check if app was opened with a link
+  // Check for initial URL (app opened via deep link)
   Linking.getInitialURL().then((url) => {
-    if (url && isFarcasterCallback(url)) {
-      handleUrl({ url });
+    if (url) {
+      console.log("[FarcasterAuth] Initial URL:", url);
+      if (url.includes("auth/farcaster") || url.includes("farcaster")) {
+        handleAuthCallback(url);
+      }
     }
   });
 
@@ -228,23 +244,11 @@ export const setupFarcasterAuthListener = (): (() => void) => {
   return () => {
     subscription.remove();
   };
-};
+}
 
-/**
- * Fetch additional user data from Farcaster Hub or Neynar (optional enhancement)
- * This can be used to get more details about a user after auth
- */
-export const fetchFarcasterUserDetails = async (
-  fid: number
-): Promise<Partial<FarcasterUserData>> => {
-  try {
-    // You can implement calls to Neynar API or Farcaster Hub here
-    // For now, return empty object - the basic data from callback is sufficient
-    console.log("[FarcasterAuth] Fetching additional details for FID:", fid);
-    return {};
-  } catch (error) {
-    console.error("[FarcasterAuth] Error fetching user details:", error);
-    return {};
-  }
+export default {
+  initiateWarpcastAuth,
+  cancelAuth,
+  handleAuthCallback,
+  setupFarcasterAuthListener,
 };
-

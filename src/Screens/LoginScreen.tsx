@@ -1,128 +1,338 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
-import { FontAwesome } from '@expo/vector-icons';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import { TextInput } from "react-native-gesture-handler";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../context/Auth";
+import { lightGreen } from "../colors";
 
-const LoginScreen = () => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+interface LoginScreenProps {
+  navigation: any;
+}
 
-  const handleEmailLogin = () => {
-    // Implement email login logic here
-    console.log('Email login');
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { state, signInWithFarcaster, signInWithWallet, signInWithEmail } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: "Sign In",
+      headerStyle: {
+        backgroundColor: "#d2e4dd",
+      },
+    });
+  }, [navigation]);
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (state.isAuthenticated && state.user) {
+      navigation.goBack();
+    }
+  }, [state.isAuthenticated, state.user, navigation]);
+
+  const handleFarcasterLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithFarcaster();
+      // Success will be handled by the auth state change
+    } catch (error: any) {
+      console.error("Farcaster login error:", error);
+      if (error.message !== "Farcaster not installed") {
+        Alert.alert("Sign In Failed", error.message || "Failed to sign in with Farcaster");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialLogin = (platform: string) => {
-    // Implement social login logic here
-    console.log(`${platform} login`);
+  const handleWalletLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithWallet();
+      navigation.goBack();
+    } catch (error: any) {
+      console.error("Wallet login error:", error);
+      Alert.alert("Sign In Failed", error.message || "Failed to sign in with wallet");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleEmailLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Missing Fields", "Please enter both email and password");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signInWithEmail(email, password);
+      navigation.goBack();
+    } catch (error: any) {
+      console.error("Email login error:", error);
+      Alert.alert("Sign In Failed", error.message || "Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (state.isLoading || isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#8B5CF6" />
+          <Text style={styles.loadingText}>Signing in...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity style={styles.loginButton} onPress={handleEmailLogin}>
-        <Text style={styles.loginButtonText}>Login with Email</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Welcome</Text>
+          <Text style={styles.subtitle}>Sign in to access all features</Text>
+        </View>
 
-      <Text style={styles.orText}>OR</Text>
+        {/* Farcaster Sign In - Primary Option */}
+        <TouchableOpacity
+          style={styles.farcasterButton}
+          onPress={handleFarcasterLogin}
+          activeOpacity={0.8}
+        >
+          <View style={styles.farcasterIconContainer}>
+            <Text style={styles.farcasterIcon}>🟣</Text>
+          </View>
+          <View style={styles.buttonTextContainer}>
+            <Text style={styles.farcasterButtonText}>Sign in with Farcaster</Text>
+            <Text style={styles.farcasterButtonSubtext}>Connect your Warpcast account</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#fff" />
+        </TouchableOpacity>
 
-      <View style={styles.socialButtonsContainer}>
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or continue with</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Anonymous Wallet */}
         <TouchableOpacity
-          style={[styles.socialButton, styles.instagramButton]}
-          onPress={() => handleSocialLogin('Instagram')}
+          style={styles.secondaryButton}
+          onPress={handleWalletLogin}
+          activeOpacity={0.8}
         >
-          <FontAwesome name="instagram" size={24} color="white" />
+          <Ionicons name="wallet-outline" size={24} color="#333" />
+          <Text style={styles.secondaryButtonText}>Continue Anonymously</Text>
         </TouchableOpacity>
+
+        {/* Email Toggle */}
         <TouchableOpacity
-          style={[styles.socialButton, styles.linkedinButton]}
-          onPress={() => handleSocialLogin('LinkedIn')}
+          style={styles.secondaryButton}
+          onPress={() => setShowEmailForm(!showEmailForm)}
+          activeOpacity={0.8}
         >
-          <FontAwesome name="linkedin" size={24} color="white" />
+          <Ionicons name="mail-outline" size={24} color="#333" />
+          <Text style={styles.secondaryButtonText}>Sign in with Email</Text>
+          <Ionicons
+            name={showEmailForm ? "chevron-up" : "chevron-down"}
+            size={20}
+            color="#666"
+          />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.socialButton, styles.googleButton]}
-          onPress={() => handleSocialLogin('Google')}
-        >
-          <FontAwesome name="google" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-    </View>
+
+        {/* Email Form */}
+        {showEmailForm && (
+          <View style={styles.emailForm}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#999"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity
+              style={styles.emailLoginButton}
+              onPress={handleEmailLogin}
+            >
+              <Text style={styles.emailLoginButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            By signing in, you agree to our Terms of Service and Privacy Policy
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: lightGreen,
+  },
+  scrollContent: {
+    padding: 24,
+    paddingTop: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 40,
   },
   title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 8,
+  },
+  farcasterButton: {
+    backgroundColor: "#8B5CF6",
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  farcasterIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  farcasterIcon: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  },
+  buttonTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  farcasterButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  farcasterButtonSubtext: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ccc",
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: "#666",
+    fontSize: 14,
+  },
+  secondaryButton: {
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+  },
+  secondaryButtonText: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+  },
+  emailForm: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 12,
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderColor: 'gray',
+    height: 48,
+    borderColor: "#e5e5e5",
     borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  loginButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
-  },
-  loginButtonText: {
-    color: 'white',
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
-    fontWeight: 'bold',
+    backgroundColor: "#fafafa",
   },
-  orText: {
-    marginVertical: 20,
+  emailLoginButton: {
+    backgroundColor: "#333",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  emailLoginButtonText: {
+    color: "#fff",
     fontSize: 16,
+    fontWeight: "600",
   },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+  footer: {
+    marginTop: 32,
+    alignItems: "center",
   },
-  socialButton: {
-    padding: 10,
-    borderRadius: 5,
-    width: 50,
-    alignItems: 'center',
-  },
-  instagramButton: {
-    backgroundColor: '#C13584',
-  },
-  linkedinButton: {
-    backgroundColor: '#0077B5',
-  },
-  googleButton: {
-    backgroundColor: '#DB4437',
+  footerText: {
+    fontSize: 12,
+    color: "#999",
+    textAlign: "center",
+    lineHeight: 18,
   },
 });
 

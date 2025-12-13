@@ -35,6 +35,7 @@ import VerifyScreen from "../Screens/VerifyScreen";
 import MiniAppScreen from "../Screens/MiniAppScreen";
 import MiniAppsScreen from "../Screens/MiniAppsScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
+import LoginScreen from "../Screens/LoginScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -63,6 +64,7 @@ type HomeNavigationStackParamList = {
   GetStarted: undefined;
   CreateGrant: undefined;
   Home: undefined;
+  Login: undefined;
   Map: undefined;
   MiniApp: { url?: string; title?: string } | undefined;
   MiniApps: undefined;
@@ -259,6 +261,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
           title: "Get Connected",
+        }}
+      />
+      <Stack.Screen
+        component={LoginScreen}
+        name="Login"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Sign In",
         }}
       />
       <Stack.Screen
