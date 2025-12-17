@@ -246,9 +246,89 @@ export function setupFarcasterAuthListener(): () => void {
   };
 }
 
+/**
+ * Create a Sign In request for mini apps
+ * Opens Farcaster to get a fresh custody signature with a specific nonce
+ */
+export interface SignInRequestOptions {
+  nonce: string;
+  notBefore?: string;
+  expirationTime?: string;
+}
+
+export interface SignInRequestResult {
+  message: string;
+  signature: string;
+  fid: number;
+  custodyAddress: string;
+}
+
+export async function createSignInRequest(
+  options: SignInRequestOptions
+): Promise<SignInRequestResult> {
+  console.log("[FarcasterAuth] Creating signIn request with nonce:", options.nonce);
+
+  try {
+    // Get the callback URL for our app
+    const callbackUrl = Linking.createURL("auth/farcaster/signin");
+
+    // Create a Sign In With Farcaster channel with the mini app's nonce
+    const channel = await appClient.createChannel({
+      siweUri: callbackUrl,
+      domain: APP_DOMAIN,
+      nonce: options.nonce,
+      notBefore: options.notBefore || new Date().toISOString(),
+      expirationTime:
+        options.expirationTime ||
+        new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 min expiry
+    });
+
+    console.log("[FarcasterAuth] SignIn channel created:", {
+      channelToken: channel.data?.channelToken,
+    });
+
+    if (!channel.data?.channelToken || !channel.data?.url) {
+      throw new Error("Failed to create signIn channel");
+    }
+
+    const { channelToken, url: farcasterUrl } = channel.data;
+
+    // Check if Farcaster is installed
+    const canOpen = await Linking.canOpenURL("farcaster://");
+
+    if (!canOpen) {
+      throw new Error("Farcaster app not installed - please install Farcaster to use this feature");
+    }
+
+    // Open Farcaster for signature
+    console.log("[FarcasterAuth] Opening Farcaster for signature");
+    await Linking.openURL(farcasterUrl);
+
+    // Poll for completion (shorter timeout for signIn)
+    const result = await pollForCompletion(channelToken, 30); // 60 seconds max
+
+    if (!result.message || !result.signature) {
+      throw new Error("Signature not received from Farcaster");
+    }
+
+    console.log("[FarcasterAuth] SignIn completed with FID:", result.fid);
+
+    return {
+      message: result.message,
+      signature: result.signature,
+      fid: result.fid,
+      custodyAddress: result.custodyAddress || "",
+    };
+  } catch (error) {
+    console.error("[FarcasterAuth] SignIn request error:", error);
+    throw error;
+  }
+}
+
 export default {
   initiateWarpcastAuth,
   cancelAuth,
   handleAuthCallback,
   setupFarcasterAuthListener,
+  createSignInRequest,
 };

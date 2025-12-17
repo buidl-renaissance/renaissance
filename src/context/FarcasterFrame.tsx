@@ -243,65 +243,76 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
         console.log("[FarcasterFrame] signIn requested", options);
         
         const currentUser = authRef.current.state.user;
+        const currentState = authRef.current.state;
+        const fid = currentUser?.fid || 0;
         
-        // Generate a signed response for authentication
-        // This works for both local accounts and Farcaster accounts
-        try {
-          const wallet = await getWallet();
-          const nonce = options?.nonce || `nonce-${Date.now()}`;
-          const notBefore = options?.notBefore;
-          const expirationTime = options?.expirationTime;
+        // Check if user is authenticated with Farcaster and has a signer
+        if (currentUser?.type === "farcaster" && fid > 0 && currentState.hasSigner) {
+          console.log("[FarcasterFrame] User has valid Neynar signer, creating SIWF message...");
           
-          // Create a SIWF-compatible message (based on EIP-4361 SIWE format)
-          const domain = "renaissance.app";
-          const uri = `https://${domain}`;
-          const statement = "Farcaster Auth";
-          const issuedAt = new Date().toISOString();
-          const chainId = 10; // Optimism (Farcaster uses Optimism)
-          const fid = currentUser?.fid || 0;
-          
-          // Build the message in EIP-4361 SIWE format
-          const messageParts = [
-            `${domain} wants you to sign in with your Ethereum account:`,
-            wallet.address,
-            "",
-            statement,
-            "",
-            `URI: ${uri}`,
-            `Version: 1`,
-            `Chain ID: ${chainId}`,
-            `Nonce: ${nonce}`,
-            `Issued At: ${issuedAt}`,
-          ];
-          
-          // Add optional fields if provided
-          if (notBefore) {
-            messageParts.push(`Not Before: ${notBefore}`);
+          try {
+            // Create a SIWF message signed with the local wallet
+            // The mini app will verify this along with the context.user FID
+            const wallet = await getWallet();
+            const nonce = options?.nonce || `nonce-${Date.now()}`;
+            const notBefore = options?.notBefore;
+            const expirationTime = options?.expirationTime;
+            
+            const domain = "renaissance.app";
+            const uri = `https://${domain}`;
+            const statement = "Farcaster Auth";
+            const issuedAt = new Date().toISOString();
+            const chainId = 10;
+            
+            const messageParts = [
+              `${domain} wants you to sign in with your Ethereum account:`,
+              wallet.address,
+              "",
+              statement,
+              "",
+              `URI: ${uri}`,
+              `Version: 1`,
+              `Chain ID: ${chainId}`,
+              `Nonce: ${nonce}`,
+              `Issued At: ${issuedAt}`,
+            ];
+            
+            if (notBefore) {
+              messageParts.push(`Not Before: ${notBefore}`);
+            }
+            if (expirationTime) {
+              messageParts.push(`Expiration Time: ${expirationTime}`);
+            }
+            
+            messageParts.push(`Resources:`);
+            messageParts.push(`- farcaster://fid/${fid}`);
+            
+            const message = messageParts.join("\n");
+            const signature = await wallet.signMessage(message);
+            
+            console.log("[FarcasterFrame] signIn completed for FID:", fid);
+            
+            // Use authAddress method since we're using a delegated address
+            return {
+              message,
+              signature,
+              authMethod: (options?.acceptAuthAddress !== false ? "authAddress" : "custody") as "custody" | "authAddress",
+            };
+          } catch (error: any) {
+            console.error("[FarcasterFrame] signIn error:", error);
+            throw new Error(error.message || "Failed to sign in");
           }
-          if (expirationTime) {
-            messageParts.push(`Expiration Time: ${expirationTime}`);
-          }
-          
-          // Add Farcaster-specific resource
-          messageParts.push(`Resources:`);
-          messageParts.push(`- farcaster://fid/${fid}`);
-          
-          const message = messageParts.join("\n");
-          
-          // Sign the message with the wallet
-          const signature = await wallet.signMessage(message);
-          
-          console.log("[FarcasterFrame] signIn signed message for user:", currentUser?.username || "anonymous");
-          
-          return {
-            message,
-            signature,
-            authMethod: "custody" as const,
-          };
-        } catch (error) {
-          console.error("[FarcasterFrame] signIn signing error:", error);
-          throw new Error("Failed to sign authentication message");
         }
+        
+        // User not authenticated with Farcaster - prompt to sign in
+        if (!currentUser || currentUser.type !== "farcaster") {
+          console.log("[FarcasterFrame] User not authenticated with Farcaster");
+          throw new Error("Please sign in with Farcaster to use this feature");
+        }
+        
+        // User is Farcaster but doesn't have signer - shouldn't happen with new flow
+        console.log("[FarcasterFrame] Farcaster user without signer");
+        throw new Error("Authentication required - please sign in again");
       },
 
       signManifest: async () => {

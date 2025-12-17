@@ -18,6 +18,8 @@
     "@farcaster/auth-client": "^0.7.0",
     "@farcaster/frame-host-react-native": "^0.1.17",
     "@gorhom/bottom-sheet": "^4.4.7",
+    "@noble/ed25519": "^3.0.0",
+    "@noble/hashes": "^2.0.1",
     "@react-native-anywhere/polyfill-base64": "^0.0.1-alpha.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/cli-platform-ios": "^11.3.6",
@@ -51,6 +53,7 @@
     "expo-splash-screen": "~0.27.5",
     "expo-status-bar": "~1.12.1",
     "expo-updates": "~0.25.23",
+    "expo-web-browser": "^15.0.10",
     "html-entities": "^2.3.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.37",
@@ -90,7 +93,7 @@
     "postinstall-postinstall": "^2.1.0"
   },
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=20.19.0"
   },
   "private": true
 }

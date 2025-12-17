@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
-      "node": "20.18.0"
+      "node": "22.9.0"
     },
     "development-simulator": {
       "developmentClient": true,
@@ -15,16 +15,16 @@
       "ios": {
         "simulator": true
       },
-      "node": "20.18.0"
+      "node": "22.9.0"
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
-      "node": "20.18.0"
+      "node": "22.9.0"
     },
     "production": {
       "channel": "production",
-      "node": "20.18.0"
+      "node": "22.9.0"
     }
   },
   "submit": {

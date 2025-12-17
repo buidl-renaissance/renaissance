@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet } from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { Chip, Text } from "react-native-paper";
 import SearchableDropdown from "react-native-searchable-dropdown";
+import { Ionicons } from "@expo/vector-icons";
 import { Button } from "../Components/Button";
 import { skillsList } from "../mocks/skills";
 import { Contact, createUser, getContact, saveContact } from "../dpop";
+import { useAuth } from "../context/Auth";
 
 // const artistAttributes = [
 //   { id: 1, name: 'Username', value: 'username' },
@@ -32,6 +34,8 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
     headerTitle: "Profile",
   });
 
+  const { state: authState, signOut, postCast } = useAuth();
+  
   const [name, setName] = useState("");
   const [publicName, setPublicName] = useState("");
   const [phone, setPhone] = useState("");
@@ -101,6 +105,24 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
     // setSelectedAttributions([]);
   };
 
+  const handleSignOut = async () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            await signOut();
+            navigation.goBack();
+          },
+        },
+      ]
+    );
+  };
+
   // const handleAddAttribution = (attribution: UserAttribution) => {
   //   setSelectedAttributions([...selectedAttributions, attribution]);
   // };
@@ -113,7 +135,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
   // };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.label}>Name</Text>
       <TextInput
         placeholder="Enter Name..."
@@ -192,15 +214,91 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
         />
       </View> */}
 
+      {/* Farcaster Section - Always visible */}
+      <View style={styles.farcasterSection}>
+        <Text style={styles.sectionTitle}>Farcaster Integration</Text>
+        
+        {authState.isAuthenticated && authState.user?.type === "farcaster" ? (
+          <>
+            {/* Connected Account Info */}
+            <View style={styles.farcasterInfo}>
+              <Ionicons name="person-circle" size={40} color="#8B5CF6" />
+              <View style={styles.farcasterDetails}>
+                <Text style={styles.farcasterUsername}>
+                  @{authState.user.username}
+                </Text>
+                <Text style={styles.farcasterFid}>
+                  FID: {authState.user.fid}
+                </Text>
+              </View>
+              <Ionicons name="checkmark-circle" size={24} color="#22C55E" style={{ marginLeft: 'auto' }} />
+            </View>
+
+            {/* Status - All permissions included with Neynar sign-in */}
+            <View style={styles.signerStatus}>
+              <Text style={styles.label}>Permissions</Text>
+              <View style={styles.statusRow}>
+                <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                <Text style={styles.statusText}>Post casts</Text>
+              </View>
+              <View style={styles.statusRow}>
+                <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                <Text style={styles.statusText}>Use mini apps</Text>
+              </View>
+              <View style={styles.statusRow}>
+                <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                <Text style={styles.statusText}>Social features</Text>
+              </View>
+            </View>
+
+            <Text style={styles.helpText}>
+              You have full access to Farcaster features in this app.
+            </Text>
+          </>
+        ) : (
+          <>
+            {/* Not Connected State */}
+            <View style={styles.notConnectedInfo}>
+              <Ionicons name="logo-buffer" size={48} color="#8B5CF6" />
+              <Text style={styles.notConnectedTitle}>Connect Farcaster</Text>
+              <Text style={styles.notConnectedText}>
+                Sign in with Farcaster to enable posting, mini apps, and social features.
+              </Text>
+            </View>
+            
+            <TouchableOpacity
+              style={styles.requestButton}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Ionicons name="log-in-outline" size={18} color="#fff" />
+              <Text style={styles.requestButtonText}>
+                Sign in with Farcaster
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
+      {/* Sign Out Button */}
+      {authState.isAuthenticated && (
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Ionicons name="log-out-outline" size={18} color="#EF4444" />
+          <Text style={styles.signOutButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+      )}
+
       <Button title="Save Profile" onPress={handleSave} />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentContainer: {
     padding: 16,
+    paddingBottom: 40,
   },
   input: {
     height: 40,
@@ -253,6 +351,120 @@ const styles = StyleSheet.create({
   selectedAttributeValue: {
     fontSize: 16,
     marginTop: 4,
+  },
+  // Farcaster section styles
+  farcasterSection: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#1F2937",
+  },
+  farcasterInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  farcasterDetails: {
+    marginLeft: 12,
+  },
+  farcasterUsername: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#8B5CF6",
+  },
+  farcasterFid: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+  signerStatus: {
+    marginBottom: 12,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  statusText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: "#4B5563",
+  },
+  requestButton: {
+    backgroundColor: "#8B5CF6",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  requestButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  revokeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#EF4444",
+    marginTop: 8,
+  },
+  revokeButtonText: {
+    color: "#EF4444",
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  helpText: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  signOutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#EF4444",
+    marginBottom: 20,
+  },
+  signOutButtonText: {
+    color: "#EF4444",
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  notConnectedInfo: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  notConnectedTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1F2937",
+    marginTop: 12,
+  },
+  notConnectedText: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 8,
+    paddingHorizontal: 20,
   },
 });
 

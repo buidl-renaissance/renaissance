@@ -10,6 +10,15 @@ import * as SecureStore from "expo-secure-store";
 import * as Linking from "expo-linking";
 import { getWallet } from "../utils/wallet";
 import { login as dpopLogin, register as dpopRegister } from "../dpop";
+import {
+  initiateDirectSignIn,
+  getStoredSignerUuid,
+  getStoredFid,
+  clearNeynarAuth,
+  fetchUserProfile,
+  postCast as neynarPostCast,
+  type NeynarUser,
+} from "../utils/neynarAuth";
 
 // Types for authentication
 export type AuthType = "farcaster" | "local_wallet" | "local_email" | null;
@@ -21,6 +30,7 @@ export interface FarcasterUserData {
   pfpUrl?: string;
   custodyAddress?: string;
   verifications?: string[];
+  signerUuid?: string; // Neynar signer UUID for posting
 }
 
 export interface LocalUserData {
@@ -46,6 +56,8 @@ interface AuthState {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasSigner: boolean;
+  signerUuid: string | null;
 }
 
 interface AuthContextValue {
@@ -60,6 +72,8 @@ interface AuthContextValue {
   }) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  // Farcaster posting
+  postCast: (text: string, options?: { parentUrl?: string; parentHash?: string }) => Promise<{ hash: string }>;
 }
 
 const AUTH_STORAGE_KEY = "AUTH_USER";
@@ -77,6 +91,8 @@ const INITIAL_STATE: AuthState = {
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  hasSigner: false,
+  signerUuid: null,
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -104,12 +120,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loadSavedAuth = async () => {
     try {
       const savedAuth = await SecureStore.getItemAsync(AUTH_STORAGE_KEY);
+      const signerUuid = await getStoredSignerUuid();
+      const storedFid = await getStoredFid();
+      
       if (savedAuth) {
         const user = JSON.parse(savedAuth) as AuthUser;
+        // Check if signer matches the user's FID
+        const hasSigner = signerUuid !== null && 
+                          storedFid !== null &&
+                          storedFid === user.fid;
+        
         setState({
           user,
           isLoading: false,
           isAuthenticated: true,
+          hasSigner,
+          signerUuid: hasSigner ? signerUuid : null,
         });
       } else {
         setState((prev) => ({ ...prev, isLoading: false }));
@@ -136,43 +162,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Sign in with Farcaster via Warpcast deep link
+  // Sign in with Farcaster via Neynar (includes signer approval)
   const signInWithFarcaster = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
-      // Import the SIWF helper (will be created in next step)
-      const { initiateWarpcastAuth } = await import("../utils/farcasterAuth");
-      await initiateWarpcastAuth();
-      // The actual user data will be received via deep link callback
-      // which is handled in the farcasterAuth module
+      console.log("[Auth] Starting Neynar sign-in flow...");
+      
+      // Use Neynar's direct sign-in which creates signer and gets approval in one flow
+      const result = await initiateDirectSignIn();
+      
+      console.log("[Auth] Neynar sign-in completed:", result.user.username);
+      
+      // Create the user object with signer info
+      const farcasterData: FarcasterUserData = {
+        fid: result.user.fid,
+        username: result.user.username,
+        displayName: result.user.displayName,
+        pfpUrl: result.user.pfpUrl,
+        custodyAddress: result.user.custodyAddress,
+        verifications: result.user.verifications,
+        signerUuid: result.signerUuid,
+      };
+      
+      const user: AuthUser = {
+        type: "farcaster",
+        farcaster: farcasterData,
+        fid: result.user.fid,
+        username: result.user.username,
+        displayName: result.user.displayName,
+        pfpUrl: result.user.pfpUrl,
+      };
+
+      await saveAuth(user);
+      
+      setState({
+        user,
+        isLoading: false,
+        isAuthenticated: true,
+        hasSigner: result.isApproved,
+        signerUuid: result.signerUuid,
+      });
+      
+      console.log("[Auth] User authenticated with posting permissions!");
     } catch (error) {
       console.error("[Auth] Farcaster sign in error:", error);
       setState((prev) => ({ ...prev, isLoading: false }));
       throw error;
     }
   }, []);
-
-  // Handle Farcaster auth callback (called from deep link handler)
-  const handleFarcasterCallback = useCallback(
-    async (farcasterData: FarcasterUserData) => {
-      const user: AuthUser = {
-        type: "farcaster",
-        farcaster: farcasterData,
-        fid: farcasterData.fid,
-        username: farcasterData.username,
-        displayName: farcasterData.displayName,
-        pfpUrl: farcasterData.pfpUrl,
-      };
-
-      await saveAuth(user);
-      setState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
-      });
-    },
-    []
-  );
 
   // Sign in with local wallet (anonymous)
   const signInWithWallet = useCallback(async (): Promise<AuthUser> => {
@@ -202,6 +239,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user,
         isLoading: false,
         isAuthenticated: true,
+        hasSigner: false, // Local wallets don't have Farcaster signers
+        signerUuid: null,
       });
 
       return user;
@@ -244,6 +283,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           user,
           isLoading: false,
           isAuthenticated: true,
+          hasSigner: false, // Email accounts don't have Farcaster signers
+          signerUuid: null,
         });
 
         return user;
@@ -297,6 +338,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           user,
           isLoading: false,
           isAuthenticated: true,
+          hasSigner: false,
+          signerUuid: null,
         });
 
         return user;
@@ -312,10 +355,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Sign out
   const signOut = useCallback(async () => {
     await clearAuth();
+    await clearNeynarAuth(); // Also clear the Neynar signer
     setState({
       user: null,
       isLoading: false,
       isAuthenticated: false,
+      hasSigner: false,
+      signerUuid: null,
     });
   }, []);
 
@@ -324,14 +370,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await loadSavedAuth();
   }, []);
 
-  // Expose handleFarcasterCallback for the deep link handler
-  useEffect(() => {
-    // Store the callback globally so it can be called from the deep link handler
-    (global as any).__authFarcasterCallback = handleFarcasterCallback;
-    return () => {
-      delete (global as any).__authFarcasterCallback;
-    };
-  }, [handleFarcasterCallback]);
+  // Post a cast to Farcaster
+  const postCast = useCallback(async (
+    text: string,
+    options?: { parentUrl?: string; parentHash?: string }
+  ): Promise<{ hash: string }> => {
+    if (!state.hasSigner || !state.signerUuid) {
+      throw new Error("No signer available - please sign in with Farcaster first");
+    }
+
+    console.log("[Auth] Posting cast...");
+    
+    const result = await neynarPostCast(text, options);
+    
+    console.log("[Auth] Cast posted:", result.hash);
+    
+    return { hash: result.hash };
+  }, [state.hasSigner, state.signerUuid]);
 
   const value: AuthContextValue = {
     state,
@@ -341,6 +396,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     registerWithEmail,
     signOut,
     refreshUser,
+    postCast,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

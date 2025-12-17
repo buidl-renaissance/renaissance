@@ -107,7 +107,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           <Text style={styles.subtitle}>Sign in to access all features</Text>
         </View>
 
-        {/* Farcaster Sign In - Primary Option */}
+        {/* Farcaster Sign In - Primary Option with Posting Permissions */}
         <TouchableOpacity
           style={styles.farcasterButton}
           onPress={handleFarcasterLogin}
@@ -118,10 +118,26 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
           <View style={styles.buttonTextContainer}>
             <Text style={styles.farcasterButtonText}>Sign in with Farcaster</Text>
-            <Text style={styles.farcasterButtonSubtext}>Connect your Warpcast account</Text>
+            <Text style={styles.farcasterButtonSubtext}>Includes posting permissions</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#fff" />
         </TouchableOpacity>
+
+        {/* Benefits of Farcaster sign-in */}
+        <View style={styles.benefitsContainer}>
+          <View style={styles.benefitItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+            <Text style={styles.benefitText}>Post casts to Farcaster</Text>
+          </View>
+          <View style={styles.benefitItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+            <Text style={styles.benefitText}>Use mini apps</Text>
+          </View>
+          <View style={styles.benefitItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+            <Text style={styles.benefitText}>Social features</Text>
+          </View>
+        </View>
 
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
@@ -333,6 +349,22 @@ const styles = StyleSheet.create({
     color: "#999",
     textAlign: "center",
     lineHeight: 18,
+  },
+  benefitsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    marginBottom: 8,
+    gap: 12,
+  },
+  benefitItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  benefitText: {
+    fontSize: 12,
+    color: "#666",
   },
 });
 

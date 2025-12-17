@@ -28,7 +28,11 @@ import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
-import { setupFarcasterAuthListener } from "./src/utils/farcasterAuth";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+
+// Warm up the browser for faster auth
+WebBrowser.maybeCompleteAuthSession();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -86,10 +90,26 @@ export default function App() {
     };
   }, []);
 
-  // Set up Farcaster auth deep link listener
+  // Handle deep links for auth callbacks
   React.useEffect(() => {
-    const cleanup = setupFarcasterAuthListener();
-    return cleanup;
+    const handleDeepLink = (event: { url: string }) => {
+      console.log("[App] Deep link received:", event.url);
+      // Deep links are handled by expo-web-browser for auth sessions
+      // and by the navigation container for screen navigation
+    };
+
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+
+    // Check for initial URL (app opened via deep link)
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log("[App] Initial URL:", url);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   return (
