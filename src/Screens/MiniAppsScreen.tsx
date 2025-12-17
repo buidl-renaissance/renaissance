@@ -105,7 +105,7 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
 
   const getAuthStatusLabel = () => {
     if (!authState.isAuthenticated) return "Not signed in";
-    if (authState.user?.type === "farcaster") return `@${authState.user.username || "farcaster"}`;
+    if (authState.user?.type === "farcaster") return `@${authState.user.username || "user"}`;
     if (authState.user?.type === "local_email") return authState.user.local?.email || "Email user";
     return "Guest";
   };
@@ -139,9 +139,9 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
 
         <View style={styles.header}>
           <Ionicons name="apps" size={48} color="#6366F1" />
-          <Text style={styles.headerTitle}>Farcaster Mini Apps</Text>
+          <Text style={styles.headerTitle}>Mini Apps</Text>
           <Text style={styles.headerSubtitle}>
-            Explore decentralized apps built on Farcaster
+            Explore apps and experiences
           </Text>
         </View>
 

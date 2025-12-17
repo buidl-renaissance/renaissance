@@ -502,114 +502,114 @@ const CalendarScreen = ({ navigation }) => {
         {/* Mini Apps Section */}
         <View style={{ 
           flexDirection: "row", 
-          paddingHorizontal: 16, 
+          paddingHorizontal: 12, 
           paddingVertical: 16,
-          gap: 16,
+          justifyContent: "space-between",
         }}>
           <TouchableOpacity 
             onPress={handleOpenArt}
             style={{
-              flex: 1,
               alignItems: "center",
+              width: 66,
             }}
           >
             <View style={{
               backgroundColor: "#EC4899",
-              borderRadius: 16,
-              width: 64,
-              height: 64,
+              borderRadius: 14,
+              width: 66,
+              height: 66,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 32 }}>🎨</Text>
+              <Text style={{ fontSize: 30 }}>🎨</Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Art</Text>
+            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Art</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={handleOpenParking}
             style={{
-              flex: 1,
               alignItems: "center",
+              width: 66,
             }}
           >
             <View style={{
               backgroundColor: "#10B981",
-              borderRadius: 16,
-              width: 64,
-              height: 64,
+              borderRadius: 14,
+              width: 66,
+              height: 66,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 32 }}>🅿️</Text>
+              <Text style={{ fontSize: 30 }}>🅿️</Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Parking</Text>
+            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Parking</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={handleOpenMusic}
             style={{
-              flex: 1,
               alignItems: "center",
+              width: 66,
             }}
           >
             <View style={{
               backgroundColor: "#F59E0B",
-              borderRadius: 16,
-              width: 64,
-              height: 64,
+              borderRadius: 14,
+              width: 66,
+              height: 66,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 32 }}>🎵</Text>
+              <Text style={{ fontSize: 30 }}>🎵</Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Music</Text>
+            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Music</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={handleOpenCollectorQuest}
             style={{
-              flex: 1,
               alignItems: "center",
+              width: 66,
             }}
           >
             <View style={{
               backgroundColor: "#3B82F6",
-              borderRadius: 16,
-              width: 64,
-              height: 64,
+              borderRadius: 14,
+              width: 66,
+              height: 66,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 32 }}>🏆</Text>
+              <Text style={{ fontSize: 30 }}>🏆</Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Quests</Text>
+            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Quests</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={handleOpenMysticIsland}
             style={{
-              flex: 1,
               alignItems: "center",
+              width: 66,
             }}
           >
             <View style={{
               backgroundColor: "#6366F1",
-              borderRadius: 16,
-              width: 64,
-              height: 64,
+              borderRadius: 14,
+              width: 66,
+              height: 66,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 8,
+              marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 32 }}>🏝️</Text>
+              <Text style={{ fontSize: 30 }}>🏝️</Text>
             </View>
             <Text style={{ 
-              fontSize: 11, 
+              fontSize: 9, 
               fontWeight: "600", 
               color: "#333",
               textAlign: "center",
