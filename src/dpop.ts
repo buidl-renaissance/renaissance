@@ -337,15 +337,18 @@ export const getFlyers = async () => {
   return result.data;
 };
 
-export const createFlyer = async (image) => {
+export const createFlyer = async (
+  image,
+  title?,
+  description?,
+  venue?,
+  start_date?,
+  end_date?
+) => {
   const contact = await getContact();
-  // console.log("CREATE FLYER: ", {
-  //   data: {
-  //     image: image,
-  //   },
-  //   user_id: contact.id,
-  // });
-  const result = await (
+  
+  // Create flyer
+  const flyerResult = await (
     await fetch(`${hostname}/api/flyer`, {
       method: "POST",
       body: JSON.stringify({
@@ -357,8 +360,32 @@ export const createFlyer = async (image) => {
       headers: { "content-type": "application/json" },
     })
   ).json();
-  // console.log("SUBMITTED FLYER: ", result);
-  return result;
+  
+  console.log("SUBMITTED FLYER: ", flyerResult);
+  
+  // If event details provided, create event with flyer reference
+  if (title && start_date && end_date) {
+    const eventResult = await (
+      await fetch(`${hostname}/api/event`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: title,
+          description: description ?? "",
+          image: image,
+          start_date: start_date,
+          end_date: end_date,
+          venue_id: venue?.id,
+          flyer_id: flyerResult?.data?.id,
+        }),
+        headers: { "content-type": "application/json" },
+      })
+    ).json();
+    
+    console.log("CREATED EVENT WITH FLYER: ", eventResult);
+    return { flyer: flyerResult, event: eventResult };
+  }
+  
+  return { flyer: flyerResult };
 };
 
 export const register = async (params: RegisterParams) => {
