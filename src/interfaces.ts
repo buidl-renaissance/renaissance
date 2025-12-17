@@ -162,3 +162,155 @@ export interface Weather {
   type: string;
   geometry: object;
 }
+
+export interface LumaHost {
+  apiId: string;
+  name: string;
+  avatarUrl: string;
+  bioShort: string | null;
+  timezone: string;
+  isVerified: boolean;
+  instagramHandle: string | null;
+  twitterHandle: string | null;
+  linkedinHandle: string | null;
+  tiktokHandle: string | null;
+  youtubeHandle: string | null;
+  website: string | null;
+  username: string | null;
+  createdAt: string | null;
+  updatedAt: string;
+}
+
+export interface LumaCategory {
+  apiId: string;
+  name: string;
+  description: string;
+  slug: string;
+  eventCount: number;
+  subscriberCount: number;
+  tintColor: string;
+  iconUrl: string;
+  heroImageDesktopUrl: string;
+  simpleIconUrl: string;
+  socialImageUrl: string;
+  pageTitle: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LumaCalendar {
+  apiId: string;
+  name: string;
+  description: string | null;
+  timezone: string | null;
+  tintColor: string;
+  createdAt: string | null;
+  updatedAt: string;
+}
+
+export interface LumaEvent {
+  apiId: string;
+  name: string;
+  calendarApiId: string;
+  categorySlug: string;
+  coverUrl: string;
+  startAt: string;
+  endAt: string;
+  timezone: string;
+  locationType: string;
+  eventType: string;
+  visibility: string;
+  url: string;
+  userApiId: string;
+  hideRsvp: boolean;
+  showGuestList: boolean;
+  waitlistEnabled: boolean;
+  oneToOne: boolean;
+  recurrenceId: string | null;
+  guestCount: number;
+  ticketCount: number;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  fullAddress: string | null;
+  address: string | null;
+  cityState: string;
+  addressDescription: string;
+  countryCode: string | null;
+  placeId: string | null;
+  appleMapsPlaceId: string | null;
+  addressMode: string;
+  addressType: string | null;
+  geoAddressVisibility: string;
+  latitude: number | null;
+  longitude: number | null;
+  virtualHasAccess: boolean;
+  ticketPrice: any;
+  ticketCurrency: string | null;
+  ticketMaxPrice: number | null;
+  isFree: boolean;
+  isSoldOut: boolean;
+  spotsRemaining: number | null;
+  isNearCapacity: boolean;
+  requireApproval: boolean;
+  currencyCode: string | null;
+  currencySymbol: string | null;
+  coverVibrantColor: string | null;
+  coverColors: string[];
+  tintColor: string | null;
+  locale: string | null;
+  soldOut: boolean | null;
+  metadata: any | null;
+  createdAt: string | null;
+  updatedAt: string;
+  category: LumaCategory;
+  calendar: LumaCalendar;
+  hosts: LumaHost[];
+  distance?: number;
+}
+
+export interface RAArtist {
+  id: string;
+  name: string;
+}
+
+export interface RAVenue {
+  id: string;
+  name: string;
+  contentUrl: string;
+}
+
+export interface RAEventImage {
+  id: string;
+  filename: string;
+  alt: string | null;
+  type: string;
+  crop: any | null;
+  __typename: string;
+}
+
+export interface RATicket {
+  validType: string;
+  onSaleFrom: string;
+  onSaleUntil: string;
+  __typename: string;
+}
+
+export interface RAEvent {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  title: string;
+  contentUrl: string;
+  flyerFront: string | null;
+  isTicketed: boolean | null;
+  interestedCount: number | null;
+  venue: RAVenue;
+  artists: RAArtist[];
+  images: RAEventImage[];
+  tickets: RATicket[];
+  pick: any | null;
+  featured?: boolean;
+  isFeatured?: boolean;
+}

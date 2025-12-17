@@ -34,6 +34,9 @@ import { useEvents } from "../hooks/useEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
+import { useLumaEvents } from "../hooks/useLumaEvents";
+import { useRAEvents } from "../hooks/useRAEvents";
+import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import { useArtworks, useContent } from "../hooks/useArtwork";
@@ -41,6 +44,11 @@ import * as Linking from "expo-linking";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
+import { LumaEventCard } from "../Components/LumaEventCard";
+import { RAEventCard } from "../Components/RAEventCard";
+import { FlyerEventCard } from "../Components/FlyerEventCard";
+import { EventWebModal } from "../Components/EventWebModal";
+import { LumaEvent, RAEvent } from "../interfaces";
 
 const { height, width } = Dimensions.get("window");
 
@@ -52,22 +60,50 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
+  
+  // Memoize query objects to prevent unnecessary re-fetches
+  const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
+  const { events: lumaEvents } = useLumaEvents(lumaQuery);
+  const { events: raEvents } = useRAEvents();
+  const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
+  
   const [contact] = useContact();
   const [flyers] = useFlyers();
   const [artworks] = useArtworks();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: DAEvent[]; title: string; subtitle: string }[]
+    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
 
+  // Mock flyer event for demonstration
+  const mockFlyerEvent = React.useMemo(() => ({
+    id: 'mock-flyer-1',
+    title: 'Detroit Art Walk - Holiday Edition',
+    start_date: moment().add(2, 'days').set({ hour: 18, minute: 0 }).toISOString(),
+    end_date: moment().add(2, 'days').set({ hour: 21, minute: 0 }).toISOString(),
+    venue: {
+      id: 999,
+      title: 'Eastern Market',
+    },
+    eventType: 'flyer',
+    description: 'Join us for a festive art walk through Eastern Market',
+  }), []);
+
   const [weather] = useWeather();
   const [time, setTime] = React.useState<string>("");
 
   const [filter, setFilter] = React.useState<string>("all");
+  
+  // State for web modal
+  const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
+  const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
+  const [webModalTitle, setWebModalTitle] = React.useState<string>("");
+  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | undefined>(undefined);
+  const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
 
   navigation.setOptions({
     title: "Home",
@@ -138,6 +174,10 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Account");
   }, []);
 
+  const handleCreateFlyer = React.useCallback(() => {
+    navigation.push("CreateFlyer");
+  }, []);
+
   React.useEffect(() => {
     setFilteredEvents(
       events.filter((event: DAEvent) => {
@@ -183,6 +223,8 @@ const CalendarScreen = ({ navigation }) => {
 
   React.useEffect(() => {
     const groups = {};
+    
+    // Process existing events
     filteredEvents.map((event: DAEvent) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
@@ -196,13 +238,97 @@ const CalendarScreen = ({ navigation }) => {
             data: [],
           };
         }
-        groups[date].data.push(event);
+        groups[date].data.push({ ...event, eventType: "da" });
       }
     });
-    const r = Object.keys(groups);
+
+    // Add mock flyer event
+    const mockStart = moment(mockFlyerEvent.start_date);
+    const mockEnd = moment(mockFlyerEvent.end_date);
+    if (mockEnd.isAfter() && moment(mockStart).add(24, "hour").isAfter()) {
+      const date = mockStart.format("MMMM Do");
+      const subtitle = mockStart.format("dddd");
+      if (!groups[date]) {
+        groups[date] = {
+          title: date,
+          subtitle: subtitle,
+          data: [],
+        };
+      }
+      groups[date].data.push(mockFlyerEvent);
+    }
+
+    // Process Luma events
+    lumaEvents.map((event: LumaEvent) => {
+      const start = moment(event.startAt);
+      const end = moment(event.endAt);
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const date = start.format("MMMM Do");
+        const subtitle = start.format("dddd");
+        if (!groups[date]) {
+          groups[date] = {
+            title: date,
+            subtitle: subtitle,
+            data: [],
+          };
+        }
+        groups[date].data.push({ ...event, eventType: "luma" });
+      }
+    });
+
+    // Process RA events
+    raEvents.map((event: RAEvent) => {
+      const start = moment(event.startTime);
+      const end = moment(event.endTime);
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const date = start.format("MMMM Do");
+        const subtitle = start.format("dddd");
+        if (!groups[date]) {
+          groups[date] = {
+            title: date,
+            subtitle: subtitle,
+            data: [],
+          };
+        }
+        groups[date].data.push({ 
+          ...event, 
+          eventType: "ra",
+          isFeatured: isFeatured(event.id)
+        });
+      }
+    });
+
+    // Sort events within each group by start time
+    Object.values(groups).forEach((group: any) => {
+      group.data.sort((a, b) => {
+        let aStart, bStart;
+        if (a.eventType === "luma") {
+          aStart = moment(a.startAt);
+        } else if (a.eventType === "ra") {
+          aStart = moment(a.startTime);
+        } else if (a.eventType === "flyer") {
+          aStart = moment(a.start_date);
+        } else {
+          aStart = moment(a.start_date);
+        }
+        
+        if (b.eventType === "luma") {
+          bStart = moment(b.startAt);
+        } else if (b.eventType === "ra") {
+          bStart = moment(b.startTime);
+        } else if (b.eventType === "flyer") {
+          bStart = moment(b.start_date);
+        } else {
+          bStart = moment(b.start_date);
+        }
+        
+        return aStart.diff(bStart);
+      });
+    });
+
     setEventsGroup(Object.values(groups) as any);
-    console.log("COMPUTE EVENT GROUPS");
-  }, [filteredEvents]);
+    console.log("COMPUTE EVENT GROUPS with Luma and RA events");
+  }, [filteredEvents, lumaEvents, raEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -376,10 +502,38 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )}
 
-        <SectionTitle>EVENT CALENDAR</SectionTitle>
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
+          <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
+            EVENT CALENDAR
+          </Text>
+          <TouchableOpacity onPress={handleCreateFlyer} style={{ padding: 4 }}>
+            <Icon
+              type={IconTypes.Ionicons}
+              name="add-circle-outline"
+              size={24}
+              color="#999"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
+
+  const handleCloseWebModal = React.useCallback(() => {
+    setWebModalVisible(false);
+    setWebModalUrl(null);
+    setWebModalTitle("");
+    setWebModalEventType(undefined);
+    setWebModalEventData(null);
+  }, []);
+
+  const handleToggleFeatured = React.useCallback(async (eventData: any) => {
+    const success = await toggleFeatured(eventData);
+    if (success) {
+      // Force re-computation of event groups to reflect the change
+      setEventsGroup((prev) => [...prev]);
+    }
+  }, [toggleFeatured]);
 
   return (
     <View style={styles.container}>
@@ -390,8 +544,68 @@ const CalendarScreen = ({ navigation }) => {
           <SectionHeader title={title} subtitle={subtitle} />
         )}
         renderItem={({ item }) => {
-          const imageHeight = item.image_data?.width
-            ? (item.image_data?.height / item.image_data?.width) *
+          const eventType = (item as any).eventType;
+
+          if (eventType === "flyer") {
+            return (
+              <FlyerEventCard
+                event={item}
+                onSelectEvent={() => {
+                  // Could open event details or edit screen
+                  console.log("Flyer event pressed:", item);
+                }}
+              />
+            );
+          }
+
+          if (eventType === "luma") {
+            const lumaEvent = item as LumaEvent;
+            return (
+              <View style={{ paddingHorizontal: 16 }}>
+                <LumaEventCard
+                  event={lumaEvent}
+                  options={{
+                    showLocation: true,
+                    showImage: true,
+                    showHosts: true,
+                  }}
+                  onSelectEvent={() => {
+                    setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
+                    setWebModalTitle(lumaEvent.name);
+                    setWebModalVisible(true);
+                  }}
+                />
+              </View>
+            );
+          }
+
+          if (eventType === "ra") {
+            const raEvent = item as RAEvent & { isFeatured?: boolean };
+            return (
+              <View style={{ paddingHorizontal: 16 }}>
+                <RAEventCard
+                  event={raEvent}
+                  options={{
+                    showVenue: true,
+                    showImage: true,
+                    showArtists: true,
+                  }}
+                  isFeatured={raEvent.isFeatured}
+                  onSelectEvent={() => {
+                    setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
+                    setWebModalTitle(raEvent.title);
+                    setWebModalEventType('ra');
+                    setWebModalEventData(raEvent);
+                    setWebModalVisible(true);
+                  }}
+                />
+              </View>
+            );
+          }
+
+          const daEvent = item as DAEvent;
+          const imageHeight = daEvent.image_data?.width
+            ? (daEvent.image_data?.height / daEvent.image_data?.width) *
                 Dimensions.get("window").width -
               54
             : 360;
@@ -400,22 +614,22 @@ const CalendarScreen = ({ navigation }) => {
             <View>
               <View style={{ paddingHorizontal: 16 }}>
                 <EventCard
-                  event={item}
+                  event={daEvent}
                   options={{
                     showBookmark: true,
                     showVenue: true,
                     showImage: true,
                   }}
-                  onSelectEvent={() => handlePressEvent(item)}
+                  onSelectEvent={() => handlePressEvent(daEvent)}
                 />
-                {item.featured && item.image && (
+                {daEvent.featured && daEvent.image && (
                   <TouchableOpacity
-                    onPress={() => handlePressEvent(item)}
+                    onPress={() => handlePressEvent(daEvent)}
                     style={{ paddingVertical: 16 }}
                   >
                     <Image
                       source={{
-                        uri: item.image,
+                        uri: daEvent.image,
                       }}
                       style={{
                         height: imageHeight,
@@ -432,6 +646,16 @@ const CalendarScreen = ({ navigation }) => {
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
       {selectedEvent && <EventPopup event={selectedEvent} />}
+      <EventWebModal
+        isVisible={webModalVisible}
+        url={webModalUrl}
+        title={webModalTitle}
+        onClose={handleCloseWebModal}
+        eventType={webModalEventType}
+        eventData={webModalEventData}
+        isFeatured={webModalEventData ? isFeatured(webModalEventData.id) : false}
+        onToggleFeatured={handleToggleFeatured}
+      />
     </View>
   );
 };
