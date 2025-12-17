@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import AccountScreen from "../Screens/AccountScreen";
 import AdminScreen from "../Screens/AdminScreen";
+import ArtScreen from "../Screens/ArtScreen";
 // import ArtistScreen from '../Screens/ArtistScreen';
 import ArtworkScreen from '../Screens/ArtworkScreen';
 import BookmarksScreen from "../Screens/BookmarksScreen";
@@ -42,6 +43,7 @@ type HomeNavigationStackParamList = {
   AccountManagement: undefined;
   Activity: undefined;
   Admin: undefined;
+  Art: undefined;
   AudioContent: undefined;
   Artist: undefined;
   Artwork: undefined;
@@ -329,6 +331,17 @@ const HomeNavigationStack = () => {
             backgroundColor: "#d2e4dd",
           },
           headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={ArtScreen}
+        name="Art"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Art",
         }}
       />
       <Stack.Screen

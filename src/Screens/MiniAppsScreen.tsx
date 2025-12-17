@@ -22,6 +22,38 @@ interface MiniApp {
 
 const MINI_APPS: MiniApp[] = [
   {
+    id: "art",
+    name: "Art",
+    description: "Discover and collect artwork from Detroit's vibrant art scene. Explore featured pieces and support local artists.",
+    url: "native://Art", // Special URL to indicate native screen
+    icon: "🎨",
+    color: "#EC4899",
+  },
+  {
+    id: "parking",
+    name: "Parking",
+    description: "Find and reserve parking spots in Detroit. Quick and easy parking solutions for events and daily needs.",
+    url: "https://buymyspot.com/detroit",
+    icon: "🅿️",
+    color: "#10B981",
+  },
+  {
+    id: "music",
+    name: "Music",
+    description: "Discover live music events, DJs, and nightlife in Detroit. Explore the city's vibrant electronic music scene.",
+    url: "https://ra.co/events/us/detroit",
+    icon: "🎵",
+    color: "#F59E0B",
+  },
+  {
+    id: "quests",
+    name: "Quests",
+    description: "Collect NFTs, complete quests, and earn rewards. Explore the world of digital collectibles and blockchain gaming.",
+    url: "https://collectorquest.ai",
+    icon: "🏆",
+    color: "#3B82F6",
+  },
+  {
     id: "mystic-island",
     name: "Mystic Island",
     description: "Build. Connect. Grow. Communities forge realms, realms forge totems, totems forge worlds.",
@@ -58,10 +90,17 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
   }, [navigation, authState.isAuthenticated]);
 
   const handleOpenApp = (app: MiniApp) => {
-    navigation.navigate("MiniApp", {
-      url: app.url,
-      title: app.name,
-    });
+    // Check if this is a native screen
+    if (app.url.startsWith("native://")) {
+      const screenName = app.url.replace("native://", "");
+      navigation.navigate(screenName);
+    } else {
+      // Open web-based mini app
+      navigation.navigate("MiniApp", {
+        url: app.url,
+        title: app.name,
+      });
+    }
   };
 
   const getAuthStatusLabel = () => {
@@ -131,12 +170,12 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
           ))}
         </View>
 
-        {MINI_APPS.length === 1 && (
+        {MINI_APPS.length <= 4 && (
           <View style={styles.comingSoon}>
             <Ionicons name="rocket-outline" size={32} color="#999" />
             <Text style={styles.comingSoonText}>More apps coming soon!</Text>
             <Text style={styles.comingSoonSubtext}>
-              Stay tuned for new Farcaster mini apps
+              Stay tuned for new apps and experiences
             </Text>
           </View>
         )}

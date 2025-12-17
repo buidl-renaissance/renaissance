@@ -39,9 +39,7 @@ import { useRAEvents } from "../hooks/useRAEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
-import { useArtworks, useContent } from "../hooks/useArtwork";
 import * as Linking from "expo-linking";
-import { ArtworkCard } from "../Components/ArtworkCard";
 import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
 import { LumaEventCard } from "../Components/LumaEventCard";
@@ -69,7 +67,6 @@ const CalendarScreen = ({ navigation }) => {
   
   const [contact] = useContact();
   const [flyers] = useFlyers();
-  const [artworks] = useArtworks();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
@@ -141,12 +138,6 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Admin");
   }, []);
 
-  const handleShowArtwork = React.useCallback((artwork: DAArtwork) => {
-    navigation.push("Artwork", {
-      artwork,
-    });
-  }, []);
-
   const handleAddEvent = React.useCallback(() => {
     (async () => {
       const wallet = await getWallet();
@@ -176,6 +167,38 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleCreateFlyer = React.useCallback(() => {
     navigation.push("CreateFlyer");
+  }, []);
+
+  const handleOpenArt = React.useCallback(() => {
+    navigation.push("Art");
+  }, []);
+
+  const handleOpenParking = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://buymyspot.com/detroit",
+      title: "Parking",
+    });
+  }, []);
+
+  const handleOpenMusic = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://ra.co/events/us/detroit",
+      title: "Music",
+    });
+  }, []);
+
+  const handleOpenCollectorQuest = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://collectorquest.ai",
+      title: "Quests",
+    });
+  }, []);
+
+  const handleOpenMysticIsland = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://mystic-island.yourland.network/",
+      title: "Mystic Island",
+    });
   }, []);
 
   React.useEffect(() => {
@@ -454,68 +477,6 @@ const CalendarScreen = ({ navigation }) => {
 
         {/* <AudioRecorder /> */}
 
-        {artworks && artworks?.length > 0 && (
-          <View style={{ marginTop: 12 }}>
-            <SectionTitle>FEATURED ARTWORK</SectionTitle>
-            <ScrollView
-              style={{
-                paddingHorizontal: 16,
-                paddingTop: 8,
-                paddingBottom: 8,
-              }}
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}
-            >
-              <View style={{ flexDirection: 'row' }}>
-                {artworks?.map((artwork) => {
-                  if (!artwork.data?.image) return <View />;
-                  return (
-                    <TouchableOpacity
-                      style={{ marginRight: 16 }}
-                      onPress={() => handleShowArtwork(artwork)}
-                    >
-                      <ArtworkCard
-                        image={artwork.data?.image}
-                        name={artwork.title}
-                        description={artwork.description}
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </ScrollView>
-            <View style={{ paddingHorizontal: 16 }}>
-              <Button
-                title="Explore Artwork"
-                size="small"
-                onPress={() => {
-                  Linking.openURL("https://art.gods.work/");
-                }}
-              />
-            </View>
-            {/* <View>
-              <Text style={{ textAlign: "center", fontSize: 22 }}>
-                GODS WORK
-              </Text>
-              <View style={{ padding: 16, paddingVertical: 4 }}>
-                <Text style={{ textAlign: "center" }}>
-                  Our mission is to empower artistic communities to create by
-                  providing opportunities for collaboration, growth, and
-                  financial sustainability.
-                </Text>
-                <View style={{ paddingHorizontal: 128, marginTop: 8 }}>
-                  <Button
-                    title="Learn More"
-                    size="small"
-                    onPress={() => {
-                      Linking.openURL("https://gods.work/about");
-                    }}
-                  />
-                </View>
-              </View>
-            </View> */}
-          </View>
-        )}
 
         {flyers?.length > 0 && (
           <View
@@ -537,6 +498,124 @@ const CalendarScreen = ({ navigation }) => {
             })}
           </View>
         )}
+
+        {/* Mini Apps Section */}
+        <View style={{ 
+          flexDirection: "row", 
+          paddingHorizontal: 16, 
+          paddingVertical: 16,
+          gap: 16,
+        }}>
+          <TouchableOpacity 
+            onPress={handleOpenArt}
+            style={{
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <View style={{
+              backgroundColor: "#EC4899",
+              borderRadius: 16,
+              width: 64,
+              height: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 32 }}>🎨</Text>
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Art</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleOpenParking}
+            style={{
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <View style={{
+              backgroundColor: "#10B981",
+              borderRadius: 16,
+              width: 64,
+              height: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 32 }}>🅿️</Text>
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Parking</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleOpenMusic}
+            style={{
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <View style={{
+              backgroundColor: "#F59E0B",
+              borderRadius: 16,
+              width: 64,
+              height: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 32 }}>🎵</Text>
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Music</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleOpenCollectorQuest}
+            style={{
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <View style={{
+              backgroundColor: "#3B82F6",
+              borderRadius: 16,
+              width: 64,
+              height: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 32 }}>🏆</Text>
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#333", textAlign: "center" }}>Quests</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={handleOpenMysticIsland}
+            style={{
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <View style={{
+              backgroundColor: "#6366F1",
+              borderRadius: 16,
+              width: 64,
+              height: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 8,
+            }}>
+              <Text style={{ fontSize: 32 }}>🏝️</Text>
+            </View>
+            <Text style={{ 
+              fontSize: 11, 
+              fontWeight: "600", 
+              color: "#333",
+              textAlign: "center",
+            }}>Mystic Island</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
