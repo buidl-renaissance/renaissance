@@ -73,25 +73,25 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string }[]
+    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
 
-  // Mock flyer event for demonstration
-  const mockFlyerEvent = React.useMemo(() => ({
-    id: 'mock-flyer-1',
-    title: 'Detroit Art Walk - Holiday Edition',
-    start_date: moment().add(2, 'days').set({ hour: 18, minute: 0 }).toISOString(),
-    end_date: moment().add(2, 'days').set({ hour: 21, minute: 0 }).toISOString(),
-    venue: {
-      id: 999,
-      title: 'Eastern Market',
-    },
-    eventType: 'flyer',
-    description: 'Join us for a festive art walk through Eastern Market',
-  }), []);
+  // Mock flyer event for demonstration (hidden)
+  // const mockFlyerEvent = React.useMemo(() => ({
+  //   id: 'mock-flyer-1',
+  //   title: 'Detroit Art Walk - Holiday Edition',
+  //   start_date: moment().add(2, 'days').set({ hour: 18, minute: 0 }).toISOString(),
+  //   end_date: moment().add(2, 'days').set({ hour: 21, minute: 0 }).toISOString(),
+  //   venue: {
+  //     id: 999,
+  //     title: 'Eastern Market',
+  //   },
+  //   eventType: 'flyer',
+  //   description: 'Join us for a festive art walk through Eastern Market',
+  // }), []);
 
   const [weather] = useWeather();
   const [time, setTime] = React.useState<string>("");
@@ -229,50 +229,56 @@ const CalendarScreen = ({ navigation }) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD"); // Use sortable key
         const date = start.format("MMMM Do");
         const subtitle = start.format("dddd");
-        if (!groups[date]) {
-          groups[date] = {
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
             title: date,
             subtitle: subtitle,
             data: [],
+            sortDate: start.valueOf(), // Store timestamp for sorting
           };
         }
-        groups[date].data.push({ ...event, eventType: "da" });
+        groups[dateKey].data.push({ ...event, eventType: "da" });
       }
     });
 
-    // Add mock flyer event
-    const mockStart = moment(mockFlyerEvent.start_date);
-    const mockEnd = moment(mockFlyerEvent.end_date);
-    if (mockEnd.isAfter() && moment(mockStart).add(24, "hour").isAfter()) {
-      const date = mockStart.format("MMMM Do");
-      const subtitle = mockStart.format("dddd");
-      if (!groups[date]) {
-        groups[date] = {
-          title: date,
-          subtitle: subtitle,
-          data: [],
-        };
-      }
-      groups[date].data.push(mockFlyerEvent);
-    }
+    // Add mock flyer event (hidden)
+    // const mockStart = moment(mockFlyerEvent.start_date);
+    // const mockEnd = moment(mockFlyerEvent.end_date);
+    // if (mockEnd.isAfter() && moment(mockStart).add(24, "hour").isAfter()) {
+    //   const dateKey = mockStart.format("YYYY-MM-DD");
+    //   const date = mockStart.format("MMMM Do");
+    //   const subtitle = mockStart.format("dddd");
+    //   if (!groups[dateKey]) {
+    //     groups[dateKey] = {
+    //       title: date,
+    //       subtitle: subtitle,
+    //       data: [],
+    //       sortDate: mockStart.valueOf(),
+    //     };
+    //   }
+    //   groups[dateKey].data.push(mockFlyerEvent);
+    // }
 
     // Process Luma events
     lumaEvents.map((event: LumaEvent) => {
       const start = moment(event.startAt);
       const end = moment(event.endAt);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
         const date = start.format("MMMM Do");
         const subtitle = start.format("dddd");
-        if (!groups[date]) {
-          groups[date] = {
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
             title: date,
             subtitle: subtitle,
             data: [],
+            sortDate: start.valueOf(),
           };
         }
-        groups[date].data.push({ ...event, eventType: "luma" });
+        groups[dateKey].data.push({ ...event, eventType: "luma" });
       }
     });
 
@@ -281,16 +287,18 @@ const CalendarScreen = ({ navigation }) => {
       const start = moment(event.startTime);
       const end = moment(event.endTime);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
         const date = start.format("MMMM Do");
         const subtitle = start.format("dddd");
-        if (!groups[date]) {
-          groups[date] = {
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
             title: date,
             subtitle: subtitle,
             data: [],
+            sortDate: start.valueOf(),
           };
         }
-        groups[date].data.push({ 
+        groups[dateKey].data.push({ 
           ...event, 
           eventType: "ra",
           isFeatured: isFeatured(event.id)
@@ -302,32 +310,60 @@ const CalendarScreen = ({ navigation }) => {
     Object.values(groups).forEach((group: any) => {
       group.data.sort((a, b) => {
         let aStart, bStart;
+        
+        // Get start time for event a
         if (a.eventType === "luma") {
           aStart = moment(a.startAt);
         } else if (a.eventType === "ra") {
           aStart = moment(a.startTime);
-        } else if (a.eventType === "flyer") {
-          aStart = moment(a.start_date);
         } else {
+          // DA events and flyer events use start_date
           aStart = moment(a.start_date);
         }
         
+        // Get start time for event b
         if (b.eventType === "luma") {
           bStart = moment(b.startAt);
         } else if (b.eventType === "ra") {
           bStart = moment(b.startTime);
-        } else if (b.eventType === "flyer") {
-          bStart = moment(b.start_date);
         } else {
+          // DA events and flyer events use start_date
           bStart = moment(b.start_date);
+        }
+        
+        // Validate both dates are valid
+        if (!aStart.isValid()) {
+          console.warn("Invalid start date for event:", a);
+          return 1; // Push invalid events to end
+        }
+        if (!bStart.isValid()) {
+          console.warn("Invalid start date for event:", b);
+          return -1; // Push invalid events to end
         }
         
         return aStart.diff(bStart);
       });
     });
 
-    setEventsGroup(Object.values(groups) as any);
+    // Sort groups by date chronologically
+    const groupsArray = Object.values(groups) as any;
+    groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
+    
+    setEventsGroup(groupsArray);
+    
+    // Debug logging
     console.log("COMPUTE EVENT GROUPS with Luma and RA events");
+    groupsArray.forEach((group: any) => {
+      console.log(`\n${group.title} - ${group.data.length} events`);
+      group.data.forEach((event: any, index: number) => {
+        const startTime = event.eventType === "luma" 
+          ? moment(event.startAt).format("h:mm a")
+          : event.eventType === "ra"
+          ? moment(event.startTime).format("h:mm a")
+          : moment(event.start_date).format("h:mm a");
+        console.log(`  ${index + 1}. [${event.eventType}] ${startTime} - ${event.title || event.name}`);
+      });
+    });
   }, [filteredEvents, lumaEvents, raEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
