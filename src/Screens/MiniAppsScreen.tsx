@@ -22,6 +22,38 @@ interface MiniApp {
 
 const MINI_APPS: MiniApp[] = [
   {
+    id: "art",
+    name: "Art",
+    description: "Discover and collect artwork from Detroit's vibrant art scene. Explore featured pieces and support local artists.",
+    url: "native://Art", // Special URL to indicate native screen
+    icon: "🎨",
+    color: "#EC4899",
+  },
+  {
+    id: "parking",
+    name: "Parking",
+    description: "Find and reserve parking spots in Detroit. Quick and easy parking solutions for events and daily needs.",
+    url: "https://buymyspot.com/detroit",
+    icon: "🅿️",
+    color: "#10B981",
+  },
+  {
+    id: "colab",
+    name: "Co.Lab",
+    description: "Turn conversations into collaborations with voice-first project planning for creative teams.",
+    url: "https://co.lab.builddetroit.xyz/",
+    icon: "🤝",
+    color: "#8B5CF6",
+  },
+  {
+    id: "quests",
+    name: "Quests",
+    description: "Collect NFTs, complete quests, and earn rewards. Explore the world of digital collectibles and blockchain gaming.",
+    url: "https://collectorquest.ai",
+    icon: "🏆",
+    color: "#3B82F6",
+  },
+  {
     id: "mystic-island",
     name: "Mystic Island",
     description: "Build. Connect. Grow. Communities forge realms, realms forge totems, totems forge worlds.",
@@ -58,15 +90,22 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
   }, [navigation, authState.isAuthenticated]);
 
   const handleOpenApp = (app: MiniApp) => {
-    navigation.navigate("MiniApp", {
-      url: app.url,
-      title: app.name,
-    });
+    // Check if this is a native screen
+    if (app.url.startsWith("native://")) {
+      const screenName = app.url.replace("native://", "");
+      navigation.navigate(screenName);
+    } else {
+      // Open web-based mini app
+      navigation.navigate("MiniApp", {
+        url: app.url,
+        title: app.name,
+      });
+    }
   };
 
   const getAuthStatusLabel = () => {
     if (!authState.isAuthenticated) return "Not signed in";
-    if (authState.user?.type === "farcaster") return `@${authState.user.username || "farcaster"}`;
+    if (authState.user?.type === "farcaster") return `@${authState.user.username || "user"}`;
     if (authState.user?.type === "local_email") return authState.user.local?.email || "Email user";
     return "Guest";
   };
@@ -100,9 +139,9 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
 
         <View style={styles.header}>
           <Ionicons name="apps" size={48} color="#6366F1" />
-          <Text style={styles.headerTitle}>Farcaster Mini Apps</Text>
+          <Text style={styles.headerTitle}>Mini Apps</Text>
           <Text style={styles.headerSubtitle}>
-            Explore decentralized apps built on Farcaster
+            Explore apps and experiences
           </Text>
         </View>
 
@@ -131,12 +170,12 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
           ))}
         </View>
 
-        {MINI_APPS.length === 1 && (
+        {MINI_APPS.length <= 4 && (
           <View style={styles.comingSoon}>
             <Ionicons name="rocket-outline" size={32} color="#999" />
             <Text style={styles.comingSoonText}>More apps coming soon!</Text>
             <Text style={styles.comingSoonSubtext}>
-              Stay tuned for new Farcaster mini apps
+              Stay tuned for new apps and experiences
             </Text>
           </View>
         )}
