@@ -56,6 +56,42 @@ const EMPTY_ITEM_LENGTH = (width - ITEM_LENGTH) / 2;
 const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
 
+// Curated list of popular nearby restaurants, grouped by neighborhood.
+// To update, add/remove entries below – no API calls are involved.
+const POPULAR_RESTAURANTS: {
+  neighborhood: string;
+  restaurants: { name: string; tags?: string[] }[];
+}[] = [
+  {
+    neighborhood: "Downtown",
+    restaurants: [
+      { name: "San Morello", tags: ["Italian", "Wood-fired"] },
+      { name: "Parc", tags: ["American", "Campus Martius"] },
+    ],
+  },
+  {
+    neighborhood: "Midtown",
+    restaurants: [
+      { name: "Grey Ghost", tags: ["Steaks", "Cocktails"] },
+      { name: "Selden Standard", tags: ["Small Plates", "Seasonal"] },
+    ],
+  },
+  {
+    neighborhood: "Corktown",
+    restaurants: [
+      { name: "Takoi", tags: ["Thai-inspired", "Late Night"] },
+      { name: "Ima", tags: ["Noodles", "Comfort"] },
+    ],
+  },
+  {
+    neighborhood: "Eastern Market",
+    restaurants: [
+      { name: "Supino Pizzeria", tags: ["Pizza", "Casual"] },
+      { name: "Vivio's", tags: ["Bar", "Oysters"] },
+    ],
+  },
+];
+
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
   
@@ -63,6 +99,8 @@ const CalendarScreen = ({ navigation }) => {
   const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
   const { events: lumaEvents } = useLumaEvents(lumaQuery);
   const { events: raEvents } = useRAEvents();
+  // NYE-specific RA events use the dedicated NYE endpoint.
+  const { events: nyeRaEvents } = useRAEvents({ type: "nye" });
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -617,9 +655,139 @@ const CalendarScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+        {/* Plan Your NYE - Featured RA events on New Year's Eve */}
+        <View
+          style={{
+            paddingTop: 8,
+          }}
+        >
+          <SectionTitle>PLAN YOUR NYE</SectionTitle>
+          {nyeRaEvents.length === 0 ? (
+            <Text
+              style={{
+                color: "#777",
+                fontSize: 12,
+                marginTop: 4,
+              }}
+            >
+              NYE events coming soon – check back later.
+            </Text>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
+            >
+              {nyeRaEvents.map((raEvent) => {
+                const flyerImage =
+                  raEvent.images?.find((img) => img.type === "FLYERFRONT")
+                    ?.filename || raEvent.flyerFront;
+
+                return (
+                  <TouchableOpacity
+                    key={raEvent.id}
+                    onPress={() => {
+                      setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
+                      setWebModalTitle(raEvent.title);
+                      setWebModalEventType("ra");
+                      setWebModalEventData(raEvent);
+                      setWebModalVisible(true);
+                    }}
+                    activeOpacity={0.85}
+                    style={{
+                      marginRight: 12,
+                      width: width * 0.35,
+                    }}
+                  >
+                    {flyerImage && (
+                      <Image
+                        source={{ uri: flyerImage }}
+                        style={{
+                          width: "100%",
+                          height: 180,
+                          borderRadius: 12,
+                          backgroundColor: "#111",
+                        }}
+                        resizeMode="cover"
+                      />
+                    )}
+                    <View style={{ marginTop: 8 }}>
+                      {raEvent.interestedCount !== null &&
+                        raEvent.interestedCount > 0 && (
+                          <Text
+                            style={{
+                              marginTop: 2,
+                              fontSize: 12,
+                              color: "#666",
+                            }}
+                          >
+                            {raEvent.interestedCount} interested
+                          </Text>
+                        )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Popular Nearby Restaurants */}
+        <View
+          style={{
+            paddingTop: 8,
+            paddingHorizontal: 16,
+          }}
+        >
+          <SectionTitle>POPULAR NEARBY RESTAURANTS</SectionTitle>
+          {POPULAR_RESTAURANTS.map((group) => (
+            <View key={group.neighborhood} style={{ marginTop: 8 }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "600",
+                  color: "#555",
+                  marginBottom: 4,
+                }}
+              >
+                {group.neighborhood}
+              </Text>
+              {group.restaurants.map((restaurant) => (
+                <View
+                  key={restaurant.name}
+                  style={{
+                    paddingVertical: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "500",
+                      color: "#111",
+                    }}
+                  >
+                    {restaurant.name}
+                  </Text>
+                  {restaurant.tags && restaurant.tags.length > 0 && (
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: "#777",
+                        marginTop: 1,
+                      }}
+                    >
+                      {restaurant.tags.join(" • ")}
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
-            EVENT CALENDAR
+            UPCOMING EVENTS
           </Text>
           <TouchableOpacity onPress={handleCreateFlyer} style={{ padding: 4 }}>
             <Icon
