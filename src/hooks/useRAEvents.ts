@@ -4,6 +4,10 @@ import { RAEvent } from "../interfaces";
 export interface RAEventsQuery {
   dateFrom?: string;
   dateTo?: string;
+  // Optional type hint for which RA endpoint to hit.
+  // "upcoming" -> /api/events/upcoming (default)
+  // "nye"      -> /api/events/nye
+  type?: "upcoming" | "nye";
 }
 
 export const useRAEvents = (query?: RAEventsQuery) => {
@@ -17,10 +21,11 @@ export const useRAEvents = (query?: RAEventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Fetching RA events...");
+      const endpointType = query?.type === "nye" ? "nye" : "upcoming";
+      console.log(`Fetching RA events (${endpointType})...`);
       
       const eventsRes = await fetch(
-        `https://ra-events.vercel.app/api/events/upcoming`
+        `https://ra-events.vercel.app/api/events/${endpointType}`
       );
       
       if (!eventsRes.ok) {
@@ -47,7 +52,7 @@ export const useRAEvents = (query?: RAEventsQuery) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [query]);
 
   React.useEffect(() => {
     // Only fetch once on mount
