@@ -4749,11 +4749,6 @@ expo-updates@~0.25.23:
     ignore "^5.3.1"
     resolve-from "^5.0.0"
 
-expo-web-browser@^15.0.10:
-  version "15.0.10"
-  resolved "https://registry.yarnpkg.com/expo-web-browser/-/expo-web-browser-15.0.10.tgz#ee7fb59b4f143f262c13c020433a83444181f1a3"
-  integrity sha512-fvDhW4bhmXAeWFNFiInmsGCK83PAqAcQaFyp/3pE/jbdKmFKoRCWr46uZGIfN4msLK/OODhaQ/+US7GSJNDHJg==
-
 expo@^51.0.30:
   version "51.0.30"
   resolved "https://registry.npmjs.org/expo/-/expo-51.0.30.tgz"

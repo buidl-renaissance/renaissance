@@ -14,7 +14,6 @@
  */
 
 import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
@@ -77,7 +76,9 @@ function getCallbackUrl(): string {
  * Initiate Neynar Sign In flow
  * Opens the Neynar auth page which handles signer creation and approval
  */
-export async function initiateNeynarSignIn(clientId: string): Promise<NeynarAuthResult> {
+export async function initiateNeynarSignIn(
+  clientId: string
+): Promise<NeynarAuthResult> {
   console.log("[NeynarAuth] Starting SIWN flow...");
 
   const callbackUrl = getCallbackUrl();
@@ -97,21 +98,16 @@ export async function initiateNeynarSignIn(clientId: string): Promise<NeynarAuth
     pendingAuthReject = reject;
 
     try {
-      // Use WebBrowser for a better auth experience
-      const result = await WebBrowser.openAuthSessionAsync(
-        authUrl.toString(),
-        callbackUrl
-      );
+      // Prefer Farcaster app if available, otherwise fall back to system browser
+      const canOpenFarcaster = await Linking.canOpenURL("farcaster://");
 
-      console.log("[NeynarAuth] WebBrowser result:", result);
-
-      if (result.type === "success" && result.url) {
-        await handleNeynarCallback(result.url);
-      } else if (result.type === "cancel") {
-        pendingAuthReject?.(new Error("Authentication cancelled"));
-        pendingAuthResolve = null;
-        pendingAuthReject = null;
+      if (canOpenFarcaster) {
+        await Linking.openURL(authUrl.toString());
+      } else {
+        await Linking.openURL(authUrl.toString());
       }
+      // NOTE: Callback handling is done via deep links and handleNeynarCallback.
+      // The promise will be resolved/rejected when handleNeynarCallback runs.
     } catch (error) {
       console.error("[NeynarAuth] Auth error:", error);
       pendingAuthReject?.(error as Error);
@@ -181,8 +177,8 @@ export async function initiateDirectSignIn(): Promise<NeynarAuthResult> {
       // Try Farcaster deep link
       await Linking.openURL(approvalUrl);
     } else {
-      // Fall back to web browser
-      await WebBrowser.openBrowserAsync(approvalUrl);
+      // Fall back to system browser
+      await Linking.openURL(approvalUrl);
     }
 
     // Poll for signer approval

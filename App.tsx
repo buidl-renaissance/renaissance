@@ -29,10 +29,6 @@ import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
 import * as Linking from "expo-linking";
-import * as WebBrowser from "expo-web-browser";
-
-// Warm up the browser for faster auth
-WebBrowser.maybeCompleteAuthSession();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -94,7 +90,7 @@ export default function App() {
   React.useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
       console.log("[App] Deep link received:", event.url);
-      // Deep links are handled by expo-web-browser for auth sessions
+      // Deep links for auth sessions are handled by Neynar auth utilities
       // and by the navigation container for screen navigation
     };
 

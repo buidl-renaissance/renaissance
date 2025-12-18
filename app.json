@@ -18,8 +18,7 @@
     "plugins": [
       "@react-native-google-signin/google-signin",
       "expo-secure-store",
-      "expo-build-properties",
-      "expo-web-browser"
+      "expo-build-properties"
     ],
     "ios": {
       "supportsTablet": true,
