@@ -38,12 +38,12 @@ const MINI_APPS: MiniApp[] = [
     color: "#10B981",
   },
   {
-    id: "music",
-    name: "Music",
-    description: "Discover live music events, DJs, and nightlife in Detroit. Explore the city's vibrant electronic music scene.",
-    url: "https://ra.co/events/us/detroit",
-    icon: "🎵",
-    color: "#F59E0B",
+    id: "colab",
+    name: "Co.Lab",
+    description: "Turn conversations into collaborations with voice-first project planning for creative teams.",
+    url: "https://co.lab.builddetroit.xyz/",
+    icon: "🤝",
+    color: "#8B5CF6",
   },
   {
     id: "quests",

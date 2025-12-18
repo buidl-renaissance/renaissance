@@ -180,10 +180,10 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
-  const handleOpenMusic = React.useCallback(() => {
+  const handleOpenCoLab = React.useCallback(() => {
     navigation.push("MiniApp", {
-      url: "https://ra.co/events/us/detroit",
-      title: "Music",
+      url: "https://co.lab.builddetroit.xyz/",
+      title: "Co.Lab",
     });
   }, []);
 
@@ -549,14 +549,14 @@ const CalendarScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            onPress={handleOpenMusic}
+            onPress={handleOpenCoLab}
             style={{
               alignItems: "center",
               width: 66,
             }}
           >
             <View style={{
-              backgroundColor: "#F59E0B",
+              backgroundColor: "#8B5CF6",
               borderRadius: 14,
               width: 66,
               height: 66,
@@ -564,9 +564,9 @@ const CalendarScreen = ({ navigation }) => {
               justifyContent: "center",
               marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 30 }}>🎵</Text>
+              <Text style={{ fontSize: 30 }}>🤝</Text>
             </View>
-            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Music</Text>
+            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Co.Lab</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
