@@ -56,41 +56,6 @@ const EMPTY_ITEM_LENGTH = (width - ITEM_LENGTH) / 2;
 const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
 
-// Curated list of popular nearby restaurants, grouped by neighborhood.
-// To update, add/remove entries below – no API calls are involved.
-const POPULAR_RESTAURANTS: {
-  neighborhood: string;
-  restaurants: { name: string; tags?: string[] }[];
-}[] = [
-  {
-    neighborhood: "Downtown",
-    restaurants: [
-      { name: "San Morello", tags: ["Italian", "Wood-fired"] },
-      { name: "Parc", tags: ["American", "Campus Martius"] },
-    ],
-  },
-  {
-    neighborhood: "Midtown",
-    restaurants: [
-      { name: "Grey Ghost", tags: ["Steaks", "Cocktails"] },
-      { name: "Selden Standard", tags: ["Small Plates", "Seasonal"] },
-    ],
-  },
-  {
-    neighborhood: "Corktown",
-    restaurants: [
-      { name: "Takoi", tags: ["Thai-inspired", "Late Night"] },
-      { name: "Ima", tags: ["Noodles", "Comfort"] },
-    ],
-  },
-  {
-    neighborhood: "Eastern Market",
-    restaurants: [
-      { name: "Supino Pizzeria", tags: ["Pizza", "Casual"] },
-      { name: "Vivio's", tags: ["Bar", "Oysters"] },
-    ],
-  },
-];
 
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
@@ -232,11 +197,8 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
-  const handleOpenMysticIsland = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://mystic-island.yourland.network/",
-      title: "Mystic Island",
-    });
+  const handleOpenRestaurants = React.useCallback(() => {
+    navigation.push("Restaurants");
   }, []);
 
   React.useEffect(() => {
@@ -629,14 +591,14 @@ const CalendarScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            onPress={handleOpenMysticIsland}
+            onPress={handleOpenRestaurants}
             style={{
               alignItems: "center",
               width: 66,
             }}
           >
             <View style={{
-              backgroundColor: "#6366F1",
+              backgroundColor: "#F59E0B",
               borderRadius: 14,
               width: 66,
               height: 66,
@@ -644,14 +606,14 @@ const CalendarScreen = ({ navigation }) => {
               justifyContent: "center",
               marginBottom: 6,
             }}>
-              <Text style={{ fontSize: 30 }}>🏝️</Text>
+              <Text style={{ fontSize: 30 }}>🍽️</Text>
             </View>
             <Text style={{ 
               fontSize: 9, 
               fontWeight: "600", 
               color: "#333",
               textAlign: "center",
-            }}>Mystic Island</Text>
+            }}>Restaurants</Text>
           </TouchableOpacity>
         </View>
 
@@ -732,58 +694,6 @@ const CalendarScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Popular Nearby Restaurants */}
-        <View
-          style={{
-            paddingTop: 8,
-            paddingHorizontal: 16,
-          }}
-        >
-          <SectionTitle>POPULAR NEARBY RESTAURANTS</SectionTitle>
-          {POPULAR_RESTAURANTS.map((group) => (
-            <View key={group.neighborhood} style={{ marginTop: 8 }}>
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontWeight: "600",
-                  color: "#555",
-                  marginBottom: 4,
-                }}
-              >
-                {group.neighborhood}
-              </Text>
-              {group.restaurants.map((restaurant) => (
-                <View
-                  key={restaurant.name}
-                  style={{
-                    paddingVertical: 4,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "500",
-                      color: "#111",
-                    }}
-                  >
-                    {restaurant.name}
-                  </Text>
-                  {restaurant.tags && restaurant.tags.length > 0 && (
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        color: "#777",
-                        marginTop: 1,
-                      }}
-                    >
-                      {restaurant.tags.join(" • ")}
-                    </Text>
-                  )}
-                </View>
-              ))}
-            </View>
-          ))}
-        </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>

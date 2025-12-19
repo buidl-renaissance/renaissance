@@ -37,6 +37,7 @@ import MiniAppScreen from "../Screens/MiniAppScreen";
 import MiniAppsScreen from "../Screens/MiniAppsScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
+import RestaurantsScreen from "../Screens/RestaurantsScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -73,6 +74,7 @@ type HomeNavigationStackParamList = {
   ProposalList: undefined;
   ProposalDetail: undefined;
   ReviewEvents: undefined;
+  Restaurants: undefined;
   Search: undefined;
   Share: undefined;
   Splash: undefined;
@@ -418,6 +420,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
           title: "Account",
+        }}
+      />
+      <Stack.Screen
+        component={RestaurantsScreen}
+        name="Restaurants"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Restaurants",
         }}
       />
     </Stack.Navigator>
