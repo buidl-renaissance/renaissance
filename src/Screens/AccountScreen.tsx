@@ -34,7 +34,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
     headerTitle: "Profile",
   });
 
-  const { state: authState, signOut, postCast } = useAuth();
+  const { state: authState, signOut } = useAuth();
   
   const [name, setName] = useState("");
   const [publicName, setPublicName] = useState("");

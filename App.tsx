@@ -1,3 +1,6 @@
+// Polyfills must be imported first
+import "text-encoding-polyfill";
+
 import React from "react";
 import HomeNavigationStack from "./src/Navigation/HomeNavigationStack";
 

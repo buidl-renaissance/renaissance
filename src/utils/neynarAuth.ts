@@ -16,6 +16,7 @@
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { NEYNAR_API_KEY as ENV_NEYNAR_API_KEY } from "@env";
 
 // Neynar API configuration
 const NEYNAR_API_BASE = "https://api.neynar.com/v2/farcaster";
@@ -25,9 +26,8 @@ const NEYNAR_AUTH_URL = "https://app.neynar.com/login";
 const NEYNAR_SIGNER_UUID_KEY = "NEYNAR_SIGNER_UUID";
 const NEYNAR_FID_KEY = "NEYNAR_FID";
 
-// Get API key - you should add NEYNAR_API_KEY to your .env file
-// For now, using a placeholder that should be replaced
-let NEYNAR_API_KEY = "NEYNAR_API_DOCS"; // Replace with actual key or import from @env
+// Get API key from environment
+let NEYNAR_API_KEY = ENV_NEYNAR_API_KEY || "";
 
 /**
  * Set the Neynar API key programmatically
