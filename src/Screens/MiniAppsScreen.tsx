@@ -24,7 +24,7 @@ const MINI_APPS: MiniApp[] = [
   {
     id: "art",
     name: "Art",
-    description: "Discover and collect artwork from Detroit's vibrant art scene. Explore featured pieces and support local artists.",
+    description: "Discover Detroit's vibrant art scene. Explore featured pieces and support local artists.",
     url: "native://Art", // Special URL to indicate native screen
     icon: "🎨",
     color: "#EC4899",

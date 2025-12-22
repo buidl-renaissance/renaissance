@@ -104,7 +104,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   // Track previous auth state to detect changes
   const prevAuthUserRef = useRef(authState.user);
   
-  // Emit context update when auth state changes while mini app is open
+  // Notify mini app when auth state changes while mini app is open
   useEffect(() => {
     const prevUser = prevAuthUserRef.current;
     const currentUser = authState.user;
@@ -115,13 +115,27 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
       (prevUser !== null && currentUser === null) ||
       (prevUser?.fid !== currentUser?.fid);
     
-    if (userChanged && emitRef.current) {
-      console.log("[MiniAppScreen] Auth changed, emitting context_updated event");
-      // Emit a custom event to notify the mini app that context has changed
-      emitRef.current({ 
-        event: "context_updated",
-        context: sdk.context,
-      });
+    if (userChanged && webViewRef.current && sdk) {
+      console.log("[MiniAppScreen] Auth changed, sending updated context to WebView");
+      // Inject updated context into WebView
+      const contextData = JSON.stringify(sdk.context);
+      const injectCode = `
+        (function() {
+          try {
+            const context = ${contextData};
+            const authenticated = ${!!currentUser};
+            
+            window.dispatchEvent(new CustomEvent('farcaster:context:updated', {
+              detail: { context, authenticated }
+            }));
+            window.__renaissanceAuthContext = context;
+          } catch (e) {
+            console.error('[MiniApp] Error handling context update:', e);
+          }
+        })();
+        true;
+      `;
+      webViewRef.current.injectJavaScript(injectCode);
     }
     
     prevAuthUserRef.current = currentUser;
@@ -154,7 +168,63 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
 
   const handleLoadEnd = useCallback(() => {
     setIsLoading(false);
-  }, [setIsLoading]);
+    // Send initial context to mini app when page loads
+    // The mini app can also call sdk.context or sdk.signIn() via RPC
+    if (emitRef.current && sdk && webViewRef.current) {
+      const isAuthenticated = !!sdk.context?.user?.fid && sdk.context.user.fid > 0;
+      console.log("[MiniAppScreen] Page loaded, context available:", {
+        user: sdk.context?.user,
+        isAuthenticated,
+      });
+      
+      // If user is authenticated, send context to WebView immediately
+      // This helps with iOS cookie/session issues by providing context upfront
+      if (isAuthenticated && webViewRef.current) {
+        // Inject JavaScript to send context to WebView
+        // This is more reliable than postMessage for React Native -> WebView communication
+        const contextData = JSON.stringify(sdk.context);
+        const injectCode = `
+          (function() {
+            try {
+              const context = ${contextData};
+              console.log('[MiniApp] Received authenticated context from Renaissance via inject:', {
+                fid: context?.user?.fid,
+                username: context?.user?.username
+              });
+              
+              // Dispatch event that mini app can listen for
+              window.dispatchEvent(new CustomEvent('farcaster:context:ready', {
+                detail: context
+              }));
+              
+              // Store on window for easy access
+              window.__renaissanceAuthContext = context;
+              
+              // Also trigger window.postMessage for apps that listen to that
+              if (window.postMessage) {
+                window.postMessage(JSON.stringify({
+                  type: 'farcaster:context:ready',
+                  context: context,
+                  authenticated: true
+                }), '*');
+              }
+            } catch (e) {
+              console.error('[MiniApp] Error handling context injection:', e);
+            }
+          })();
+          true;
+        `;
+        
+        // Use setTimeout to ensure WebView is fully ready
+        setTimeout(() => {
+          if (webViewRef.current) {
+            webViewRef.current.injectJavaScript(injectCode);
+            console.log("[MiniAppScreen] Injected context into WebView");
+          }
+        }, 300); // Slightly longer delay to ensure WebView JS context is ready
+      }
+    }
+  }, [setIsLoading, sdk]);
 
   if (!frameUrl) {
     return (
@@ -209,7 +279,58 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
                 console.log('[MiniApp] FarcasterFrameEvent', e.data);
               });
               
-              console.log('[MiniApp] Frame host initialized');
+              // Make context available immediately when page loads
+              // The RPC adapter will handle actual SDK calls, but we can set up
+              // a flag to indicate the host is ready with authenticated context
+              window.farcasterHostReady = true;
+              
+              console.log('[MiniApp] Frame host initialized - context available via RPC');
+            })();
+            true;
+          `}
+          // Inject script after page loads to ensure context is available
+          injectedJavaScript={`
+            (function() {
+              // Listen for postMessage (for any apps that use window.postMessage)
+              window.addEventListener('message', function(event) {
+                try {
+                  const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                  if (data && data.type === 'farcaster:context:ready' && data.authenticated) {
+                    console.log('[MiniApp] Received context via window.postMessage:', {
+                      fid: data.context?.user?.fid,
+                      username: data.context?.user?.username
+                    });
+                    window.__renaissanceAuthContext = data.context;
+                    window.dispatchEvent(new CustomEvent('farcaster:context:ready', {
+                      detail: data.context
+                    }));
+                  }
+                } catch (e) {
+                  // Ignore non-JSON or invalid messages
+                }
+              });
+              
+              // Check if RPC adapter has made window.farcaster available yet
+              // Mini apps should primarily use window.farcaster.signIn() or window.farcaster.context
+              if (window.farcaster && window.farcaster.context) {
+                const context = window.farcaster.context;
+                if (context.user && context.user.fid > 0) {
+                  console.log('[MiniApp] Authenticated context available via RPC:', {
+                    fid: context.user.fid,
+                    username: context.user.username
+                  });
+                  // Store and dispatch for apps that listen to events
+                  window.__renaissanceAuthContext = context;
+                  window.dispatchEvent(new CustomEvent('farcaster:context:ready', {
+                    detail: context
+                  }));
+                }
+              }
+              
+              // Helper function mini apps can call to get context
+              window.getRenaissanceAuth = function() {
+                return window.__renaissanceAuthContext || (window.farcaster?.context || null);
+              };
             })();
             true;
           `}

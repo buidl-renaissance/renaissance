@@ -6,15 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
 } from "react-native";
-import * as Linking from "expo-linking";
 import { SectionTitle } from "../Components/SectionTitle";
 import { ArtworkCard } from "../Components/ArtworkCard";
-import { Button } from "../Components/Button";
 import { useArtworks } from "../hooks/useArtwork";
 import { DAArtwork } from "../interfaces";
-import { lightGreen } from "../colors";
 
 interface ArtScreenProps {
   navigation: any;
@@ -35,9 +31,19 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const handleExploreMore = React.useCallback(() => {
-    Linking.openURL("https://art.gods.work/");
-  }, []);
+  const handleArtDetroitNowApp = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://www.artdetroitnow.com/",
+      title: "Art Detroit Now",
+    });
+  }, [navigation]);
+
+  const handleArtClvb = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://www.artclvb.xyz/",
+      title: "ArtClvb",
+    });
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,12 +52,37 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
           <Text style={styles.headerIcon}>🎨</Text>
           <Text style={styles.headerTitle}>Detroit Art</Text>
           <Text style={styles.headerSubtitle}>
-            Discover and collect artwork from Detroit's vibrant art scene
+            Discover Detroit's vibrant art scene
           </Text>
         </View>
 
         {artworks && artworks.length > 0 ? (
           <>
+            {/* Mini Apps Section */}
+            <View style={styles.miniAppsSection}>
+              <View style={styles.miniAppsContainer}>
+                <TouchableOpacity 
+                  onPress={handleArtDetroitNowApp}
+                  style={styles.miniAppItem}
+                >
+                  <View style={[styles.miniAppIconContainer, { backgroundColor: "#EC4899" }]}>
+                    <Text style={styles.miniAppIconEmoji}>📅</Text>
+                  </View>
+                  <Text style={styles.miniAppLabel}>Art Detroit Now</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={handleArtClvb}
+                  style={styles.miniAppItem}
+                >
+                  <View style={[styles.miniAppIconContainer, { backgroundColor: "#8B5CF6" }]}>
+                    <Text style={styles.miniAppIconEmoji}>🎨</Text>
+                  </View>
+                  <Text style={styles.miniAppLabel}>ArtClvb</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <View style={styles.section}>
               <SectionTitle>FEATURED ARTWORK</SectionTitle>
               <ScrollView
@@ -78,20 +109,6 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
                 })}
               </ScrollView>
             </View>
-
-            <View style={styles.exploreSection}>
-              <Text style={styles.exploreTitle}>GODS WORK</Text>
-              <Text style={styles.exploreDescription}>
-                Our mission is to empower artistic communities to create by
-                providing opportunities for collaboration, growth, and
-                financial sustainability.
-              </Text>
-              <Button
-                title="Explore More Artwork"
-                size="medium"
-                onPress={handleExploreMore}
-              />
-            </View>
           </>
         ) : (
           <View style={styles.emptyState}>
@@ -110,7 +127,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightGreen,
+    backgroundColor: "white",
   },
   scrollView: {
     flex: 1,
@@ -119,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 32,
     paddingHorizontal: 16,
-    backgroundColor: "white",
+    backgroundColor: "#EC4899",
   },
   headerIcon: {
     fontSize: 48,
@@ -127,17 +144,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#fff",
     marginTop: 12,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "rgba(255, 255, 255, 0.9)",
     marginTop: 4,
     textAlign: "center",
   },
   section: {
-    marginTop: 16,
     backgroundColor: "white",
   },
   horizontalScroll: {
@@ -150,26 +166,6 @@ const styles = StyleSheet.create({
   },
   artworkCardContainer: {
     marginRight: 16,
-  },
-  exploreSection: {
-    backgroundColor: "white",
-    marginTop: 16,
-    padding: 24,
-    alignItems: "center",
-  },
-  exploreTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 12,
-  },
-  exploreDescription: {
-    fontSize: 15,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 20,
-    paddingHorizontal: 16,
   },
   emptyState: {
     alignItems: "center",
@@ -193,6 +189,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 8,
+    textAlign: "center",
+  },
+  miniAppsSection: {
+    backgroundColor: "white",
+    paddingVertical: 16,
+  },
+  miniAppsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    justifyContent: "flex-start",
+  },
+  miniAppItem: {
+    alignItems: "center",
+    width: 66,
+    marginRight: 12,
+  },
+  miniAppIconContainer: {
+    borderRadius: 14,
+    width: 66,
+    height: 66,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
+  },
+  miniAppIconEmoji: {
+    fontSize: 30,
+  },
+  miniAppLabel: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#333",
     textAlign: "center",
   },
 });

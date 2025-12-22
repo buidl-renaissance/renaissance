@@ -277,8 +277,9 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
           console.log("[FarcasterFrame] User authenticated with Farcaster, creating SIWF message...");
           
           try {
-            // Create a SIWF message signed with the local wallet
-            // The mini app will verify this along with the context.user FID
+            // Create a SIWF (Sign-In With Farcaster) message signed with the local wallet
+            // Format follows SIWF spec: https://eips.ethereum.org/EIPS/eip-4361
+            // The mini app will verify the signature matches the wallet address and extract FID from Resources
             const wallet = await getWallet();
             const nonce = options?.nonce || `nonce-${Date.now()}`;
             const notBefore = options?.notBefore;
@@ -288,8 +289,10 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
             const uri = `https://${domain}`;
             const statement = "Farcaster Auth";
             const issuedAt = new Date().toISOString();
-            const chainId = 10;
+            const chainId = 10; // Optimism (Farcaster's chain)
             
+            // Build SIWF message according to spec
+            // Format: domain wants you to sign in...\naddress\n\nstatement\n\nURI: ...\nVersion: 1\n...
             const messageParts = [
               `${domain} wants you to sign in with your Ethereum account:`,
               wallet.address,
@@ -310,6 +313,7 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
               messageParts.push(`Expiration Time: ${expirationTime}`);
             }
             
+            // Resources section contains the FID for Farcaster verification
             messageParts.push(`Resources:`);
             messageParts.push(`- farcaster://fid/${fid}`);
             
@@ -317,6 +321,21 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
             const signature = await wallet.signMessage(message);
             
             console.log("[FarcasterFrame] signIn completed for FID:", fid);
+            console.log("[FarcasterFrame] SIWF Message structure:", {
+              hasDomain: message.includes(domain),
+              hasAddress: message.includes(wallet.address),
+              hasStatement: message.includes(statement),
+              hasURI: message.includes(uri),
+              hasVersion: message.includes("Version: 1"),
+              hasChainId: message.includes(`Chain ID: ${chainId}`),
+              hasNonce: message.includes("Nonce:"),
+              hasIssuedAt: message.includes("Issued At:"),
+              hasResources: message.includes("Resources:"),
+              hasFid: message.includes(`farcaster://fid/${fid}`),
+              messageLength: message.length,
+              signatureLength: signature.length,
+              authMethod: options?.acceptAuthAddress !== false ? "authAddress" : "custody",
+            });
             
             // Use authAddress method since we're using a delegated address
             return {
@@ -363,6 +382,21 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
             const signature = await wallet.signMessage(message);
             
             console.log("[FarcasterFrame] signIn completed for local user");
+            console.log("[FarcasterFrame] SIWF Message structure (local user):", {
+              hasDomain: message.includes("renaissance.app"),
+              hasAddress: message.includes(wallet.address),
+              hasStatement: message.includes("Farcaster Auth"),
+              hasURI: message.includes("https://renaissance.app"),
+              hasVersion: message.includes("Version: 1"),
+              hasChainId: message.includes("Chain ID: 10"),
+              hasNonce: message.includes("Nonce:"),
+              hasIssuedAt: message.includes("Issued At:"),
+              hasResources: message.includes("Resources:"),
+              hasFid: message.includes(`farcaster://fid/${fid}`),
+              messageLength: message.length,
+              signatureLength: signature.length,
+              authMethod: "custody",
+            });
             
             return {
               message,

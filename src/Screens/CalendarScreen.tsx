@@ -185,7 +185,7 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleOpenCoLab = React.useCallback(() => {
     navigation.push("MiniApp", {
-      url: "https://co.lab.builddetroit.xyz",
+      url: "https://co.lab.builddetroit.xyz/",
       title: "Co.Lab",
     });
   }, []);
