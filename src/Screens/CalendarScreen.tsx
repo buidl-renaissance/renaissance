@@ -18,6 +18,7 @@ import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { FloatingButton } from "../Components/FloatingButton";
+import { FloatingProfileButton } from "../Components/FloatingProfileButton";
 import { SectionTitle } from "../Components/SectionTitle";
 
 import moment, { weekdays } from "moment";
@@ -838,6 +839,7 @@ const CalendarScreen = ({ navigation }) => {
         }}
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
+      <FloatingProfileButton navigation={navigation} />
       {selectedEvent && <EventPopup event={selectedEvent} />}
       <EventWebModal
         isVisible={webModalVisible}

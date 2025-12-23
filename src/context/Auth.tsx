@@ -11,6 +11,7 @@ import * as Linking from "expo-linking";
 import { getWallet } from "../utils/wallet";
 import { login as dpopLogin, register as dpopRegister } from "../dpop";
 import { initiateWarpcastAuth } from "../utils/farcasterAuth";
+import { fetchUserProfile } from "../utils/neynarAuth";
 
 // Types for authentication
 export type AuthType = "farcaster" | "local_wallet" | "local_email" | null;
@@ -163,13 +164,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (farcasterData: FarcasterUserData) => {
       console.log("[Auth] Received Farcaster callback:", farcasterData.username);
       
+      // If pfpUrl is missing, fetch full profile from Neynar
+      let finalFarcasterData = farcasterData;
+      if (!farcasterData.pfpUrl && farcasterData.fid > 0) {
+        try {
+          console.log("[Auth] Fetching full profile from Neynar for FID:", farcasterData.fid);
+          const fullProfile = await fetchUserProfile(farcasterData.fid);
+          finalFarcasterData = {
+            ...farcasterData,
+            pfpUrl: fullProfile.pfpUrl || farcasterData.pfpUrl,
+            displayName: fullProfile.displayName || farcasterData.displayName,
+            username: fullProfile.username || farcasterData.username,
+          };
+          console.log("[Auth] Fetched profile with pfpUrl:", fullProfile.pfpUrl ? "yes" : "no");
+        } catch (error) {
+          console.error("[Auth] Error fetching profile from Neynar:", error);
+          // Continue with original data if fetch fails
+        }
+      }
+      
       const user: AuthUser = {
         type: "farcaster",
-        farcaster: farcasterData,
-        fid: farcasterData.fid,
-        username: farcasterData.username,
-        displayName: farcasterData.displayName,
-        pfpUrl: farcasterData.pfpUrl,
+        farcaster: finalFarcasterData,
+        fid: finalFarcasterData.fid,
+        username: finalFarcasterData.username,
+        displayName: finalFarcasterData.displayName,
+        pfpUrl: finalFarcasterData.pfpUrl,
       };
 
       await saveAuth(user);
@@ -179,7 +199,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: true,
       });
       
-      console.log("[Auth] Farcaster user authenticated!");
+      console.log("[Auth] Farcaster user authenticated!", {
+        fid: user.fid,
+        username: user.username,
+        hasPfpUrl: !!user.pfpUrl,
+      });
     },
     []
   );
@@ -340,8 +364,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
-    await loadSavedAuth();
-  }, []);
+    if (state.user?.type === "farcaster" && state.user.fid > 0) {
+      try {
+        console.log("[Auth] Refreshing user profile from Neynar...");
+        const fullProfile = await fetchUserProfile(state.user.fid);
+        
+        const updatedUser: AuthUser = {
+          ...state.user,
+          farcaster: {
+            ...state.user.farcaster!,
+            pfpUrl: fullProfile.pfpUrl || state.user.farcaster.pfpUrl,
+            displayName: fullProfile.displayName || state.user.farcaster.displayName,
+            username: fullProfile.username || state.user.farcaster.username,
+          },
+          pfpUrl: fullProfile.pfpUrl || state.user.pfpUrl,
+          displayName: fullProfile.displayName || state.user.displayName,
+          username: fullProfile.username || state.user.username,
+        };
+
+        await saveAuth(updatedUser);
+        setState((prev) => ({
+          ...prev,
+          user: updatedUser,
+        }));
+        
+        console.log("[Auth] User profile refreshed");
+      } catch (error) {
+        console.error("[Auth] Error refreshing user profile:", error);
+        // Fall back to loading saved auth
+        await loadSavedAuth();
+      }
+    } else {
+      await loadSavedAuth();
+    }
+  }, [state.user]);
 
   const value: AuthContextValue = {
     state,

@@ -38,6 +38,7 @@ import MiniAppsScreen from "../Screens/MiniAppsScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
+import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -64,6 +65,7 @@ type HomeNavigationStackParamList = {
   Event: undefined;
   EventEdit: undefined;
   Files: undefined;
+  FarcasterProfile: undefined;
   GetStarted: undefined;
   CreateGrant: undefined;
   Home: undefined;
@@ -239,6 +241,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={AccountScreen}
         name="Account"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={FarcasterProfileScreen}
+        name="FarcasterProfile"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

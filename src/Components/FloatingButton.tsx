@@ -35,6 +35,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     bottom: 30,
-    right: 10,
+    right: 120,
   },
 });

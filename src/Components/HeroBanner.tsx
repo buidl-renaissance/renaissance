@@ -5,7 +5,6 @@ import { getContact, Contact } from "../dpop";
 import { useContact } from "../hooks/useContact";
 
 export const HeroBanner = ({ children, handleLogin }) => {
-
   const [contact] = useContact();
 
   return (

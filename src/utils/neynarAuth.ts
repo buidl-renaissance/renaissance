@@ -480,6 +480,84 @@ export async function signMessage(message: string): Promise<string> {
   throw new Error("Direct message signing not available via Neynar API");
 }
 
+/**
+ * Cast interface matching Neynar API response
+ */
+export interface Cast {
+  hash: string;
+  author: {
+    fid: number;
+    username?: string;
+    display_name?: string;
+    pfp_url?: string;
+  };
+  text: string;
+  timestamp: string;
+  embeds?: Array<{
+    url?: string;
+    cast_id?: {
+      fid: number;
+      hash: string;
+    };
+  }>;
+  reactions?: {
+    likes_count?: number;
+    recasts_count?: number;
+    replies_count?: number;
+  };
+  parent_author?: {
+    fid: number;
+    username?: string;
+  };
+  parent_hash?: string;
+}
+
+/**
+ * Fetch casts for a specific user (FID)
+ */
+export async function fetchUserCasts(
+  fid: number,
+  options?: {
+    limit?: number;
+    cursor?: string;
+  }
+): Promise<{ casts: Cast[]; next?: { cursor: string } }> {
+  console.log("[NeynarAuth] Fetching casts for FID:", fid);
+
+  const limit = options?.limit || 25;
+  const params = new URLSearchParams({
+    fid: fid.toString(),
+    limit: limit.toString(),
+  });
+
+  if (options?.cursor) {
+    params.append("cursor", options.cursor);
+  }
+
+  const response = await fetch(
+    `${NEYNAR_API_BASE}/feed/user/casts?${params.toString()}`,
+    {
+      headers: {
+        "api_key": NEYNAR_API_KEY,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[NeynarAuth] Fetch casts error:", response.status, errorText);
+    throw new Error(`Failed to fetch casts: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("[NeynarAuth] Fetched casts:", data.result?.casts?.length || 0);
+
+  return {
+    casts: data.result?.casts || [],
+    next: data.result?.next ? { cursor: data.result.next.cursor } : undefined,
+  };
+}
+
 // Helper function
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -490,6 +568,7 @@ export default {
   initiateDirectSignIn,
   handleNeynarCallback,
   fetchUserProfile,
+  fetchUserCasts,
   getStoredSignerUuid,
   getStoredFid,
   clearNeynarAuth,

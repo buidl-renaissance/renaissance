@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from "react-native";
 import { Chip, Text } from "react-native-paper";
 import SearchableDropdown from "react-native-searchable-dropdown";
 import { Ionicons } from "@expo/vector-icons";
@@ -220,9 +220,25 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
         
         {authState.isAuthenticated && authState.user?.type === "farcaster" ? (
           <>
-            {/* Connected Account Info */}
-            <View style={styles.farcasterInfo}>
-              <Ionicons name="person-circle" size={40} color="#8B5CF6" />
+            {/* Connected Account Info - Clickable to view profile */}
+            <TouchableOpacity
+              style={styles.farcasterInfo}
+              onPress={() => {
+                console.log("[AccountScreen] Navigating to FarcasterProfile");
+                navigation.navigate("FarcasterProfile");
+              }}
+              activeOpacity={0.7}
+            >
+              {authState.user.pfpUrl ? (
+                <Image
+                  source={{ uri: authState.user.pfpUrl }}
+                  style={styles.farcasterPfp}
+                />
+              ) : (
+                <View style={styles.farcasterPfpPlaceholder}>
+                  <Ionicons name="person" size={24} color="#8B5CF6" />
+                </View>
+              )}
               <View style={styles.farcasterDetails}>
                 <Text style={styles.farcasterUsername}>
                   @{authState.user.username}
@@ -230,9 +246,14 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
                 <Text style={styles.farcasterFid}>
                   FID: {authState.user.fid}
                 </Text>
+                {authState.user.displayName && (
+                  <Text style={styles.farcasterDisplayName}>
+                    {authState.user.displayName}
+                  </Text>
+                )}
               </View>
-              <Ionicons name="checkmark-circle" size={24} color="#22C55E" style={{ marginLeft: 'auto' }} />
-            </View>
+              <Ionicons name="chevron-forward" size={20} color="#6B7280" style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
 
             {/* Status - All permissions included with Neynar sign-in */}
             <View style={styles.signerStatus}>
@@ -250,6 +271,20 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
                 <Text style={styles.statusText}>Social features</Text>
               </View>
             </View>
+
+            {/* View Profile Button */}
+            <TouchableOpacity
+              style={styles.viewProfileButton}
+              onPress={() => {
+                console.log("[AccountScreen] Navigating to FarcasterProfile from button");
+                navigation.navigate("FarcasterProfile");
+              }}
+            >
+              <Ionicons name="person-circle-outline" size={18} color="#8B5CF6" />
+              <Text style={styles.viewProfileButtonText}>
+                View Profile & Casts
+              </Text>
+            </TouchableOpacity>
 
             <Text style={styles.helpText}>
               You have full access to Farcaster features in this app.
@@ -370,9 +405,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+    padding: 12,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+  },
+  farcasterPfp: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+  },
+  farcasterPfpPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   farcasterDetails: {
-    marginLeft: 12,
+    flex: 1,
+    marginLeft: 0,
   },
   farcasterUsername: {
     fontSize: 16,
@@ -382,6 +436,13 @@ const styles = StyleSheet.create({
   farcasterFid: {
     fontSize: 12,
     color: "#6B7280",
+    marginTop: 2,
+  },
+  farcasterDisplayName: {
+    fontSize: 14,
+    color: "#1F2937",
+    marginTop: 2,
+    fontWeight: "500",
   },
   signerStatus: {
     marginBottom: 12,
@@ -408,6 +469,23 @@ const styles = StyleSheet.create({
   },
   requestButtonText: {
     color: "#fff",
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  viewProfileButton: {
+    backgroundColor: "#EEF2FF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#8B5CF6",
+  },
+  viewProfileButtonText: {
+    color: "#8B5CF6",
     fontWeight: "600",
     marginLeft: 8,
   },
