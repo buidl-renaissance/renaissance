@@ -45,6 +45,13 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     });
   }, [navigation]);
 
+  const handleResourcePress = React.useCallback((url: string, title: string) => {
+    navigation.push("MiniApp", {
+      url,
+      title,
+    });
+  }, [navigation]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -108,6 +115,148 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
                   );
                 })}
               </ScrollView>
+            </View>
+
+            {/* Art Resources Section */}
+            <View style={styles.resourcesSection}>
+              <SectionTitle>ART RESOURCES</SectionTitle>
+              
+              {/* Local Art Guides & Events */}
+              <View style={styles.resourceCategory}>
+                <Text style={styles.categoryTitle}>🎨 Local Art Guides & Events</Text>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.artdetroitnow.com/", "Art Detroit Now")}
+                >
+                  <Text style={styles.resourceName}>Art Detroit Now</Text>
+                  <Text style={styles.resourceDescription}>Guide to contemporary art events, gallery openings, exhibitions and happenings in Detroit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://detroitartreview.com/", "Detroit Art Review")}
+                >
+                  <Text style={styles.resourceName}>Detroit Art Review</Text>
+                  <Text style={styles.resourceDescription}>Critical reviews of Detroit art exhibitions and gallery shows</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://thedetroiter.com/", "TheDetroiter.com")}
+                >
+                  <Text style={styles.resourceName}>TheDetroiter.com</Text>
+                  <Text style={styles.resourceDescription}>Long-running Detroit cultural site with arts & culture articles, interviews, event listings, and critiques</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://spreadart.org/", "Spread Art")}
+                >
+                  <Text style={styles.resourceName}>Spread Art</Text>
+                  <Text style={styles.resourceDescription}>Community creative space and incubator supporting local artistic collaborations and cultural programming</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.hourdetroit.com/arts/", "Hour Detroit - Art Section")}
+                >
+                  <Text style={styles.resourceName}>Hour Detroit – Art Section</Text>
+                  <Text style={styles.resourceDescription}>Local magazine coverage highlighting Detroit art events, features, and artist stories</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.metrotimes.com/arts-culture", "Metro Times - Arts & Culture")}
+                >
+                  <Text style={styles.resourceName}>Metro Times – Arts & Culture</Text>
+                  <Text style={styles.resourceDescription}>Weekly news and reviews on art, gallery shows, performances, and local culture</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Publications & Blogs */}
+              <View style={styles.resourceCategory}>
+                <Text style={styles.categoryTitle}>🖼️ Publications & Blogs</Text>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://barbedmagazine.com/", "Barbed Magazine")}
+                >
+                  <Text style={styles.resourceName}>Barbed Magazine</Text>
+                  <Text style={styles.resourceDescription}>Detroit-area art publication amplifying LGBTQ+ and BIPOC artists</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://runnerdetroit.com/art", "Runner Magazine - ART Section")}
+                >
+                  <Text style={styles.resourceName}>Runner Magazine – ART Section</Text>
+                  <Text style={styles.resourceDescription}>Detroit grassroots arts coverage with studio visits, reviews and features</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://blog.feedspot.com/detroit_art_blogs/", "Feedspot List of Detroit Art Blogs")}
+                >
+                  <Text style={styles.resourceName}>Feedspot List of Detroit Art Blogs</Text>
+                  <Text style={styles.resourceDescription}>Community blogs like Mint Artists Guild, Art In Motion, BridgeDetroit Arts & Culture, and others</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Major Art Institutions */}
+              <View style={styles.resourceCategory}>
+                <Text style={styles.categoryTitle}>🖼️ Major Art Institutions</Text>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://dia.org/", "Detroit Institute of Arts")}
+                >
+                  <Text style={styles.resourceName}>Detroit Institute of Arts (DIA)</Text>
+                  <Text style={styles.resourceDescription}>Museum site with exhibitions, events, and news</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://detroitartistsmarket.org/", "Detroit Artists Market")}
+                >
+                  <Text style={styles.resourceName}>Detroit Artists Market (DAM)</Text>
+                  <Text style={styles.resourceDescription}>Contemporary art gallery promoting local artists (website has exhibitions/events)</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://scarabclub.org/", "Scarab Club")}
+                >
+                  <Text style={styles.resourceName}>Scarab Club</Text>
+                  <Text style={styles.resourceDescription}>Historic artist club/gallery offering exhibitions and programs</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://cranbrookartmuseum.org/", "Cranbrook Art Museum")}
+                >
+                  <Text style={styles.resourceName}>Cranbrook Art Museum</Text>
+                  <Text style={styles.resourceDescription}>Renowned regional art museum with online resources, exhibitions, and research</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Other Useful Resources */}
+              <View style={styles.resourceCategory}>
+                <Text style={styles.categoryTitle}>📣 Other Useful Art & Culture Resources</Text>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.theartnewspaper.com/tag/detroit", "The Art Newspaper - Detroit Tag")}
+                >
+                  <Text style={styles.resourceName}>The Art Newspaper – Detroit Tag</Text>
+                  <Text style={styles.resourceDescription}>Art news aggregator with international and local Detroit art coverage</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Iconic Public Art Sites */}
+              <View style={styles.resourceCategory}>
+                <Text style={styles.categoryTitle}>📌 Iconic Public Art Sites</Text>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.heidelberg.org/", "The Heidelberg Project")}
+                >
+                  <Text style={styles.resourceName}>The Heidelberg Project</Text>
+                  <Text style={styles.resourceDescription}>Outdoor community art installation and cultural org</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.resourceItem}
+                  onPress={() => handleResourcePress("https://www.makeartworkdetroit.org/", "Lincoln Street Art Park / Make Art Work Detroit")}
+                >
+                  <Text style={styles.resourceName}>Lincoln Street Art Park / Make Art Work Detroit</Text>
+                  <Text style={styles.resourceDescription}>Outdoor art park with installations and public engagement</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </>
         ) : (
@@ -221,6 +370,40 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
     textAlign: "center",
+  },
+  resourcesSection: {
+    backgroundColor: "white",
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  resourceCategory: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  categoryTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 12,
+  },
+  resourceItem: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  resourceName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 6,
+  },
+  resourceDescription: {
+    fontSize: 14,
+    color: "#6B7280",
+    lineHeight: 20,
   },
 });
 
