@@ -20,6 +20,7 @@ import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { FloatingButton } from "../Components/FloatingButton";
 import { FloatingProfileButton } from "../Components/FloatingProfileButton";
 import { SectionTitle } from "../Components/SectionTitle";
+import { MiniAppButton } from "../Components/MiniAppButton";
 
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
@@ -200,6 +201,41 @@ const CalendarScreen = ({ navigation }) => {
 
   const handleOpenRestaurants = React.useCallback(() => {
     navigation.push("Restaurants");
+  }, []);
+
+  const handleOpenGloabi = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://gloabi-chat.vercel.app/",
+      title: "Gloabi",
+    });
+  }, []);
+
+  const handleOpenMysticIsland = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://mystic-island.yourland.network/",
+      title: "Mystic Island",
+    });
+  }, []);
+
+  const handleOpenDynoDetroit = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://dynodetroit.com",
+      title: "Dyno Detroit",
+    });
+  }, []);
+
+  const handleOpenHotBones = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://hotbones.com",
+      title: "Hot Bones",
+    });
+  }, []);
+
+  const handleOpenBeaconHQ = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://www.thebeaconhq.com/",
+      title: "The Beacon HQ",
+    });
   }, []);
 
   React.useEffect(() => {
@@ -504,118 +540,78 @@ const CalendarScreen = ({ navigation }) => {
         <View style={{ 
           flexDirection: "row", 
           paddingHorizontal: 12, 
-          paddingVertical: 16,
+          paddingVertical: 12,
           justifyContent: "space-between",
         }}>
-          <TouchableOpacity 
+          <MiniAppButton
+            emoji="🎨"
+            label="Art"
+            backgroundColor="#EC4899"
             onPress={handleOpenArt}
-            style={{
-              alignItems: "center",
-              width: 66,
-            }}
-          >
-            <View style={{
-              backgroundColor: "#EC4899",
-              borderRadius: 14,
-              width: 66,
-              height: 66,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}>
-              <Text style={{ fontSize: 30 }}>🎨</Text>
-            </View>
-            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Art</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
+          />
+          <MiniAppButton
+            emoji="🅿️"
+            label="Parking"
+            backgroundColor="#10B981"
             onPress={handleOpenParking}
-            style={{
-              alignItems: "center",
-              width: 66,
-            }}
-          >
-            <View style={{
-              backgroundColor: "#10B981",
-              borderRadius: 14,
-              width: 66,
-              height: 66,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}>
-              <Text style={{ fontSize: 30 }}>🅿️</Text>
-            </View>
-            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Parking</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
+          />
+          <MiniAppButton
+            emoji="🤝"
+            label="Co.Lab"
+            backgroundColor="#8B5CF6"
             onPress={handleOpenCoLab}
-            style={{
-              alignItems: "center",
-              width: 66,
-            }}
-          >
-            <View style={{
-              backgroundColor: "#8B5CF6",
-              borderRadius: 14,
-              width: 66,
-              height: 66,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}>
-              <Text style={{ fontSize: 30 }}>🤝</Text>
-            </View>
-            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Co.Lab</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
+          />
+          <MiniAppButton
+            emoji="🏆"
+            label="Quests"
+            backgroundColor="#3B82F6"
             onPress={handleOpenCollectorQuest}
-            style={{
-              alignItems: "center",
-              width: 66,
-            }}
-          >
-            <View style={{
-              backgroundColor: "#3B82F6",
-              borderRadius: 14,
-              width: 66,
-              height: 66,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}>
-              <Text style={{ fontSize: 30 }}>🏆</Text>
-            </View>
-            <Text style={{ fontSize: 9, fontWeight: "600", color: "#333", textAlign: "center" }}>Quests</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
+          />
+          <MiniAppButton
+            emoji="🍽️"
+            label="Restaurants"
+            backgroundColor="#F59E0B"
             onPress={handleOpenRestaurants}
-            style={{
-              alignItems: "center",
-              width: 66,
-            }}
-          >
-            <View style={{
-              backgroundColor: "#F59E0B",
-              borderRadius: 14,
-              width: 66,
-              height: 66,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 6,
-            }}>
-              <Text style={{ fontSize: 30 }}>🍽️</Text>
-            </View>
-            <Text style={{ 
-              fontSize: 9, 
-              fontWeight: "600", 
-              color: "#333",
-              textAlign: "center",
-            }}>Restaurants</Text>
-          </TouchableOpacity>
+          />
+        </View>
+
+        {/* Second Row of Mini Apps */}
+        <View style={{ 
+          flexDirection: "row", 
+          paddingHorizontal: 12, 
+          paddingVertical: 6,
+          justifyContent: "space-between",
+        }}>
+          <MiniAppButton
+            emoji="💬"
+            label="Gloabi"
+            backgroundColor="#6366F1"
+            onPress={handleOpenGloabi}
+          />
+          <MiniAppButton
+            emoji="🏝️"
+            label="Mystic Island"
+            backgroundColor="#14B8A6"
+            onPress={handleOpenMysticIsland}
+          />
+          <MiniAppButton
+            emoji="🧗"
+            label="Dyno Detroit"
+            backgroundColor="#DC2626"
+            onPress={handleOpenDynoDetroit}
+          />
+          <MiniAppButton
+            emoji="🧘"
+            label="Hot Bones"
+            backgroundColor="#F97316"
+            onPress={handleOpenHotBones}
+          />
+          <MiniAppButton
+            emoji="🎮"
+            label="Beacon HQ"
+            backgroundColor="#059669"
+            onPress={handleOpenBeaconHQ}
+          />
         </View>
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve */}
