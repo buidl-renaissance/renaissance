@@ -264,6 +264,14 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
           sharedCookiesEnabled
           thirdPartyCookiesEnabled
           originWhitelist={["*"]}
+          // Safari-like scrolling
+          scrollEnabled={true}
+          bounces={true}
+          showsVerticalScrollIndicator={true}
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="normal"
+          nestedScrollEnabled={true}
+          overScrollMode="always"
           // Inject script to set up Farcaster Frame SDK communication
           injectedJavaScriptBeforeContentLoaded={`
             (function() {

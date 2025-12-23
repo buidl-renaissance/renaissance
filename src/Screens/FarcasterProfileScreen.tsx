@@ -14,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/Auth";
 import { fetchUserProfile, fetchUserCasts, Cast } from "../utils/neynarAuth";
-import { lightGreen } from "../colors";
 
 interface FarcasterProfileScreenProps {
   navigation: any;
@@ -35,7 +34,7 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
     navigation.setOptions({
       title: "Profile",
       headerStyle: {
-        backgroundColor: lightGreen,
+        backgroundColor: "#fff",
       },
       headerTintColor: "#000",
     });
@@ -170,7 +169,7 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
@@ -189,54 +188,68 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
         }}
         scrollEventThrottle={400}
       >
-        {/* Profile Header */}
+        {/* Profile Header - Instagram Style */}
         {(profile || authState.user) && (
           <View style={styles.profileHeader}>
-            {(profile?.pfpUrl || authState.user?.pfpUrl) ? (
-              <Image
-                source={{ uri: profile?.pfpUrl || authState.user?.pfpUrl }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <Ionicons name="person" size={40} color="#999" />
+            {/* Top Row: Profile Picture and Stats */}
+            <View style={styles.profileTopRow}>
+              {/* Profile Picture */}
+              <View style={styles.profileImageContainer}>
+                {(profile?.pfpUrl || authState.user?.pfpUrl) ? (
+                  <Image
+                    source={{ uri: profile?.pfpUrl || authState.user?.pfpUrl }}
+                    style={styles.profileImage}
+                  />
+                ) : (
+                  <View style={styles.profileImagePlaceholder}>
+                    <Ionicons name="person" size={40} color="#999" />
+                  </View>
+                )}
               </View>
-            )}
-            <Text style={styles.displayName}>
-              {profile?.displayName || authState.user?.displayName || profile?.username || authState.user?.username || "Anonymous"}
-            </Text>
-            {(profile?.username || authState.user?.username) && (
-              <Text style={styles.username}>
-                @{profile?.username || authState.user?.username}
+              
+              {/* Stats */}
+              <View style={styles.statsContainer}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{casts.length}</Text>
+                  <Text style={styles.statLabel}>Casts</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>
+                    {profile?.followerCount || 0}
+                  </Text>
+                  <Text style={styles.statLabel}>Followers</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>
+                    {profile?.followingCount || 0}
+                  </Text>
+                  <Text style={styles.statLabel}>Following</Text>
+                </View>
+              </View>
+            </View>
+            
+            {/* User Info */}
+            <View style={styles.userInfo}>
+              <Text style={styles.displayName}>
+                {profile?.displayName || authState.user?.displayName || profile?.username || authState.user?.username || "Anonymous"}
               </Text>
-            )}
-            {profile?.bio && (
-              <Text style={styles.bio}>{profile.bio}</Text>
-            )}
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {profile?.followerCount || 0}
+              {(profile?.username || authState.user?.username) && (
+                <Text style={styles.username}>
+                  @{profile?.username || authState.user?.username}
                 </Text>
-                <Text style={styles.statLabel}>Followers</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {profile?.followingCount || 0}
-                </Text>
-                <Text style={styles.statLabel}>Following</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{casts.length}</Text>
-                <Text style={styles.statLabel}>Casts</Text>
-              </View>
+              )}
+              {profile?.bio && (
+                <Text style={styles.bio}>{profile.bio}</Text>
+              )}
             </View>
           </View>
         )}
 
         {/* Casts Section */}
         <View style={styles.castsSection}>
-          <Text style={styles.sectionTitle}>Your Casts</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionDivider} />
+          </View>
           {casts.length === 0 ? (
             <View style={styles.emptyCastsContainer}>
               <Ionicons name="chatbubbles-outline" size={48} color="#999" />
@@ -326,13 +339,14 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightGreen,
+    backgroundColor: "#fff",
   },
   scrollView: {
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 20,
+    paddingBottom: 100,
+    paddingTop: 0,
   },
   loadingContainer: {
     flex: 1,
@@ -364,73 +378,89 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     backgroundColor: "#fff",
-    padding: 20,
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    paddingTop: 12,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    marginTop: 0,
+  },
+  profileTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  profileImageContainer: {
+    marginRight: 28,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 12,
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   profileImagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#E5E7EB",
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    backgroundColor: "#F3F4F6",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
-  },
-  displayName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1F2937",
-    marginBottom: 4,
-  },
-  username: {
-    fontSize: 16,
-    color: "#6366F1",
-    marginBottom: 8,
-  },
-  bio: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    marginBottom: 16,
-    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   statsContainer: {
     flexDirection: "row",
+    flex: 1,
     justifyContent: "space-around",
-    width: "100%",
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
+    alignItems: "center",
+    paddingTop: 8,
   },
   statItem: {
     alignItems: "center",
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1F2937",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 2,
   },
   statLabel: {
     fontSize: 12,
-    color: "#6B7280",
-    marginTop: 4,
+    color: "#737373",
+    fontWeight: "400",
+  },
+  userInfo: {
+    paddingHorizontal: 0,
+  },
+  displayName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 2,
+  },
+  username: {
+    fontSize: 14,
+    color: "#737373",
+    marginBottom: 8,
+    fontWeight: "400",
+  },
+  bio: {
+    fontSize: 14,
+    color: "#000",
+    lineHeight: 20,
+    marginBottom: 0,
   },
   castsSection: {
-    padding: 16,
+    paddingTop: 0,
+    paddingHorizontal: 0,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1F2937",
-    marginBottom: 16,
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: "#DBDBDB",
   },
   emptyCastsContainer: {
     alignItems: "center",
@@ -449,31 +479,29 @@ const styles = StyleSheet.create({
   },
   castCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#DBDBDB",
   },
   castHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   castAuthorImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     marginRight: 12,
+    borderWidth: 0.5,
+    borderColor: "#DBDBDB",
   },
   castAuthorImagePlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#E5E7EB",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F3F4F6",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -482,41 +510,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   castAuthorName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#1F2937",
+    color: "#000",
+    marginBottom: 0,
   },
   castAuthorUsername: {
     fontSize: 14,
-    color: "#6B7280",
-    marginTop: 2,
+    color: "#737373",
+    fontWeight: "400",
   },
   castTimestamp: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: "#737373",
+    fontWeight: "400",
   },
   castText: {
-    fontSize: 15,
-    color: "#1F2937",
-    lineHeight: 22,
-    marginBottom: 12,
+    fontSize: 14,
+    color: "#000",
+    lineHeight: 20,
+    marginBottom: 8,
+    marginLeft: 44,
   },
   castReactions: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
+    marginTop: 4,
+    marginLeft: 44,
   },
   reactionItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: 20,
   },
   reactionCount: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 4,
+    fontSize: 13,
+    color: "#6B7280",
+    marginLeft: 6,
+    fontWeight: "500",
   },
   loadingMoreContainer: {
     paddingVertical: 20,

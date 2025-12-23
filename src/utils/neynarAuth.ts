@@ -524,6 +524,11 @@ export async function fetchUserCasts(
 ): Promise<{ casts: Cast[]; next?: { cursor: string } }> {
   console.log("[NeynarAuth] Fetching casts for FID:", fid);
 
+  if (!NEYNAR_API_KEY) {
+    console.error("[NeynarAuth] No API key configured");
+    throw new Error("Neynar API key not configured");
+  }
+
   const limit = options?.limit || 25;
   const params = new URLSearchParams({
     fid: fid.toString(),
@@ -534,27 +539,60 @@ export async function fetchUserCasts(
     params.append("cursor", options.cursor);
   }
 
-  const response = await fetch(
-    `${NEYNAR_API_BASE}/feed/user/casts?${params.toString()}`,
-    {
-      headers: {
-        "api_key": NEYNAR_API_KEY,
-      },
-    }
-  );
+  // Try the correct Neynar API endpoint for user casts
+  // Based on Neynar v2 API: /v2/farcaster/cast/user
+  const url = `${NEYNAR_API_BASE}/cast/user?${params.toString()}`;
+  console.log("[NeynarAuth] Fetching from URL:", url.replace(NEYNAR_API_KEY, "***"));
+
+  const response = await fetch(url, {
+    headers: {
+      "api_key": NEYNAR_API_KEY,
+    },
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
     console.error("[NeynarAuth] Fetch casts error:", response.status, errorText);
-    throw new Error(`Failed to fetch casts: ${response.status}`);
+    throw new Error(`Failed to fetch casts: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
-  console.log("[NeynarAuth] Fetched casts:", data.result?.casts?.length || 0);
+  console.log("[NeynarAuth] API Response structure:", {
+    hasResult: !!data.result,
+    hasCasts: !!data.casts,
+    resultKeys: data.result ? Object.keys(data.result) : [],
+    topLevelKeys: Object.keys(data),
+    castsCount: data.result?.casts?.length || data.casts?.length || 0,
+    fullResponse: JSON.stringify(data).substring(0, 500), // First 500 chars for debugging
+  });
+
+  // Neynar API v2 returns casts in different structures depending on endpoint
+  // Try multiple possible response structures
+  let casts: Cast[] = [];
+  let next: any = undefined;
+
+  if (data.result) {
+    casts = data.result.casts || data.result || [];
+    next = data.result.next;
+  } else if (data.casts) {
+    casts = data.casts;
+    next = data.next;
+  } else if (Array.isArray(data)) {
+    casts = data;
+  }
+
+  console.log("[NeynarAuth] Parsed casts:", casts.length);
+  if (casts.length > 0) {
+    console.log("[NeynarAuth] First cast sample:", {
+      hash: casts[0].hash,
+      text: casts[0].text?.substring(0, 50),
+      author: casts[0].author?.username,
+    });
+  }
 
   return {
-    casts: data.result?.casts || [],
-    next: data.result?.next ? { cursor: data.result.next.cursor } : undefined,
+    casts: casts,
+    next: next ? { cursor: typeof next === 'string' ? next : next.cursor } : undefined,
   };
 }
 
