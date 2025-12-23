@@ -7,8 +7,8 @@ import { ALCHEMY_API_KEY } from "@env";
 export const generateWallet = () => {
   const wallet = ethers.Wallet.createRandom();
   console.log('address:', wallet.address)
-  console.log('mnemonic:', wallet.mnemonic.phrase)
-  console.log('privateKey:', wallet.privateKey)
+  // console.log('mnemonic:', wallet.mnemonic.phrase)
+  // console.log('privateKey:', wallet.privateKey)
   return wallet;
 };
 
@@ -16,7 +16,7 @@ export const loadWallet = (pk: string) => {
   const wallet = new ethers.Wallet(pk);
   console.log('address:', wallet.address)
   // console.log('mnemonic:', wallet.mnemonic.phrase)
-  console.log('privateKey:', wallet.privateKey)
+  // console.log('privateKey:', wallet.privateKey)
   return wallet;
 };
 

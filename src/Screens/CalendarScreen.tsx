@@ -766,6 +766,8 @@ const CalendarScreen = ({ navigation }) => {
                   onSelectEvent={() => {
                     setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
                     setWebModalTitle(lumaEvent.name);
+                    setWebModalEventType('luma');
+                    setWebModalEventData(lumaEvent);
                     setWebModalVisible(true);
                   }}
                 />
@@ -848,8 +850,6 @@ const CalendarScreen = ({ navigation }) => {
         onClose={handleCloseWebModal}
         eventType={webModalEventType}
         eventData={webModalEventData}
-        isFeatured={webModalEventData ? isFeatured(webModalEventData.id) : false}
-        onToggleFeatured={handleToggleFeatured}
       />
     </View>
   );

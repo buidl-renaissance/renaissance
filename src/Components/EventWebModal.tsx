@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "rea
 import Modal from "react-native-modal";
 import { WebView } from "react-native-webview";
 import Icon, { IconTypes } from "./Icon";
+import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
+import { EventRegister } from "react-native-event-listeners";
 
 interface EventWebModalProps {
   isVisible: boolean;
@@ -11,8 +13,6 @@ interface EventWebModalProps {
   onClose: () => void;
   eventType?: 'ra' | 'luma' | 'da';
   eventData?: any;
-  isFeatured?: boolean;
-  onToggleFeatured?: (eventData: any) => void;
 }
 
 export const EventWebModal: React.FC<EventWebModalProps> = ({
@@ -22,22 +22,55 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
   onClose,
   eventType,
   eventData,
-  isFeatured = false,
-  onToggleFeatured,
 }) => {
   const [loading, setLoading] = React.useState(true);
+  const [isBookmarked, setIsBookmarked] = React.useState(false);
 
   React.useEffect(() => {
     if (isVisible) {
       setLoading(true);
+      // Load bookmark status when modal opens
+      if (eventData && eventType) {
+        (async () => {
+          const bookmarked = await getBookmarkStatusForWebEvent(eventData, eventType);
+          setIsBookmarked(bookmarked);
+        })();
+      }
     }
-  }, [isVisible, url]);
+  }, [isVisible, url, eventData, eventType]);
 
-  const handleToggleFeatured = React.useCallback(() => {
-    if (onToggleFeatured && eventData) {
-      onToggleFeatured(eventData);
-    }
-  }, [onToggleFeatured, eventData]);
+  React.useEffect(() => {
+    if (!eventData || !eventType) return;
+    
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (eventType === 'da' && eventData.id === data.event?.id) {
+        setIsBookmarked(data.isBookmarked);
+      } else if (eventType === 'luma' && eventData.apiId === data.event?.apiId) {
+        setIsBookmarked(data.isBookmarked);
+      } else if (eventType === 'ra' && eventData.id === data.event?.id) {
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, [eventData, eventType]);
+
+  const handleToggleBookmark = React.useCallback(async () => {
+    if (!eventData || !eventType) return;
+    
+    const newBookmarkStatus = await toggleBookmarkForWebEvent(eventData, eventType);
+    setIsBookmarked(newBookmarkStatus);
+    
+    // Emit event for other components to update
+    EventRegister.emitEvent("BookmarkEvent", {
+      event: eventData,
+      isBookmarked: newBookmarkStatus,
+    });
+  }, [eventData, eventType]);
 
   return (
     <Modal
@@ -57,16 +90,16 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
             {title || "Event Details"}
           </Text>
           <View style={styles.headerActions}>
-            {eventType === 'ra' && (
+            {eventType && eventData && (
               <TouchableOpacity
-                onPress={handleToggleFeatured}
-                style={styles.featureButton}
+                onPress={handleToggleBookmark}
+                style={styles.bookmarkButton}
               >
                 <Icon
                   type={IconTypes.Ionicons}
-                  name={isFeatured ? "star" : "star-outline"}
+                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
                   size={24}
-                  color={isFeatured ? "#3449ff" : "#666"}
+                  color={isBookmarked ? "#3449ff" : "#666"}
                 />
               </TouchableOpacity>
             )}
@@ -141,7 +174,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  featureButton: {
+  bookmarkButton: {
     padding: 4,
     marginRight: 8,
   },
