@@ -32,8 +32,8 @@ export const ChatBox = ({ comments, handleSubmit }) => {
         backgroundColor: "white",
       }}
     >
-      {comments?.map((comment: DAComment) => (
-        <CommentBox comment={comment} />
+      {comments?.map((comment: DAComment, index: number) => (
+        <CommentBox key={index} comment={comment} />
       ))}
       {/* <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
         <Button

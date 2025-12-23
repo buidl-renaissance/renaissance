@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,55 +6,62 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SectionTitle } from "../Components/SectionTitle";
+import { CategoryFilter } from "../Components/CategoryFilter";
+import { RestaurantCard } from "../Components/RestaurantCard";
+import { RestaurantRankingCard } from "../Components/RestaurantRankingCard";
+import { BucketListCard } from "../Components/BucketListCard";
+import { BucketListModal } from "../Components/BucketListModal";
+import { FoodPostCard } from "../Components/FoodPostCard";
+import {
+  Restaurant,
+  RestaurantCategory,
+  BucketList,
+  FoodPost,
+} from "../interfaces";
+import {
+  MOCK_RESTAURANTS,
+  MOCK_BUCKET_LISTS,
+  MOCK_FOOD_POSTS,
+} from "../mocks/restaurants";
+import {
+  getRankingsByCategory,
+  getTopRestaurants,
+  getAllCategories,
+} from "../utils/restaurantRankings";
+import {
+  getBucketLists,
+  createBucketList,
+  updateBucketList,
+  deleteBucketList,
+  shareBucketList,
+  addRestaurantToList,
+} from "../utils/bucketLists";
 
-const { width } = Dimensions.get("window");
-
-// Curated list of popular nearby restaurants, grouped by neighborhood.
-// To update, add/remove entries below – no API calls are involved.
-const POPULAR_RESTAURANTS: {
-  neighborhood: string;
-  restaurants: { name: string; tags?: string[] }[];
-}[] = [
-  {
-    neighborhood: "Downtown",
-    restaurants: [
-      { name: "San Morello", tags: ["Italian", "Wood-fired"] },
-      { name: "Parc", tags: ["American", "Campus Martius"] },
-    ],
-  },
-  {
-    neighborhood: "Midtown",
-    restaurants: [
-      { name: "Grey Ghost", tags: ["Steaks", "Cocktails"] },
-      { name: "Selden Standard", tags: ["Small Plates", "Seasonal"] },
-    ],
-  },
-  {
-    neighborhood: "Corktown",
-    restaurants: [
-      { name: "Takoi", tags: ["Thai-inspired", "Late Night"] },
-      { name: "Ima", tags: ["Noodles", "Comfort"] },
-    ],
-  },
-  {
-    neighborhood: "Eastern Market",
-    restaurants: [
-      { name: "Supino Pizzeria", tags: ["Pizza", "Casual"] },
-      { name: "Vivio's", tags: ["Bar", "Oysters"] },
-    ],
-  },
-];
+type TabType = "rankings" | "categories" | "bucketLists" | "feed";
 
 interface RestaurantsScreenProps {
   navigation: any;
 }
 
-const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({ navigation }) => {
-  React.useEffect(() => {
+const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
+  navigation,
+}) => {
+  const [activeTab, setActiveTab] = useState<TabType>("rankings");
+  const [selectedCategory, setSelectedCategory] = useState<
+    RestaurantCategory | "all"
+  >("all");
+  const [selectedRankingCategory, setSelectedRankingCategory] =
+    useState<RestaurantCategory>("pizza");
+  const [bucketLists, setBucketLists] = useState<BucketList[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingBucketList, setEditingBucketList] =
+    useState<BucketList | null>(null);
+  const [foodPosts] = useState<FoodPost[]>(MOCK_FOOD_POSTS);
+
+  useEffect(() => {
     navigation.setOptions({
       title: "Restaurants",
       headerStyle: {
@@ -64,53 +71,354 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({ navigation }) => 
     });
   }, [navigation]);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Ionicons name="restaurant" size={48} color="#3449ff" />
-          <Text style={styles.headerTitle}>Popular Nearby Restaurants</Text>
-          <Text style={styles.headerSubtitle}>
-            Discover great dining spots across Detroit neighborhoods
-          </Text>
-        </View>
+  useEffect(() => {
+    loadBucketLists();
+  }, []);
 
-        <View style={styles.content}>
-          <SectionTitle>RESTAURANTS BY AREA</SectionTitle>
+  const loadBucketLists = async () => {
+    const lists = await getBucketLists();
+    if (lists.length === 0) {
+      // Initialize with mock data
+      setBucketLists(MOCK_BUCKET_LISTS);
+    } else {
+      setBucketLists(lists);
+    }
+  };
+
+  const handleCreateBucketList = async (
+    name: string,
+    restaurantIds: string[]
+  ) => {
+    const newList = await createBucketList(name, "user1");
+    if (restaurantIds.length > 0) {
+      for (const restaurantId of restaurantIds) {
+        await addRestaurantToList(newList.id, restaurantId);
+      }
+    }
+    await loadBucketLists();
+  };
+
+  const handleUpdateBucketList = async (
+    name: string,
+    restaurantIds: string[]
+  ) => {
+    if (editingBucketList) {
+      await updateBucketList(editingBucketList.id, {
+        name,
+        restaurants: restaurantIds,
+      });
+      await loadBucketLists();
+    }
+  };
+
+  const handleSaveBucketList = async (
+    name: string,
+    restaurantIds: string[]
+  ) => {
+    if (editingBucketList) {
+      await handleUpdateBucketList(name, restaurantIds);
+    } else {
+      await handleCreateBucketList(name, restaurantIds);
+    }
+    setIsModalVisible(false);
+    setEditingBucketList(null);
+  };
+
+  const handleShareBucketList = async (listId: string) => {
+    const shareCode = await shareBucketList(listId);
+    if (shareCode) {
+      // In a real app, show share dialog
+      console.log("Share code:", shareCode);
+    }
+    await loadBucketLists();
+  };
+
+  const handleAddToBucketList = (restaurantId: string) => {
+    // Show bucket list selector or create new
+    setEditingBucketList(null);
+    setIsModalVisible(true);
+  };
+
+  const filteredRestaurants = React.useMemo(() => {
+    if (selectedCategory === "all") {
+      return MOCK_RESTAURANTS;
+    }
+    return MOCK_RESTAURANTS.filter((r) =>
+      r.categories.includes(selectedCategory)
+    );
+  }, [selectedCategory]);
+
+  const renderRankingsTab = () => {
+    const rankings = getRankingsByCategory(selectedRankingCategory);
+    const topRestaurants = getTopRestaurants(selectedRankingCategory, 20);
+    const categories = getAllCategories();
+
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.categorySelector}>
+          <Text style={styles.sectionLabel}>Category:</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScroll}
+            style={styles.categoryScroll}
+            contentContainerStyle={styles.categoryScrollContent}
           >
-            {POPULAR_RESTAURANTS.map((group) => (
-              <View key={group.neighborhood} style={styles.areaCard}>
-                <Text style={styles.areaTitle}>{group.neighborhood}</Text>
-                {group.restaurants.map((restaurant) => (
-                  <View key={restaurant.name} style={styles.restaurantItem}>
-                    <Text style={styles.restaurantName}>{restaurant.name}</Text>
-                    {restaurant.tags && restaurant.tags.length > 0 && (
-                      <View style={styles.tagsContainer}>
-                        {restaurant.tags.map((tag, index) => (
-                          <View key={index} style={styles.tag}>
-                            <Text style={styles.tagText}>{tag}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                style={[
+                  styles.categoryChip,
+                  selectedRankingCategory === cat && styles.categoryChipActive,
+                ]}
+                onPress={() => setSelectedRankingCategory(cat)}
+              >
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    selectedRankingCategory === cat &&
+                      styles.categoryChipTextActive,
+                  ]}
+                >
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </Text>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
+        <SectionTitle>
+          TOP {selectedRankingCategory.toUpperCase()} RESTAURANTS
+        </SectionTitle>
+        {topRestaurants.length > 0 ? (
+          topRestaurants.map((item, index) => {
+            const ranking = rankings.find((r) => r.restaurantId === item.id);
+            return (
+              <RestaurantRankingCard
+                key={item.id}
+                ranking={
+                  ranking || {
+                    restaurantId: item.id,
+                    category: selectedRankingCategory,
+                    points: item.points || 0,
+                    rank: index + 1,
+                  }
+                }
+              />
+            );
+          })
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No rankings yet</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
-        <View style={styles.footer}>
-          <Ionicons name="information-circle-outline" size={20} color="#999" />
-          <Text style={styles.footerText}>
-            More restaurants and features coming soon
-          </Text>
+  const renderCategoriesTab = () => {
+    return (
+      <View style={styles.tabContent}>
+        <CategoryFilter
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+        <SectionTitle>
+          {selectedCategory === "all"
+            ? "ALL RESTAURANTS"
+            : selectedCategory.toUpperCase()}
+        </SectionTitle>
+        {filteredRestaurants.length > 0 ? (
+          filteredRestaurants.map((item) => (
+            <RestaurantCard
+              key={item.id}
+              restaurant={item}
+              onAddToBucketList={() => handleAddToBucketList(item.id)}
+            />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No restaurants found</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderBucketListsTab = () => {
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.bucketListHeader}>
+          <SectionTitle>MY BUCKET LISTS</SectionTitle>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              setEditingBucketList(null);
+              setIsModalVisible(true);
+            }}
+          >
+            <Ionicons name="add-circle" size={24} color="#3449ff" />
+            <Text style={styles.addButtonText}>New List</Text>
+          </TouchableOpacity>
         </View>
+        {bucketLists.length > 0 ? (
+          bucketLists.map((item) => (
+            <BucketListCard
+              key={item.id}
+              bucketList={item}
+              onEdit={() => {
+                setEditingBucketList(item);
+                setIsModalVisible(true);
+              }}
+              onShare={() => handleShareBucketList(item.id)}
+            />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>
+              No bucket lists yet. Create one to get started!
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderFeedTab = () => {
+    const sortedPosts = [...foodPosts].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return (
+      <View style={styles.tabContent}>
+        <SectionTitle>BEST FOOD FEED</SectionTitle>
+        {sortedPosts.length > 0 ? (
+          sortedPosts.map((item) => (
+            <FoodPostCard
+              key={item.id}
+              post={item}
+              onSubmitComment={(text) => {
+                console.log("Comment submitted:", text);
+              }}
+            />
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No posts yet</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "rankings":
+        return renderRankingsTab();
+      case "categories":
+        return renderCategoriesTab();
+      case "bucketLists":
+        return renderBucketListsTab();
+      case "feed":
+        return renderFeedTab();
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "rankings" && styles.activeTab]}
+          onPress={() => setActiveTab("rankings")}
+        >
+          <Ionicons
+            name="trophy"
+            size={20}
+            color={activeTab === "rankings" ? "#3449ff" : "#999"}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "rankings" && styles.activeTabText,
+            ]}
+          >
+            Rankings
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "categories" && styles.activeTab]}
+          onPress={() => setActiveTab("categories")}
+        >
+          <Ionicons
+            name="grid"
+            size={20}
+            color={activeTab === "categories" ? "#3449ff" : "#999"}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "categories" && styles.activeTabText,
+            ]}
+          >
+            Categories
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            activeTab === "bucketLists" && styles.activeTab,
+          ]}
+          onPress={() => setActiveTab("bucketLists")}
+        >
+          <Ionicons
+            name="list"
+            size={20}
+            color={activeTab === "bucketLists" ? "#3449ff" : "#999"}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "bucketLists" && styles.activeTabText,
+            ]}
+          >
+            Bucket Lists
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "feed" && styles.activeTab]}
+          onPress={() => setActiveTab("feed")}
+        >
+          <Ionicons
+            name="restaurant"
+            size={20}
+            color={activeTab === "feed" ? "#3449ff" : "#999"}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "feed" && styles.activeTabText,
+            ]}
+          >
+            Feed
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {renderTabContent()}
       </ScrollView>
+
+      <BucketListModal
+        visible={isModalVisible}
+        bucketList={editingBucketList}
+        restaurants={MOCK_RESTAURANTS}
+        onClose={() => {
+          setIsModalVisible(false);
+          setEditingBucketList(null);
+        }}
+        onSave={handleSaveBucketList}
+      />
     </SafeAreaView>
   );
 };
@@ -120,95 +428,105 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    alignItems: "center",
-    paddingVertical: 32,
-    paddingHorizontal: 16,
-    backgroundColor: "#f9f9f9",
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 12,
-    textAlign: "center",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 8,
-    textAlign: "center",
-  },
-  content: {
-    paddingTop: 24,
-  },
-  horizontalScroll: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  areaCard: {
-    marginRight: 12,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: "#f5f5f5",
-    width: 240,
-    minHeight: 200,
-  },
-  areaTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#444",
-    marginBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: "#3449ff",
-    paddingBottom: 8,
-  },
-  restaurantItem: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
-  },
-  restaurantName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111",
-    marginBottom: 4,
-  },
-  tagsContainer: {
+  tabsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 4,
+    backgroundColor: "#f9f9f9",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    paddingVertical: 8,
   },
-  tag: {
-    backgroundColor: "#e5e5e5",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  tagText: {
-    fontSize: 11,
-    color: "#666",
-    fontWeight: "500",
-  },
-  footer: {
+  tab: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 32,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#3449ff",
+  },
+  tabText: {
+    fontSize: 12,
+    color: "#999",
+    fontWeight: "500",
+  },
+  activeTabText: {
+    color: "#3449ff",
+    fontWeight: "600",
+  },
+  content: {
+    flex: 1,
+  },
+  tabContent: {
+    flex: 1,
+    paddingBottom: 20,
+  },
+  categorySelector: {
+    paddingVertical: 8,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    paddingHorizontal: 16,
+    marginBottom: 4,
+  },
+  bucketListHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  addButtonText: {
+    fontSize: 14,
+    color: "#3449ff",
+    fontWeight: "600",
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#999",
+    textAlign: "center",
+  },
+  categoryScroll: {
+    paddingVertical: 8,
+  },
+  categoryScrollContent: {
     paddingHorizontal: 16,
   },
-  footerText: {
-    fontSize: 13,
-    color: "#999",
-    marginLeft: 8,
-    textAlign: "center",
+  categoryChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0",
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  categoryChipActive: {
+    backgroundColor: "#3449ff",
+    borderColor: "#3449ff",
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
+  },
+  categoryChipTextActive: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });
 
 export default RestaurantsScreen;
-

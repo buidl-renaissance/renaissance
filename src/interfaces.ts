@@ -314,3 +314,52 @@ export interface RAEvent {
   featured?: boolean;
   isFeatured?: boolean;
 }
+
+export type RestaurantCategory = 'pizza' | 'burgers' | 'tacos' | 'drinks' | 'sushi' | 'italian' | 'asian' | 'mexican' | 'american' | 'dessert';
+
+export interface Restaurant {
+  id: string;
+  name: string;
+  address: string;
+  neighborhood: string;
+  categories: RestaurantCategory[];
+  image?: string;
+  rating?: number;
+  points?: number;
+  description?: string;
+  geo?: {
+    lat: number;
+    lng: number;
+  };
+}
+
+export interface RestaurantRanking {
+  restaurantId: string;
+  category: RestaurantCategory;
+  points: number;
+  rank: number;
+}
+
+export interface BucketList {
+  id: string;
+  name: string;
+  ownerId: string;
+  collaborators: string[];
+  restaurants: string[];
+  isShared: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FoodPost {
+  id: string;
+  restaurantId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  image?: string;
+  caption: string;
+  comments: DAComment[];
+  likes: number;
+  timestamp: string;
+}
