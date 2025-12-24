@@ -39,6 +39,7 @@ import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
+import CalendarViewScreen from "../Screens/CalendarViewScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -54,6 +55,7 @@ type HomeNavigationStackParamList = {
   Bookmarks: undefined;
   BrowseMap: undefined;
   Calendar: undefined;
+  CalendarView: { selectedDate?: string; eventsGroup?: any[] } | undefined;
   Camera: undefined;
   ContentUpload: undefined;
   Chat: undefined;
@@ -101,6 +103,16 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={CalendarScreen}
         name="Calendar"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+        }}
+      />
+      <Stack.Screen
+        component={CalendarViewScreen}
+        name="CalendarView"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",

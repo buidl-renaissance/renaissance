@@ -1,5 +1,5 @@
-import React from "react";
-import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import React, { useRef } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, Linking, PanResponder, Animated } from "react-native";
 import Modal from "react-native-modal";
 import { WebView } from "react-native-webview";
 import Icon, { IconTypes } from "./Icon";
@@ -25,10 +25,64 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
 }) => {
   const [loading, setLoading] = React.useState(true);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
+  const [isDismissing, setIsDismissing] = React.useState(false);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const lastOffset = useRef(0);
+  
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to downward swipes
+        return gestureState.dy > 0;
+      },
+      onPanResponderGrant: () => {
+        lastOffset.current = 0;
+        translateY.setOffset(0);
+        translateY.setValue(0);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow downward movement
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        translateY.flattenOffset();
+        
+        // If dragged down more than 100px, dismiss the modal
+        if (gestureState.dy > 100) {
+          setIsDismissing(true);
+          Animated.timing(translateY, {
+            toValue: 1000,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            translateY.setValue(0);
+            setIsDismissing(false);
+            // Small delay to ensure animation completes before closing
+            setTimeout(() => {
+              onClose();
+            }, 50);
+          });
+        } else {
+          // Spring back to original position
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   React.useEffect(() => {
     if (isVisible) {
       setLoading(true);
+      setIsDismissing(false);
+      translateY.setValue(0);
       // Load bookmark status when modal opens
       if (eventData && eventType) {
         (async () => {
@@ -37,7 +91,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         })();
       }
     }
-  }, [isVisible, url, eventData, eventType]);
+  }, [isVisible, url, eventData, eventType, translateY]);
 
   React.useEffect(() => {
     if (!eventData || !eventType) return;
@@ -72,6 +126,16 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
     });
   }, [eventData, eventType]);
 
+  const handleOpenInSafari = React.useCallback(async () => {
+    if (url) {
+      try {
+        await Linking.openURL(url);
+      } catch (error) {
+        console.error("Failed to open URL in Safari:", error);
+      }
+    }
+  }, [url]);
+
   return (
     <Modal
       isVisible={isVisible}
@@ -79,38 +143,50 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       onBackButtonPress={onClose}
       style={styles.modal}
       animationIn="slideInUp"
-      animationOut="slideOutDown"
+      animationOut={isDismissing ? "fadeOut" : "slideOutDown"}
       useNativeDriver
-      hideModalContentWhileAnimating
+      hideModalContentWhileAnimating={!isDismissing}
+      backdropOpacity={isDismissing ? 0 : 0.5}
     >
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {title || "Event Details"}
-          </Text>
-          <View style={styles.headerActions}>
-            {eventType && eventData && (
+      <Animated.View 
+        style={[
+          styles.container,
+          {
+            transform: [{ translateY }],
+          },
+        ]}
+      >
+        {/* Drag handle */}
+        <View style={styles.dragHandle} {...panResponder.panHandlers}>
+          <View style={styles.dragHandleBar} />
+        </View>
+        
+        {/* Title header at top */}
+        <View style={styles.titleHeader}>
+          <View style={styles.titleHeaderContent}>
+            <View style={styles.titleHeaderTextContainer}>
+              <Text style={styles.titleHeaderText} numberOfLines={1}>
+                {title || "Event Details"}
+              </Text>
+              {url && (
+                <Text style={styles.titleHeaderUrl} numberOfLines={1}>
+                  {url}
+                </Text>
+              )}
+            </View>
+            {eventType === 'ra' && url && (
               <TouchableOpacity
-                onPress={handleToggleBookmark}
-                style={styles.bookmarkButton}
+                onPress={handleOpenInSafari}
+                style={styles.safariButton}
               >
                 <Icon
                   type={IconTypes.Ionicons}
-                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
-                  size={24}
-                  color={isBookmarked ? "#3449ff" : "#666"}
+                  name="open-outline"
+                  size={20}
+                  color="#3449ff"
                 />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon
-                type={IconTypes.Ionicons}
-                name="close"
-                size={24}
-                color="#333"
-              />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -123,6 +199,8 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               onLoadStart={() => setLoading(true)}
               onLoadEnd={() => setLoading(false)}
               startInLoadingState={true}
+              scrollEnabled={true}
+              nestedScrollEnabled={true}
               renderLoading={() => (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#3449ff" />
@@ -137,7 +215,35 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
             </View>
           )}
         </View>
-      </View>
+
+        {/* Floating action buttons */}
+        <View style={styles.floatingButtons}>
+          {eventType && eventData && (
+            <TouchableOpacity
+              onPress={handleToggleBookmark}
+              style={[
+                styles.floatingBookmarkButton,
+                isBookmarked && styles.floatingBookmarkButtonActive,
+              ]}
+            >
+              <Icon
+                type={IconTypes.Ionicons}
+                name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                size={22}
+                color="#3449ff"
+              />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={onClose} style={styles.floatingCloseButton}>
+            <Icon
+              type={IconTypes.Ionicons}
+              name="close"
+              size={24}
+              color="#333"
+            />
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </Modal>
   );
 };
@@ -154,32 +260,96 @@ const styles = StyleSheet.create({
     height: "90%",
     overflow: "hidden",
   },
-  header: {
+  dragHandle: {
+    paddingTop: 8,
+    paddingBottom: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dragHandleBar: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#ccc",
+  },
+  titleHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  titleHeaderContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    backgroundColor: "white",
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+  titleHeaderTextContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: 12,
   },
-  headerActions: {
+  titleHeaderText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 2,
+  },
+  titleHeaderUrl: {
+    fontSize: 11,
+    color: "#666",
+  },
+  safariButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(52, 73, 255, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  floatingButtons: {
+    position: "absolute",
+    bottom: 20,
+    right: 16,
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
   },
-  bookmarkButton: {
-    padding: 4,
-    marginRight: 8,
+  floatingBookmarkButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(52, 73, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  closeButton: {
-    padding: 4,
+  floatingBookmarkButtonActive: {
+    backgroundColor: "rgba(52, 73, 255, 0.6)",
+  },
+  floatingCloseButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    alignItems: "center",
+    justifyContent: "center",
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   webViewContainer: {
     flex: 1,
@@ -187,6 +357,7 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   loadingContainer: {
     flex: 1,

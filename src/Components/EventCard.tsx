@@ -50,6 +50,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const start = moment(event.start_date);
@@ -60,6 +61,38 @@ export const EventCard: React.FC<EventCardProps> = ({
       setIsNow(false);
     }
   }, [event.start_date, event.end_date, isNow, setIsNow]);
+
+  // Load bookmark status
+  React.useEffect(() => {
+    (async () => {
+      const bookmarked = await getBookmarkStatus(event);
+      setIsBookmarked(bookmarked);
+    })();
+  }, [event]);
+
+  // Listen for bookmark changes
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (event.id === data.event?.id) {
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, [event]);
+
+  const handleBookmarkBadgePress = React.useCallback(async (e: any) => {
+    e.stopPropagation();
+    await toggleBookmark(event);
+    setIsBookmarked(!isBookmarked);
+    EventRegister.emitEvent("BookmarkEvent", {
+      event,
+      isBookmarked: !isBookmarked,
+    });
+  }, [event, isBookmarked]);
 
   const handleAdminPress = React.useCallback(() => {}, []);
 
@@ -148,12 +181,28 @@ export const EventCard: React.FC<EventCardProps> = ({
                     </Text>
                   )}
                 </View>
-                <Text
-                  style={[styles.title, { fontSize: 18 }]}
-                  numberOfLines={2}
-                >
-                  {decode(event.title)}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+                  <Text
+                    style={[styles.title, { fontSize: 18, flex: 1 }]}
+                    numberOfLines={2}
+                  >
+                    {decode(event.title)}
+                  </Text>
+                  {isBookmarked && (
+                    <TouchableOpacity
+                      onPress={handleBookmarkBadgePress}
+                      style={styles.bookmarkBadge}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon
+                        type={IconTypes.Ionicons}
+                        size={14}
+                        color="#3449ff"
+                        name="bookmark"
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
                 {event.venue && options?.showVenue && (
                   <Text style={styles.subtitle}>
                     {decode(event.venue.title)}
@@ -264,6 +313,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginRight: 4,
     marginBottom: 4,
+  },
+  bookmarkBadge: {
+    marginLeft: 6,
+    padding: 2,
   },
 });
 

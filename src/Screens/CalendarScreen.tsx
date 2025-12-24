@@ -19,14 +19,18 @@ import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { FloatingButton } from "../Components/FloatingButton";
 import { FloatingProfileButton } from "../Components/FloatingProfileButton";
+import { FloatingActionButtons } from "../Components/FloatingActionButtons";
 import { SectionTitle } from "../Components/SectionTitle";
 import { MiniAppButton } from "../Components/MiniAppButton";
+import { EventForecast } from "../Components/EventForecast";
+import { getBookmarkStatusForWebEvent, getBookmarks } from "../utils/bookmarks";
+import { getGoingStatusForWebEvent, getGoingEvents } from "../utils/rsvp";
+import { EventRegister } from "react-native-event-listeners";
 
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
 import { DAArtwork, DAEvent, DAFlyer, Weather } from "../interfaces";
-import { RoundButton } from "../Components/RoundButton";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
 import { Activities } from "../Components/Activities";
@@ -48,6 +52,8 @@ import { LumaEventCard } from "../Components/LumaEventCard";
 import { RAEventCard } from "../Components/RAEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { EventWebModal } from "../Components/EventWebModal";
+import { MiniAppModal } from "../Components/MiniAppModal";
+import { QRCodeModal } from "../Components/QRCodeModal";
 import { LumaEvent, RAEvent } from "../interfaces";
 
 const { height, width } = Dimensions.get("window");
@@ -75,11 +81,13 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number }[]
+    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
+
+  const sectionListRef = React.useRef<SectionList>(null);
 
   // Mock flyer event for demonstration (hidden)
   // const mockFlyerEvent = React.useMemo(() => ({
@@ -107,6 +115,14 @@ const CalendarScreen = ({ navigation }) => {
   const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | undefined>(undefined);
   const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
 
+  // State for mini app modal
+  const [miniAppModalVisible, setMiniAppModalVisible] = React.useState<boolean>(false);
+  const [miniAppModalUrl, setMiniAppModalUrl] = React.useState<string | null>(null);
+  const [miniAppModalTitle, setMiniAppModalTitle] = React.useState<string>("");
+
+  // State for QR code modal
+  const [qrCodeModalVisible, setQrCodeModalVisible] = React.useState<boolean>(false);
+
   navigation.setOptions({
     title: "Home",
     headerTitle: () => <HeaderTitleImage />,
@@ -131,8 +147,8 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Bookmarks");
   }, []);
 
-  const handleSharePress = React.useCallback(() => {
-    navigation.push("Share");
+  const handleQRCodePress = React.useCallback(() => {
+    setQrCodeModalVisible(true);
   }, []);
 
   const handleMiniAppsPress = React.useCallback(() => {
@@ -179,24 +195,21 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleOpenParking = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://buymyspot.com/detroit",
-      title: "Parking",
-    });
+    setMiniAppModalUrl("https://buymyspot.com/detroit");
+    setMiniAppModalTitle("Parking");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenCoLab = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://co.lab.builddetroit.xyz/",
-      title: "Co.Lab",
-    });
+    setMiniAppModalUrl("https://co.lab.builddetroit.xyz/");
+    setMiniAppModalTitle("Co.Lab");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenCollectorQuest = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://collectorquest.ai",
-      title: "Quests",
-    });
+    setMiniAppModalUrl("https://collectorquest.ai");
+    setMiniAppModalTitle("Quests");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenRestaurants = React.useCallback(() => {
@@ -204,38 +217,33 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleOpenGloabi = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://gloabi-chat.vercel.app/",
-      title: "Gloabi",
-    });
+    setMiniAppModalUrl("https://gloabi-chat.vercel.app/");
+    setMiniAppModalTitle("Gloabi");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenMysticIsland = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://mystic-island.yourland.network/",
-      title: "Mystic Island",
-    });
+    setMiniAppModalUrl("https://mystic-island.yourland.network/");
+    setMiniAppModalTitle("Mystic Island");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenDynoDetroit = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://dynodetroit.com",
-      title: "Dyno Detroit",
-    });
+    setMiniAppModalUrl("https://dynodetroit.com");
+    setMiniAppModalTitle("Dyno Detroit");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenHotBones = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://hotbones.com",
-      title: "Hot Bones",
-    });
+    setMiniAppModalUrl("https://hotbones.com");
+    setMiniAppModalTitle("Hot Bones");
+    setMiniAppModalVisible(true);
   }, []);
 
   const handleOpenBeaconHQ = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://www.thebeaconhq.com/",
-      title: "The Beacon HQ",
-    });
+    setMiniAppModalUrl("https://www.thebeaconhq.com/");
+    setMiniAppModalTitle("The Beacon HQ");
+    setMiniAppModalVisible(true);
   }, []);
 
   React.useEffect(() => {
@@ -298,6 +306,7 @@ const CalendarScreen = ({ navigation }) => {
             subtitle: subtitle,
             data: [],
             sortDate: start.valueOf(), // Store timestamp for sorting
+            dateKey: dateKey, // Store dateKey for matching
           };
         }
         groups[dateKey].data.push({ ...event, eventType: "da" });
@@ -336,6 +345,7 @@ const CalendarScreen = ({ navigation }) => {
             subtitle: subtitle,
             data: [],
             sortDate: start.valueOf(),
+            dateKey: dateKey, // Store dateKey for matching
           };
         }
         groups[dateKey].data.push({ ...event, eventType: "luma" });
@@ -356,6 +366,7 @@ const CalendarScreen = ({ navigation }) => {
             subtitle: subtitle,
             data: [],
             sortDate: start.valueOf(),
+            dateKey: dateKey, // Store dateKey for matching
           };
         }
         groups[dateKey].data.push({ 
@@ -445,6 +456,170 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("Login");
   }, []);
 
+  // State for forecast data with bookmark and going counts
+  const [forecastData, setForecastData] = React.useState<Array<{
+    date: moment.Moment;
+    dateKey: string;
+    eventCount: number;
+    isToday: boolean;
+    bookmarkedCount: number;
+    goingCount: number;
+  }>>([]);
+
+  // Calculate event counts for the next 7 days
+  React.useEffect(() => {
+    const calculateForecast = async () => {
+      const today = moment().startOf("day");
+      const days: Array<{
+        date: moment.Moment;
+        dateKey: string;
+        eventCount: number;
+        isToday: boolean;
+        bookmarkedCount: number;
+        goingCount: number;
+      }> = [];
+
+      // Create maps for event counts, bookmarked, and going
+      const eventCountMap: { [key: string]: number } = {};
+      const bookmarkedCountMap: { [key: string]: number } = {};
+      const goingCountMap: { [key: string]: number } = {};
+
+      // Get bookmark and going IDs once
+      const bookmarkIds = await getBookmarks();
+      const goingIds = await getGoingEvents();
+
+      // Process eventsGroup to build count maps
+      for (const group of eventsGroup) {
+        const dateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+        eventCountMap[dateKey] = group.data.length;
+        bookmarkedCountMap[dateKey] = 0;
+        goingCountMap[dateKey] = 0;
+
+        // Check each event in the group for bookmark and going status
+        for (const event of group.data) {
+          const eventType = event.eventType || 'da';
+          let isBookmarked = false;
+          let isGoing = false;
+
+          try {
+            if (eventType === 'da' && event.id) {
+              // Check DA event bookmark and going status
+              isBookmarked = bookmarkIds.includes(event.id);
+              isGoing = goingIds.includes(event.id);
+            } else if (eventType === 'luma' && event.apiId) {
+              isBookmarked = await getBookmarkStatusForWebEvent(event, 'luma');
+              isGoing = await getGoingStatusForWebEvent(event, 'luma');
+            } else if (eventType === 'ra' && event.id) {
+              isBookmarked = await getBookmarkStatusForWebEvent(event, 'ra');
+              isGoing = await getGoingStatusForWebEvent(event, 'ra');
+            }
+
+            if (isBookmarked) {
+              bookmarkedCountMap[dateKey] = (bookmarkedCountMap[dateKey] || 0) + 1;
+            }
+            if (isGoing) {
+              goingCountMap[dateKey] = (goingCountMap[dateKey] || 0) + 1;
+            }
+          } catch (error) {
+            console.error("Error checking bookmark/going status:", error);
+          }
+        }
+      }
+
+      // Generate 7 days starting from today
+      for (let i = 0; i < 7; i++) {
+        const date = today.clone().add(i, "days");
+        const dateKey = date.format("YYYY-MM-DD");
+        const isToday = i === 0;
+
+        days.push({
+          date,
+          dateKey,
+          eventCount: eventCountMap[dateKey] || 0,
+          isToday,
+          bookmarkedCount: bookmarkedCountMap[dateKey] || 0,
+          goingCount: goingCountMap[dateKey] || 0,
+        });
+      }
+
+      setForecastData(days);
+    };
+
+    calculateForecast();
+
+    // Listen for bookmark and going status changes
+    const bookmarkListener = EventRegister.addEventListener("BookmarkEvent", () => {
+      calculateForecast();
+    });
+    const goingListener = EventRegister.addEventListener("GoingEvent", () => {
+      calculateForecast();
+    });
+
+    return () => {
+      if (typeof bookmarkListener === "string") {
+        EventRegister.removeEventListener(bookmarkListener);
+      }
+      if (typeof goingListener === "string") {
+        EventRegister.removeEventListener(goingListener);
+      }
+    };
+  }, [eventsGroup]);
+
+  const get7DayForecast = forecastData;
+
+  // Handle scrolling to a specific day's events
+  const handleDayPress = React.useCallback(
+    (dateKey: string) => {
+      console.log("handleDayPress - Looking for dateKey:", dateKey);
+      console.log("handleDayPress - eventsGroup length:", eventsGroup.length);
+      
+      // Find the section index for this date
+      const sectionIndex = eventsGroup.findIndex((group: any) => {
+        // Use dateKey if available, otherwise derive from sortDate
+        const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+        const matches = groupDateKey === dateKey;
+        if (matches) {
+          console.log("handleDayPress - Found match at index:", eventsGroup.indexOf(group), "dateKey:", groupDateKey);
+        }
+        return matches;
+      });
+
+      console.log("handleDayPress - Final sectionIndex:", sectionIndex);
+
+      if (sectionIndex >= 0 && sectionListRef.current) {
+        // Check if the section has data
+        const section = eventsGroup[sectionIndex];
+        console.log("handleDayPress - Section found:", section.title, "with", section.data.length, "events");
+        
+        if (section && section.data && section.data.length > 0) {
+          // Use setTimeout to ensure the list has rendered
+          setTimeout(() => {
+            try {
+              console.log("handleDayPress - Attempting scroll to sectionIndex:", sectionIndex);
+              sectionListRef.current?.scrollToLocation({
+                sectionIndex,
+                itemIndex: 0,
+                animated: true,
+                viewOffset: 0,
+              });
+              console.log("handleDayPress - Scroll command sent");
+            } catch (error) {
+              console.error("Error scrolling to location:", error);
+            }
+          }, 300);
+        } else {
+          console.log("handleDayPress - Section has no data");
+        }
+      } else {
+        console.log("handleDayPress - Section not found or ref not available");
+        if (sectionIndex < 0) {
+          console.log("handleDayPress - Available dateKeys:", eventsGroup.map((g: any) => g.dateKey || moment(g.sortDate).format("YYYY-MM-DD")));
+        }
+      }
+    },
+    [eventsGroup]
+  );
+
   const sectionHeader = () => {
     return (
       <View>
@@ -461,45 +636,6 @@ const CalendarScreen = ({ navigation }) => {
           )}
           {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
           {/* {username && pub && sig && } */}
-          <View style={{ flex: 1, flexDirection: "row", marginTop: 8 }}>
-            <RoundButton
-              onPress={handleToggleDisplay}
-              type={IconTypes.Ionicons}
-              name={"map-outline"}
-            />
-            <RoundButton
-              onPress={handleSearchPress}
-              type={IconTypes.Ionicons}
-              name={"search"}
-            />
-            <RoundButton
-              onPress={handleBookmarkPress}
-              type={IconTypes.Ionicons}
-              name={"bookmark-outline"}
-            />
-            <RoundButton
-              onPress={handleChatPress}
-              type={IconTypes.MaterialIcons}
-              name={"chat"}
-            />
-            <RoundButton
-              onPress={handleSharePress}
-              type={IconTypes.Ionicons}
-              name={"share"}
-            />
-            <RoundButton
-              onPress={handleMiniAppsPress}
-              type={IconTypes.Ionicons}
-              name={"apps-outline"}
-            />
-            {contact?.id === 1 && (
-              <RoundButton
-                onPress={handleAdminPress}
-                type={IconTypes.Ionicons}
-                name={"settings-outline"}
-              />
-            )}
-          </View>
         </HeroBanner>
 
         {/* <GrantOpportunities />
@@ -705,6 +841,11 @@ const CalendarScreen = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
+
+        {/* 7-Day Event Forecast */}
+        {get7DayForecast.length > 0 && (
+          <EventForecast days={get7DayForecast} onDayPress={handleDayPress} />
+        )}
       </View>
     );
   };
@@ -728,6 +869,7 @@ const CalendarScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <SectionList
+        ref={sectionListRef}
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
         renderSectionHeader={({ section: { title, subtitle } }) => (
@@ -837,6 +979,16 @@ const CalendarScreen = ({ navigation }) => {
         }}
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
+      <FloatingActionButtons
+        onMapPress={handleToggleDisplay}
+        onSearchPress={handleSearchPress}
+        onBookmarkPress={handleBookmarkPress}
+        onChatPress={handleChatPress}
+        onQRCodePress={handleQRCodePress}
+        onAppsPress={handleMiniAppsPress}
+        onAdminPress={handleAdminPress}
+        showAdmin={contact?.id === 1}
+      />
       <FloatingProfileButton navigation={navigation} />
       {selectedEvent && <EventPopup event={selectedEvent} />}
       <EventWebModal
@@ -846,6 +998,25 @@ const CalendarScreen = ({ navigation }) => {
         onClose={handleCloseWebModal}
         eventType={webModalEventType}
         eventData={webModalEventData}
+      />
+      <MiniAppModal
+        isVisible={miniAppModalVisible}
+        url={miniAppModalUrl}
+        title={miniAppModalTitle}
+        onClose={() => {
+          setMiniAppModalVisible(false);
+          setMiniAppModalUrl(null);
+          setMiniAppModalTitle("");
+        }}
+      />
+      <QRCodeModal
+        isVisible={qrCodeModalVisible}
+        onClose={() => setQrCodeModalVisible(false)}
+        onScanResult={(data) => {
+          console.log("QR Code scanned:", data);
+          // Handle scanned QR code data here
+          setQrCodeModalVisible(false);
+        }}
       />
     </View>
   );

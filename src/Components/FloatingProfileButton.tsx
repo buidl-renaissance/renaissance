@@ -36,7 +36,7 @@ export const FloatingProfileButton = ({ onPress, navigation }: FloatingProfileBu
         />
       ) : (
         <View style={styles.profileImagePlaceholder}>
-          <Ionicons name="person" size={28} color="white" />
+          <Ionicons name="person" size={20} color="white" />
         </View>
       )}
     </TouchableOpacity>
@@ -45,15 +45,15 @@ export const FloatingProfileButton = ({ onPress, navigation }: FloatingProfileBu
 
 const styles = StyleSheet.create({
   button: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "#6366F1",
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    bottom: 30,
-    right: 20,
+    top: 60, // Match the top position of action buttons
+    right: 16, // Align with action buttons container
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -63,14 +63,14 @@ const styles = StyleSheet.create({
     borderColor: "white",
   },
   profileImage: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   profileImagePlaceholder: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     alignItems: "center",
     justifyContent: "center",

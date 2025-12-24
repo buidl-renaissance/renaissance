@@ -4,6 +4,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { getContact, Contact } from "../dpop";
 import { useContact } from "../hooks/useContact";
 import { useAuth } from "../context/Auth";
+import { TreasuryBalanceCard } from "./TreasuryBalanceCard";
 
 export const HeroBanner = ({ children, handleLogin }) => {
   const [contact] = useContact();
@@ -12,7 +13,7 @@ export const HeroBanner = ({ children, handleLogin }) => {
   return (
     <View>
       <ImageBackground
-        source={require("../../assets/renaissance.png")}
+        source={require("../../assets/renaissance-top-right.png")}
         resizeMode="cover"
       >
         <Animated.View
@@ -45,6 +46,7 @@ export const HeroBanner = ({ children, handleLogin }) => {
               </TouchableOpacity>
             </View>
           )}
+          <TreasuryBalanceCard />
           <Text
             style={{
               color: "white",
