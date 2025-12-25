@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import Icon, { IconTypes } from "./Icon";
 
 interface FloatingActionButtonsProps {
@@ -12,6 +12,7 @@ interface FloatingActionButtonsProps {
   onAppsPress?: () => void;
   onAdminPress?: () => void;
   showAdmin?: boolean;
+  walletBalance?: string;
 }
 
 export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
@@ -24,6 +25,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   onAppsPress,
   onAdminPress,
   showAdmin = false,
+  walletBalance,
 }) => {
   // Filter to show main buttons: map, bookmark, chat, mini apps (search moved to far right)
   const mainButtons = [
@@ -45,6 +47,9 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
                 style={[styles.topButton, onQRCodePress && styles.topButtonWithDivider]}
                 activeOpacity={0.7}
               >
+                {walletBalance && (
+                  <Text style={styles.balanceText}>${walletBalance}</Text>
+                )}
                 <Icon type={IconTypes.Ionicons} name="wallet-outline" size={18} color="#333" />
               </TouchableOpacity>
             )}
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 60,
     left: 0,
-    right: 16,
+    right: 12,
     alignItems: "flex-end",
     justifyContent: "flex-start",
   },
@@ -114,9 +119,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 1)",
   },
+  balanceText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginRight: 6,
+  },
   topButton: {
     paddingHorizontal: 10,
     paddingVertical: 6,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },

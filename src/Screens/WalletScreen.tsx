@@ -6,7 +6,6 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,9 +15,63 @@ interface WalletScreenProps {
   navigation: any;
 }
 
+interface TokenBalance {
+  id: string;
+  name: string;
+  symbol: string;
+  balance: string;
+  usdValue: string;
+  changePercent: string;
+  isPositive: boolean;
+  icon: string;
+  type: "lending" | "token";
+  apy?: string;
+}
+
 const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
   const [walletAddress, setWalletAddress] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"Tokens" | "Collectibles" | "History">("Tokens");
+  const [showReferralBanner, setShowReferralBanner] = useState(true);
+  const [totalBalance] = useState("31.40");
+  const [balanceChange] = useState({ value: "0.13", percent: "0.40", isPositive: true });
+
+  // Mock token balances
+  const [tokenBalances] = useState<TokenBalance[]>([
+    {
+      id: "usdc-lending",
+      name: "USDC Lending",
+      symbol: "USDC",
+      balance: "0",
+      usdValue: "0",
+      changePercent: "0",
+      isPositive: true,
+      icon: "diamond-outline",
+      type: "lending",
+      apy: "5.40",
+    },
+    {
+      id: "eth",
+      name: "Ethereum",
+      symbol: "ETH",
+      balance: "0.010315",
+      usdValue: "30.30",
+      changePercent: "0.20",
+      isPositive: false,
+      icon: "logo-ethereum",
+      type: "token",
+    },
+    {
+      id: "saveholly",
+      name: "Die Hard is a Christmas movie",
+      symbol: "saveholly",
+      balance: "3,039,728",
+      usdValue: "1.10",
+      changePercent: "0.28",
+      isPositive: false,
+      icon: "diamond-outline",
+      type: "token",
+    },
+  ]);
 
   useEffect(() => {
     loadWalletInfo();
@@ -26,59 +79,188 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
 
   const loadWalletInfo = async () => {
     try {
-      setIsLoading(true);
       const wallet = await getWallet();
       setWalletAddress(wallet.address);
     } catch (error) {
       console.error("Error loading wallet:", error);
       Alert.alert("Error", "Failed to load wallet information");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const formatAddress = (address: string) => {
-    if (!address) return "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+  const renderTokenItem = (token: TokenBalance) => (
+    <TouchableOpacity key={token.id} style={styles.tokenItem}>
+      <View style={styles.tokenIconContainer}>
+        <View style={[styles.tokenIcon, token.type === "lending" && styles.tokenIconPurple]}>
+          <Ionicons name={token.icon as any} size={24} color="#fff" />
+        </View>
+      </View>
+      <View style={styles.tokenInfo}>
+        <Text style={styles.tokenName}>{token.name}</Text>
+        <View style={styles.tokenSubInfo}>
+          {token.apy && (
+            <Text style={styles.tokenApy}>Earn {token.apy}% APY</Text>
+          )}
+          {!token.apy && (
+            <Text style={styles.tokenBalance}>
+              {token.balance} {token.symbol}
+            </Text>
+          )}
+        </View>
+      </View>
+      <View style={styles.tokenValueContainer}>
+        <Text style={styles.tokenUsdValue}>${token.usdValue}</Text>
+        {token.changePercent !== "0" && (
+          <View style={styles.tokenChangeContainer}>
+            <Ionicons
+              name={token.isPositive ? "arrow-up" : "arrow-down"}
+              size={12}
+              color={token.isPositive ? "#10B981" : "#EF4444"}
+            />
+            <Text
+              style={[
+                styles.tokenChange,
+                token.isPositive ? styles.tokenChangePositive : styles.tokenChangeNegative,
+                { marginLeft: 4 },
+              ]}
+            >
+              {token.changePercent}%
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  const cashBalances = tokenBalances.filter((t) => t.type === "lending");
+  const otherBalances = tokenBalances.filter((t) => t.type === "token");
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#6366F1" />
-            <Text style={styles.loadingText}>Loading wallet...</Text>
+        {/* Total Balance */}
+        <View style={styles.balanceContainer}>
+          <Text style={styles.totalBalance}>${totalBalance}</Text>
+          <View style={styles.balanceChangeContainer}>
+            <Text style={styles.balanceChangeValue}>${balanceChange.value}</Text>
+            <View style={[styles.balanceChangePercentContainer, { marginLeft: 8 }]}>
+              <Ionicons
+                name="arrow-up"
+                size={12}
+                color="#10B981"
+                style={styles.balanceChangeArrow}
+              />
+              <Text style={styles.balanceChangePercent}>{balanceChange.percent}%</Text>
+            </View>
           </View>
-        ) : (
-          <>
-            <View style={styles.header}>
-              <Ionicons name="wallet" size={48} color="#6366F1" />
-              <Text style={styles.title}>Wallet</Text>
-            </View>
+        </View>
 
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Address</Text>
-              <View style={styles.addressContainer}>
-                <Text style={styles.addressText} numberOfLines={1}>
-                  {walletAddress}
-                </Text>
+        {/* Referral Rewards Banner */}
+        {showReferralBanner && (
+          <View style={styles.referralBanner}>
+            <View style={styles.referralBannerContent}>
+              <View style={styles.referralIconContainer}>
+                <Ionicons name="cash-outline" size={20} color="#fff" />
               </View>
-              <Text style={styles.shortAddress}>{formatAddress(walletAddress)}</Text>
+              <View style={styles.referralTextContainer}>
+                <Text style={styles.referralTitle}>Referral Rewards</Text>
+                <Text style={styles.referralSubtitle}>Invite friends & earn 20% of trading fees.</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowReferralBanner(false)}
+                style={styles.referralCloseButton}
+              >
+                <Ionicons name="close" size={18} color="#fff" />
+              </TouchableOpacity>
             </View>
+            <View style={styles.referralPagination}>
+              <View style={[styles.paginationDot, styles.paginationDotActive, { marginLeft: 0 }]} />
+              <View style={styles.paginationDot} />
+              <View style={styles.paginationDot} />
+              <View style={styles.paginationDot} />
+            </View>
+          </View>
+        )}
 
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Network</Text>
-              <Text style={styles.cardValue}>Ethereum</Text>
-            </View>
+        {/* Action Buttons */}
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="arrow-down" size={20} color="#fff" />
+            <Text style={styles.actionButtonText}>Deposit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="arrow-up" size={20} color="#fff" />
+            <Text style={styles.actionButtonText}>Send</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, { marginRight: 0 }]}>
+            <Ionicons name="swap-horizontal-outline" size={20} color="#fff" />
+            <Text style={styles.actionButtonText}>Swap</Text>
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.infoSection}>
-              <Text style={styles.infoText}>
-                This is your wallet address. You can use it to receive tokens and interact with
-                decentralized applications.
-              </Text>
-            </View>
-          </>
+        {/* Navigation Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "Tokens" && styles.tabActive]}
+            onPress={() => setActiveTab("Tokens")}
+          >
+            <Text style={[styles.tabText, activeTab === "Tokens" && styles.tabTextActive]}>
+              Tokens
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "Collectibles" && styles.tabActive]}
+            onPress={() => setActiveTab("Collectibles")}
+          >
+            <Text style={[styles.tabText, activeTab === "Collectibles" && styles.tabTextActive]}>
+              Collectibles
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "History" && styles.tabActive]}
+            onPress={() => setActiveTab("History")}
+          >
+            <Text style={[styles.tabText, activeTab === "History" && styles.tabTextActive]}>
+              History
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Cash Balance Section */}
+        {activeTab === "Tokens" && cashBalances.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Cash Balance</Text>
+            {cashBalances.map(renderTokenItem)}
+          </View>
+        )}
+
+        {/* Other Balances Section */}
+        {activeTab === "Tokens" && otherBalances.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Other Balances</Text>
+            {otherBalances.map(renderTokenItem)}
+          </View>
+        )}
+
+        {/* Show All Button */}
+        {activeTab === "Tokens" && (
+          <TouchableOpacity style={styles.showAllButton}>
+            <Text style={styles.showAllButtonText}>Show all</Text>
+            <Ionicons name="chevron-down" size={16} color="#fff" />
+          </TouchableOpacity>
+        )}
+
+        {/* Collectibles Tab Content */}
+        {activeTab === "Collectibles" && (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>No collectibles yet</Text>
+          </View>
+        )}
+
+        {/* History Tab Content */}
+        {activeTab === "History" && (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>No transaction history</Text>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -88,80 +270,235 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#000",
   },
   scrollView: {
     flex: 1,
   },
   content: {
     padding: 20,
+    paddingTop: 20,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: 400,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: "#666",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
+  balanceContainer: {
     marginTop: 20,
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 28,
+  totalBalance: {
+    fontSize: 48,
     fontWeight: "bold",
-    color: "#333",
-    marginTop: 16,
-  },
-  card: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#e5e5e5",
-  },
-  cardLabel: {
-    fontSize: 14,
-    color: "#666",
+    color: "#fff",
     marginBottom: 8,
+  },
+  balanceChangeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  balanceChangeValue: {
+    fontSize: 16,
+    color: "#10B981",
     fontWeight: "500",
   },
-  cardValue: {
-    fontSize: 18,
-    color: "#333",
-    fontWeight: "600",
+  balanceChangePercentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  addressContainer: {
-    marginBottom: 8,
+  balanceChangeArrow: {
+    marginRight: 2,
   },
-  addressText: {
+  balanceChangePercent: {
     fontSize: 16,
-    color: "#333",
-    fontFamily: "monospace",
+    color: "#10B981",
+    fontWeight: "500",
   },
-  shortAddress: {
-    fontSize: 14,
-    color: "#999",
-    fontFamily: "monospace",
-  },
-  infoSection: {
-    marginTop: 8,
-    padding: 16,
-    backgroundColor: "#f0f4ff",
+  referralBanner: {
+    backgroundColor: "#6B21A8",
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#6366F1",
+    padding: 16,
+    marginBottom: 20,
+    position: "relative",
   },
-  infoText: {
+  referralBannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  referralIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  referralTextContainer: {
+    flex: 1,
+  },
+  referralTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  referralSubtitle: {
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.8)",
+  },
+  referralCloseButton: {
+    padding: 4,
+  },
+  referralPagination: {
+    flexDirection: "row",
+    alignSelf: "flex-end",
+  },
+  paginationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    marginLeft: 6,
+  },
+  paginationDotActive: {
+    backgroundColor: "#fff",
+  },
+  actionButtonsContainer: {
+    flexDirection: "row",
+    marginBottom: 24,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    marginBottom: 24,
+  },
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+  },
+  tabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#10B981",
+  },
+  tabText: {
+    fontSize: 16,
+    color: "#9CA3AF",
+    fontWeight: "500",
+  },
+  tabTextActive: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
     fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
+    color: "#9CA3AF",
+    marginBottom: 12,
+    fontWeight: "500",
+  },
+  tokenItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  tokenIconContainer: {
+    marginRight: 12,
+  },
+  tokenIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#3B82F6",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tokenIconPurple: {
+    backgroundColor: "#8B5CF6",
+  },
+  tokenInfo: {
+    flex: 1,
+  },
+  tokenName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  tokenSubInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  tokenBalance: {
+    fontSize: 14,
+    color: "#9CA3AF",
+  },
+  tokenApy: {
+    fontSize: 14,
+    color: "#10B981",
+  },
+  tokenValueContainer: {
+    alignItems: "flex-end",
+  },
+  tokenUsdValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  tokenChangeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  tokenChange: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  tokenChangePositive: {
+    color: "#10B981",
+  },
+  tokenChangeNegative: {
+    color: "#EF4444",
+  },
+  showAllButton: {
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  showAllButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginRight: 8,
+  },
+  emptyStateContainer: {
+    padding: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: "#9CA3AF",
   },
 });
 

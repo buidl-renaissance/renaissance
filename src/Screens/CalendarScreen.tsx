@@ -46,6 +46,7 @@ import { useFlyers } from "../hooks/useFlyers";
 import { useLumaEvents } from "../hooks/useLumaEvents";
 import { useRAEvents } from "../hooks/useRAEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
+import { useAuth } from "../context/Auth";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import * as Linking from "expo-linking";
@@ -57,6 +58,7 @@ import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { EventWebModal } from "../Components/EventWebModal";
 import { MiniAppModal } from "../Components/MiniAppModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
+import { WalletModal } from "../Components/WalletModal";
 import { LumaEvent, RAEvent } from "../interfaces";
 
 const { height, width } = Dimensions.get("window");
@@ -70,13 +72,14 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
+  const { state: authState } = useAuth();
   
   // Memoize query objects to prevent unnecessary re-fetches
   const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
   const { events: lumaEvents } = useLumaEvents(lumaQuery);
   const { events: raEvents } = useRAEvents();
   // NYE-specific RA events use the dedicated NYE endpoint.
-  const { events: nyeRaEvents } = useRAEvents({ type: "nye" });
+  const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -126,6 +129,9 @@ const CalendarScreen = ({ navigation }) => {
   // State for QR code modal
   const [qrCodeModalVisible, setQrCodeModalVisible] = React.useState<boolean>(false);
 
+  // State for wallet modal
+  const [walletModalVisible, setWalletModalVisible] = React.useState<boolean>(false);
+
   navigation.setOptions({
     title: "Home",
     headerTitle: () => <HeaderTitleImage />,
@@ -155,8 +161,8 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleWalletPress = React.useCallback(() => {
-    navigation.push("Wallet");
-  }, [navigation]);
+    setWalletModalVisible(true);
+  }, []);
 
   const handleMiniAppsPress = React.useCallback(() => {
     navigation.push("MiniApps");
@@ -632,7 +638,7 @@ const CalendarScreen = ({ navigation }) => {
   const sectionHeader = () => {
     return (
       <View>
-        <HeroBanner handleLogin={handleLogin}>
+        <HeroBanner>
           {weather?.properties?.periods?.length && (
             <View>
               <Text style={{ color: "white", fontSize: 32 }}>
@@ -766,7 +772,43 @@ const CalendarScreen = ({ navigation }) => {
           }}
         >
           <SectionTitle>PLAN YOUR NYE</SectionTitle>
-          {nyeRaEvents.length === 0 ? (
+          {nyeLoading ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
+            >
+              {[1, 2, 3].map((index) => (
+                <View
+                  key={index}
+                  style={{
+                    marginRight: 12,
+                    width: width * 0.35,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: "100%",
+                      height: 180,
+                      borderRadius: 12,
+                      backgroundColor: "#1F2937",
+                    }}
+                  />
+                  <View style={{ marginTop: 8 }}>
+                    <View
+                      style={{
+                        width: "60%",
+                        height: 12,
+                        borderRadius: 4,
+                        backgroundColor: "#1F2937",
+                        marginTop: 4,
+                      }}
+                    />
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          ) : nyeRaEvents.length === 0 ? (
             <Text
               style={{
                 color: "#777",
@@ -1007,11 +1049,12 @@ const CalendarScreen = ({ navigation }) => {
       <FloatingActionButtons
         onSearchPress={handleSearchPress}
         onBookmarkPress={handleBookmarkPress}
-        onQRCodePress={handleQRCodePress}
-        onWalletPress={handleWalletPress}
+        onQRCodePress={authState.isAuthenticated ? handleQRCodePress : undefined}
+        onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
         onAppsPress={handleMiniAppsPress}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
+        walletBalance="31.40"
       />
       <FloatingProfileButton navigation={navigation} />
       {selectedEvent && <EventPopup event={selectedEvent} />}
@@ -1041,6 +1084,10 @@ const CalendarScreen = ({ navigation }) => {
           // Handle scanned QR code data here
           setQrCodeModalVisible(false);
         }}
+      />
+      <WalletModal
+        isVisible={walletModalVisible}
+        onClose={() => setWalletModalVisible(false)}
       />
     </View>
   );

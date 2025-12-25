@@ -1,7 +1,8 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, Image, View } from "react-native";
+import { StyleSheet, TouchableOpacity, Image, View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/Auth";
+import Icon, { IconTypes } from "./Icon";
 
 interface FloatingProfileButtonProps {
   onPress?: () => void;
@@ -17,14 +18,24 @@ export const FloatingProfileButton = ({ onPress, navigation }: FloatingProfileBu
     } else if (navigation) {
       if (authState.isAuthenticated && authState.user?.type === "farcaster") {
         navigation.navigate("FarcasterProfile");
+      } else if (authState.isAuthenticated) {
+        navigation.navigate("AccountManagement");
       } else {
+        // Navigate to AccountManagement (same as mini app screen) when not authenticated
         navigation.navigate("AccountManagement");
       }
     }
   };
 
+  // Show login button when not authenticated
   if (!authState.isAuthenticated) {
-    return null;
+    return (
+      <View style={styles.loginButtonContainer}>
+        <TouchableOpacity onPress={handlePress} style={styles.loginButton} activeOpacity={0.7}>
+          <Text style={styles.loginText}>Login</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
@@ -61,6 +72,36 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 2.5,
     borderColor: "white",
+  },
+  loginButtonContainer: {
+    position: "absolute",
+    top: 60, // Match the top position of action buttons
+    right: 16, // Align with action buttons container
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 1)",
+  },
+  loginButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loginText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
   },
   profileImage: {
     width: 36,

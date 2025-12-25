@@ -1,14 +1,8 @@
 import React from "react";
 import { Animated, ImageBackground, Text, View } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { getContact, Contact } from "../dpop";
-import { useContact } from "../hooks/useContact";
-import { useAuth } from "../context/Auth";
 import { TreasuryBalanceCard } from "./TreasuryBalanceCard";
 
-export const HeroBanner = ({ children, handleLogin }) => {
-  const [contact] = useContact();
-  const { state: authState } = useAuth();
+export const HeroBanner = ({ children }) => {
 
   return (
     <View>
@@ -26,26 +20,6 @@ export const HeroBanner = ({ children, handleLogin }) => {
             borderBottomWidth: 1,
           }}
         >
-          {/* Only show login button when user is not authenticated */}
-          {!authState.isAuthenticated && (
-            <View style={{ position: "absolute", top: 48, right: 16 }}>
-              <TouchableOpacity onPress={handleLogin}>
-                <Text
-                  style={{
-                    borderColor: "white",
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    color: "white",
-                    fontSize: 18,
-                    padding: 8,
-                    marginTop: 8,
-                  }}
-                >
-                  Login
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
           {/* <TreasuryBalanceCard /> */}
           <Text
             style={{
