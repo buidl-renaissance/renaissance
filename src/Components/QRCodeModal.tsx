@@ -98,7 +98,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>QR Code</Text>
+            <Text style={styles.title}>Connect</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Icon type={IconTypes.Ionicons} name="close" size={24} color="#333" />
             </TouchableOpacity>
@@ -132,7 +132,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   <>
                     <View style={styles.qrCodeContainer}>
                       <View style={styles.qrCodeWrapper}>
-                        <QRCode value={qrData} size={240} />
+                        <QRCode value={qrData} size={200} />
                         {authState.user?.pfpUrl && (
                           <View style={styles.avatarOverlay}>
                             <Image
@@ -186,19 +186,38 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                       style={styles.scanner}
                       barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
                     />
-                    <View style={styles.scanOverlay}>
-                      <Text style={styles.scanInstruction}>
-                        Position the QR code within the frame
-                      </Text>
-                      {scanned && (
+                    <View style={styles.scanFrameOverlay}>
+                      {/* Top-left corner */}
+                      <View style={styles.cornerTopLeft}>
+                        <View style={[styles.cornerLine, styles.cornerLineHorizontal, { top: 0, left: 0 }]} />
+                        <View style={[styles.cornerLine, styles.cornerLineVertical, { top: 0, left: 0 }]} />
+                      </View>
+                      {/* Top-right corner */}
+                      <View style={styles.cornerTopRight}>
+                        <View style={[styles.cornerLine, styles.cornerLineHorizontal, { top: 0, right: 0 }]} />
+                        <View style={[styles.cornerLine, styles.cornerLineVertical, { top: 0, right: 0 }]} />
+                      </View>
+                      {/* Bottom-left corner */}
+                      <View style={styles.cornerBottomLeft}>
+                        <View style={[styles.cornerLine, styles.cornerLineHorizontal, { bottom: 0, left: 0 }]} />
+                        <View style={[styles.cornerLine, styles.cornerLineVertical, { bottom: 0, left: 0 }]} />
+                      </View>
+                      {/* Bottom-right corner */}
+                      <View style={styles.cornerBottomRight}>
+                        <View style={[styles.cornerLine, styles.cornerLineHorizontal, { bottom: 0, right: 0 }]} />
+                        <View style={[styles.cornerLine, styles.cornerLineVertical, { bottom: 0, right: 0 }]} />
+                      </View>
+                    </View>
+                    {scanned && (
+                      <View style={styles.scanAgainContainer}>
                         <TouchableOpacity
                           style={styles.scanAgainButton}
                           onPress={() => setScanned(false)}
                         >
                           <Text style={styles.scanAgainText}>Scan Again</Text>
                         </TouchableOpacity>
-                      )}
-                    </View>
+                      </View>
+                    )}
                   </>
                 )}
               </View>
@@ -241,19 +260,20 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 25,
+    padding: 4,
     marginBottom: 20,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
+    borderRadius: 20,
+    backgroundColor: "transparent",
   },
   activeTab: {
-    borderBottomColor: "#3449ff",
+    backgroundColor: "#3449ff",
   },
   tabText: {
     fontSize: 16,
@@ -261,52 +281,56 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   activeTabText: {
-    color: "#3449ff",
+    color: "white",
   },
   contentContainer: {
     minHeight: 300,
   },
   displayContainer: {
     alignItems: "center",
+    width: "100%",
+    height: 300,
+    justifyContent: "center",
+    paddingVertical: 10,
   },
   qrCodeContainer: {
-    padding: 20,
+    padding: 16,
     backgroundColor: "white",
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   qrCodeWrapper: {
     position: "relative",
-    width: 240,
-    height: 240,
+    width: 200,
+    height: 200,
     justifyContent: "center",
     alignItems: "center",
   },
   avatarOverlay: {
     position: "absolute",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
   },
   avatarImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
   },
   username: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   instruction: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#666",
-    marginBottom: 24,
     textAlign: "center",
+    paddingHorizontal: 20,
   },
   notAuthenticatedContainer: {
     alignItems: "center",
@@ -336,32 +360,72 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
-  scanOverlay: {
+  scanFrameOverlay: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     left: 0,
     right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    padding: 16,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  scanInstruction: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 12,
+  cornerTopLeft: {
+    position: "absolute",
+    top: "20%",
+    left: "20%",
+    width: 40,
+    height: 40,
+  },
+  cornerTopRight: {
+    position: "absolute",
+    top: "20%",
+    right: "20%",
+    width: 40,
+    height: 40,
+  },
+  cornerBottomLeft: {
+    position: "absolute",
+    bottom: "20%",
+    left: "20%",
+    width: 40,
+    height: 40,
+  },
+  cornerBottomRight: {
+    position: "absolute",
+    bottom: "20%",
+    right: "20%",
+    width: 40,
+    height: 40,
+  },
+  cornerLine: {
+    position: "absolute",
+    backgroundColor: "#3449ff",
+  },
+  cornerLineHorizontal: {
+    height: 3,
+    width: 40,
+  },
+  cornerLineVertical: {
+    width: 3,
+    height: 40,
+  },
+  scanAgainContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
   scanAgainButton: {
-    backgroundColor: "white",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    backgroundColor: "#3449ff",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
-    alignSelf: "center",
   },
   scanAgainText: {
-    color: "#333",
+    color: "white",
     fontWeight: "600",
+    fontSize: 16,
   },
   permissionText: {
     fontSize: 16,

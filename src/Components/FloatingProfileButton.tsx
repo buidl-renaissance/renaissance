@@ -55,11 +55,11 @@ const styles = StyleSheet.create({
     top: 60, // Match the top position of action buttons
     right: 16, // Align with action buttons container
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    borderWidth: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 2.5,
     borderColor: "white",
   },
   profileImage: {

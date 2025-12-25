@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import moment from "moment";
 
 interface DayForecast {
@@ -19,11 +19,7 @@ interface EventForecastProps {
 export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }) => {
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <View style={styles.scrollContent}>
         {days.map((day) => (
           <TouchableOpacity
             key={day.dateKey}
@@ -32,7 +28,7 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
             activeOpacity={0.7}
           >
             <Text style={styles.dayName}>
-              {day.date.format("ddd")}
+              {day.isToday ? "TODAY" : day.date.format("ddd")}
             </Text>
             <View
               style={[
@@ -49,30 +45,14 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
                 {day.date.format("D")}
               </Text>
             </View>
-            <Text style={styles.eventCount}>
-              {day.eventCount === 0
-                ? "0"
-                : `${day.eventCount} ${day.eventCount === 1 ? "event" : "events"}`}
-            </Text>
-            {(day.bookmarkedCount > 0 || day.goingCount > 0) && (
-              <View style={styles.badgesContainer}>
-                {day.bookmarkedCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{day.bookmarkedCount}</Text>
-                  </View>
-                )}
-                {day.goingCount > 0 && (
-                  <View style={[styles.badge, styles.goingBadge]}>
-                    <Text style={[styles.badgeText, styles.goingBadgeText]}>
-                      {day.goingCount}
-                    </Text>
-                  </View>
-                )}
-              </View>
+            {day.bookmarkedCount > 0 && (
+              <Text style={styles.eventCount}>
+                {`${day.bookmarkedCount} ${day.bookmarkedCount === 1 ? "event" : "events"}`}
+              </Text>
             )}
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -84,12 +64,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollContent: {
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingHorizontal: 4,
   },
   dayContainer: {
     alignItems: "center",
-    marginHorizontal: 8,
-    minWidth: 60,
+    flex: 1,
   },
   dayName: {
     fontSize: 11,
@@ -99,9 +80,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   dateBadge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
@@ -111,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#6366F1",
   },
   dateText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#333",
   },

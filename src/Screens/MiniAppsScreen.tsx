@@ -54,14 +54,53 @@ const MINI_APPS: MiniApp[] = [
     color: "#3B82F6",
   },
   {
+    id: "restaurants",
+    name: "Restaurants",
+    description: "Discover and explore Detroit's dining scene. Find great restaurants and read reviews.",
+    url: "native://Restaurants",
+    icon: "🍽️",
+    color: "#F59E0B",
+  },
+  {
+    id: "gloabi",
+    name: "Gloabi",
+    description: "Connect and chat with the community. Join conversations and stay connected.",
+    url: "https://gloabi-chat.vercel.app/",
+    icon: "💬",
+    color: "#6366F1",
+  },
+  {
     id: "mystic-island",
     name: "Mystic Island",
     description: "Build. Connect. Grow. Communities forge realms, realms forge totems, totems forge worlds.",
     url: "https://mystic-island.yourland.network/",
     icon: "🏝️",
-    color: "#6366F1",
+    color: "#14B8A6",
   },
-  // Add more mini apps here as they become available
+  {
+    id: "dyno-detroit",
+    name: "Dyno Detroit",
+    description: "Explore climbing and fitness experiences in Detroit.",
+    url: "https://dynodetroit.com",
+    icon: "🧗",
+    color: "#DC2626",
+  },
+  {
+    id: "hot-bones",
+    name: "Hot Bones",
+    description: "Discover wellness and relaxation experiences.",
+    url: "https://hotbones.com",
+    icon: "🧘",
+    color: "#F97316",
+  },
+  {
+    id: "beacon-hq",
+    name: "Beacon HQ",
+    description: "Explore gaming and entertainment experiences.",
+    url: "https://www.thebeaconhq.com/",
+    icon: "🎮",
+    color: "#059669",
+  },
 ];
 
 interface MiniAppsScreenProps {
@@ -93,7 +132,7 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
     // Check if this is a native screen
     if (app.url.startsWith("native://")) {
       const screenName = app.url.replace("native://", "");
-      navigation.navigate(screenName);
+      navigation.push(screenName);
     } else {
       // Open web-based mini app
       navigation.navigate("MiniApp", {
@@ -137,14 +176,6 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
           <Ionicons name="chevron-forward" size={20} color="#666" />
         </TouchableOpacity>
 
-        <View style={styles.header}>
-          <Ionicons name="apps" size={48} color="#6366F1" />
-          <Text style={styles.headerTitle}>Mini Apps</Text>
-          <Text style={styles.headerSubtitle}>
-            Explore apps and experiences
-          </Text>
-        </View>
-
         <View style={styles.appsContainer}>
           {MINI_APPS.map((app) => (
             <TouchableOpacity
@@ -162,23 +193,10 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
                   {app.description}
                 </Text>
               </View>
-              <View style={styles.openButton}>
-                <Text style={styles.openButtonText}>Open</Text>
-                <Ionicons name="chevron-forward" size={16} color="#6366F1" />
-              </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        {MINI_APPS.length <= 4 && (
-          <View style={styles.comingSoon}>
-            <Ionicons name="rocket-outline" size={32} color="#999" />
-            <Text style={styles.comingSoonText}>More apps coming soon!</Text>
-            <Text style={styles.comingSoonSubtext}>
-              Stay tuned for new apps and experiences
-            </Text>
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -228,25 +246,9 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 2,
   },
-  header: {
-    alignItems: "center",
-    paddingVertical: 32,
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 12,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 4,
-    textAlign: "center",
-  },
   appsContainer: {
     paddingHorizontal: 16,
+    paddingTop: 16,
   },
   appCard: {
     backgroundColor: "#fff",
@@ -285,36 +287,6 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 4,
     lineHeight: 18,
-  },
-  openButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EEF2FF",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  openButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6366F1",
-    marginRight: 4,
-  },
-  comingSoon: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 16,
-  },
-  comingSoonText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#666",
-    marginTop: 12,
-  },
-  comingSoonSubtext: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 4,
   },
 });
 

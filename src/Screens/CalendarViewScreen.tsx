@@ -108,6 +108,7 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
       <SectionList
         ref={sectionListRef}
         sections={eventsGroup}
+        stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section: { title, subtitle } }) => (
           <SectionHeader title={title} subtitle={subtitle} />
         )}

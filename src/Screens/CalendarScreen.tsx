@@ -7,7 +7,10 @@ import {
   Image,
   Text,
   View,
+  Platform,
+  StatusBar,
 } from "react-native";
+import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 
 import { HeroBanner } from "../Components/HeroBanner";
 
@@ -574,51 +577,53 @@ const CalendarScreen = ({ navigation }) => {
   // Handle scrolling to a specific day's events
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
-      console.log("handleDayPress - Looking for dateKey:", dateKey);
-      console.log("handleDayPress - eventsGroup length:", eventsGroup.length);
+      if (!sectionListRef.current || eventsGroup.length === 0) {
+        return;
+      }
+
+      const targetDate = moment(dateKey);
       
-      // Find the section index for this date
-      const sectionIndex = eventsGroup.findIndex((group: any) => {
-        // Use dateKey if available, otherwise derive from sortDate
+      // First, try to find an exact match for the date
+      let sectionIndex = eventsGroup.findIndex((group: any) => {
         const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
-        const matches = groupDateKey === dateKey;
-        if (matches) {
-          console.log("handleDayPress - Found match at index:", eventsGroup.indexOf(group), "dateKey:", groupDateKey);
-        }
-        return matches;
+        return groupDateKey === dateKey;
       });
 
-      console.log("handleDayPress - Final sectionIndex:", sectionIndex);
+      // If no exact match, find the next section with events (closest future date)
+      if (sectionIndex < 0) {
+        sectionIndex = eventsGroup.findIndex((group: any) => {
+          const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+          const groupDate = moment(groupDateKey);
+          return groupDate.isSame(targetDate, 'day') || groupDate.isAfter(targetDate, 'day');
+        });
+      }
 
-      if (sectionIndex >= 0 && sectionListRef.current) {
-        // Check if the section has data
+      // If we found a valid section, scroll to it
+      if (sectionIndex >= 0) {
         const section = eventsGroup[sectionIndex];
-        console.log("handleDayPress - Section found:", section.title, "with", section.data.length, "events");
         
-        if (section && section.data && section.data.length > 0) {
-          // Use setTimeout to ensure the list has rendered
+        // Calculate status bar offset to prevent header from being covered
+        const statusBarHeight = Platform.select({
+          ios: 108,
+          android: StatusBar.currentHeight || 24,
+          default: 0,
+        });
+        
+        // Use requestAnimationFrame and setTimeout to ensure the list has fully rendered
+        requestAnimationFrame(() => {
           setTimeout(() => {
             try {
-              console.log("handleDayPress - Attempting scroll to sectionIndex:", sectionIndex);
               sectionListRef.current?.scrollToLocation({
                 sectionIndex,
                 itemIndex: 0,
                 animated: true,
-                viewOffset: 0,
+                viewOffset: statusBarHeight,
               });
-              console.log("handleDayPress - Scroll command sent");
             } catch (error) {
               console.error("Error scrolling to location:", error);
             }
-          }, 300);
-        } else {
-          console.log("handleDayPress - Section has no data");
-        }
-      } else {
-        console.log("handleDayPress - Section not found or ref not available");
-        if (sectionIndex < 0) {
-          console.log("handleDayPress - Available dateKeys:", eventsGroup.map((g: any) => g.dateKey || moment(g.sortDate).format("YYYY-MM-DD")));
-        }
+          }, 100);
+        });
       }
     },
     [eventsGroup]
@@ -872,10 +877,26 @@ const CalendarScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Top gradient overlay - fades from white to transparent, faster fade around buttons */}
+      <View style={styles.topGradientContainer} pointerEvents="none">
+        <Svg height={120} width={width} style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id="topGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <Stop offset="0%" stopColor="white" stopOpacity="0.95" />
+              <Stop offset="25%" stopColor="white" stopOpacity="0.60" />
+              <Stop offset="50%" stopColor="white" stopOpacity="0.25" />
+              <Stop offset="70%" stopColor="white" stopOpacity="0.08" />
+              <Stop offset="100%" stopColor="white" stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#topGradient)" />
+        </Svg>
+      </View>
       <SectionList
         ref={sectionListRef}
         sections={eventsGroup}
         ListHeaderComponent={sectionHeader()}
+        stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section: { title, subtitle } }) => (
           <SectionHeader title={title} subtitle={subtitle} />
         )}
@@ -1032,6 +1053,14 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     borderTopWidth: 1,
     borderColor: "#999",
+  },
+  topGradientContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120, // Extends below the buttons (which are at top: 60 with ~40px height)
+    zIndex: 1000,
   },
   cardContainer: {
     backgroundColor: "white",
