@@ -46,7 +46,7 @@ export const HeroBanner = ({ children, handleLogin }) => {
               </TouchableOpacity>
             </View>
           )}
-          <TreasuryBalanceCard />
+          {/* <TreasuryBalanceCard /> */}
           <Text
             style={{
               color: "white",

@@ -40,6 +40,7 @@ import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 import CalendarViewScreen from "../Screens/CalendarViewScreen";
+import WalletScreen from "../Screens/WalletScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -83,6 +84,7 @@ type HomeNavigationStackParamList = {
   Share: undefined;
   Splash: undefined;
   Verify: undefined;
+  Wallet: undefined;
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -444,6 +446,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
           title: "Account",
+        }}
+      />
+      <Stack.Screen
+        component={WalletScreen}
+        name="Wallet"
+        options={{
+          headerStyle: {
+            backgroundColor: "#d2e4dd",
+          },
+          headerTintColor: "#000",
+          title: "Wallet",
         }}
       />
       <Stack.Screen

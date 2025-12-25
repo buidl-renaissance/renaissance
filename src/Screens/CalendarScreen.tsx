@@ -151,6 +151,10 @@ const CalendarScreen = ({ navigation }) => {
     setQrCodeModalVisible(true);
   }, []);
 
+  const handleWalletPress = React.useCallback(() => {
+    navigation.push("Wallet");
+  }, [navigation]);
+
   const handleMiniAppsPress = React.useCallback(() => {
     navigation.push("MiniApps");
   }, []);
@@ -985,6 +989,7 @@ const CalendarScreen = ({ navigation }) => {
         onBookmarkPress={handleBookmarkPress}
         onChatPress={handleChatPress}
         onQRCodePress={handleQRCodePress}
+        onWalletPress={handleWalletPress}
         onAppsPress={handleMiniAppsPress}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
