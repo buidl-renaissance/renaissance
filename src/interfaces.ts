@@ -315,7 +315,7 @@ export interface RAEvent {
   isFeatured?: boolean;
 }
 
-export type RestaurantCategory = 'pizza' | 'burgers' | 'tacos' | 'drinks' | 'sushi' | 'italian' | 'asian' | 'mexican' | 'american' | 'dessert';
+export type RestaurantCategory = 'restaurants' | 'pizza' | 'burgers' | 'tacos' | 'drinks' | 'sushi' | 'italian' | 'asian' | 'mexican' | 'american' | 'dessert' | 'seafood' | 'bbq' | 'vegetarian' | 'breakfast' | 'mediterranean' | 'thai' | 'indian' | 'chinese';
 
 export interface Restaurant {
   id: string;

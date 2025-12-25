@@ -984,10 +984,8 @@ const CalendarScreen = ({ navigation }) => {
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
       <FloatingActionButtons
-        onMapPress={handleToggleDisplay}
         onSearchPress={handleSearchPress}
         onBookmarkPress={handleBookmarkPress}
-        onChatPress={handleChatPress}
         onQRCodePress={handleQRCodePress}
         onWalletPress={handleWalletPress}
         onAppsPress={handleMiniAppsPress}

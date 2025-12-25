@@ -59,6 +59,9 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
+          // Close immediately to prevent modal from showing again
+          onClose();
+          // Animate out
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
@@ -66,10 +69,6 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
           }).start(() => {
             translateY.setValue(0);
             setIsDismissing(false);
-            // Small delay to ensure animation completes before closing
-            setTimeout(() => {
-              onClose();
-            }, 50);
           });
         } else {
           // Spring back to original position
@@ -255,15 +254,15 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
 
   return (
     <Modal
-      isVisible={isVisible}
+      isVisible={isVisible && !isDismissing}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       style={styles.modal}
       animationIn="slideInUp"
-      animationOut={isDismissing ? "fadeOut" : "slideOutDown"}
+      animationOut="slideOutDown"
       useNativeDriver
-      hideModalContentWhileAnimating={!isDismissing}
-      backdropOpacity={isDismissing ? 0 : 0.5}
+      hideModalContentWhileAnimating
+      backdropOpacity={0.5}
     >
       <Animated.View 
         style={[

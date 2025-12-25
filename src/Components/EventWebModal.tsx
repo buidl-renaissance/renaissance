@@ -53,6 +53,9 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
+          // Close immediately to prevent modal from showing again
+          onClose();
+          // Animate out
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
@@ -60,10 +63,6 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
           }).start(() => {
             translateY.setValue(0);
             setIsDismissing(false);
-            // Small delay to ensure animation completes before closing
-            setTimeout(() => {
-              onClose();
-            }, 50);
           });
         } else {
           // Spring back to original position
@@ -138,15 +137,15 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
 
   return (
     <Modal
-      isVisible={isVisible}
+      isVisible={isVisible && !isDismissing}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       style={styles.modal}
       animationIn="slideInUp"
-      animationOut={isDismissing ? "fadeOut" : "slideOutDown"}
+      animationOut="slideOutDown"
       useNativeDriver
-      hideModalContentWhileAnimating={!isDismissing}
-      backdropOpacity={isDismissing ? 0 : 0.5}
+      hideModalContentWhileAnimating
+      backdropOpacity={0.5}
     >
       <Animated.View 
         style={[
@@ -199,8 +198,22 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               onLoadStart={() => setLoading(true)}
               onLoadEnd={() => setLoading(false)}
               startInLoadingState={true}
+              javaScriptEnabled
+              domStorageEnabled
+              allowsInlineMediaPlayback
+              mediaPlaybackRequiresUserAction={false}
+              allowsBackForwardNavigationGestures
+              sharedCookiesEnabled
+              thirdPartyCookiesEnabled
+              originWhitelist={["*"]}
+              // Safari-like scrolling
               scrollEnabled={true}
+              bounces={true}
+              showsVerticalScrollIndicator={true}
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="normal"
               nestedScrollEnabled={true}
+              overScrollMode="always"
               renderLoading={() => (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#3449ff" />

@@ -17,28 +17,16 @@ export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
   if (!restaurant) return null;
 
   const rankChange = previousRank ? previousRank - ranking.rank : 0;
+  
+  // Get other categories the restaurant is known for (excluding the current ranking category)
+  const otherCategories = restaurant.categories.filter(
+    (cat) => cat !== ranking.category
+  );
 
   return (
     <View style={styles.card}>
-      <View style={styles.rankContainer}>
-        <Text style={styles.rankNumber}>{ranking.rank}</Text>
-        {rankChange !== 0 && (
-          <View style={styles.rankChange}>
-            {rankChange > 0 ? (
-              <Ionicons name="arrow-up" size={16} color="#4CAF50" />
-            ) : (
-              <Ionicons name="arrow-down" size={16} color="#F44336" />
-            )}
-            <Text
-              style={[
-                styles.rankChangeText,
-                { color: rankChange > 0 ? "#4CAF50" : "#F44336" },
-              ]}
-            >
-              {Math.abs(rankChange)}
-            </Text>
-          </View>
-        )}
+      <View style={styles.rankBadge}>
+        <Text style={styles.rankBadgeText}>#{ranking.rank}</Text>
       </View>
       <View style={styles.content}>
         <Text style={styles.name}>{restaurant.name}</Text>
@@ -47,10 +35,35 @@ export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
           <Ionicons name="trophy" size={14} color="#FFD700" />
           <Text style={styles.points}>{ranking.points} points</Text>
         </View>
+        {otherCategories.length > 0 && (
+          <View style={styles.categoriesContainer}>
+            {otherCategories.map((category, index) => (
+              <View key={index} style={styles.categoryTag}>
+                <Text style={styles.categoryTagText}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-      <View style={styles.categoryBadge}>
-        <Text style={styles.categoryText}>{ranking.category}</Text>
-      </View>
+      {rankChange !== 0 && (
+        <View style={styles.rankChange}>
+          {rankChange > 0 ? (
+            <Ionicons name="arrow-up" size={16} color="#4CAF50" />
+          ) : (
+            <Ionicons name="arrow-down" size={16} color="#F44336" />
+          )}
+          <Text
+            style={[
+              styles.rankChangeText,
+              { color: rankChange > 0 ? "#4CAF50" : "#F44336" },
+            ]}
+          >
+            {Math.abs(rankChange)}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -63,27 +76,31 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginHorizontal: 16,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  rankContainer: {
-    width: 50,
+  rankBadge: {
+    backgroundColor: "#3449ff",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
-  rankNumber: {
-    fontSize: 24,
+  rankBadgeText: {
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#3449ff",
+    color: "#fff",
   },
   rankChange: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    marginLeft: 8,
   },
   rankChangeText: {
     fontSize: 10,
@@ -107,6 +124,7 @@ const styles = StyleSheet.create({
   pointsContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 8,
   },
   points: {
     fontSize: 12,
@@ -114,17 +132,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 4,
   },
-  categoryBadge: {
-    backgroundColor: "#e5e5e5",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+  categoriesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 4,
   },
-  categoryText: {
-    fontSize: 11,
+  categoryTag: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  categoryTagText: {
+    fontSize: 10,
     color: "#666",
-    fontWeight: "600",
-    textTransform: "capitalize",
+    fontWeight: "500",
   },
 });
 

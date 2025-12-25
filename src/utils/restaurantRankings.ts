@@ -4,6 +4,30 @@ import { MOCK_RESTAURANTS, MOCK_RANKINGS } from '../mocks/restaurants';
 export const getRankingsByCategory = (
   category: RestaurantCategory
 ): RestaurantRanking[] => {
+  // "restaurants" is a special category that shows all restaurants
+  if (category === 'restaurants') {
+    // Aggregate points across all categories for each restaurant
+    const restaurantPoints = new Map<string, number>();
+    MOCK_RANKINGS.forEach((ranking) => {
+      const currentPoints = restaurantPoints.get(ranking.restaurantId) || 0;
+      restaurantPoints.set(ranking.restaurantId, currentPoints + ranking.points);
+    });
+    
+    // Create rankings from aggregated points
+    return Array.from(restaurantPoints.entries())
+      .map(([restaurantId, points]) => ({
+        restaurantId,
+        category: 'restaurants' as RestaurantCategory,
+        points,
+        rank: 0, // Will be set below
+      }))
+      .sort((a, b) => b.points - a.points)
+      .map((ranking, index) => ({
+        ...ranking,
+        rank: index + 1,
+      }));
+  }
+  
   return MOCK_RANKINGS.filter((ranking) => ranking.category === category)
     .sort((a, b) => b.points - a.points)
     .map((ranking, index) => ({
@@ -52,6 +76,6 @@ export const getRestaurantRanking = (
 };
 
 export const getAllCategories = (): RestaurantCategory[] => {
-  return ['pizza', 'burgers', 'tacos', 'drinks', 'sushi', 'italian', 'asian', 'mexican', 'american', 'dessert'];
+  return ['restaurants', 'pizza', 'burgers', 'tacos', 'drinks', 'sushi', 'italian', 'asian', 'mexican', 'american', 'dessert', 'seafood', 'bbq', 'vegetarian', 'thai', 'breakfast', 'mediterranean', 'indian', 'chinese'];
 };
 

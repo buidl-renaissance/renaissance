@@ -54,7 +54,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
     RestaurantCategory | "all"
   >("all");
   const [selectedRankingCategory, setSelectedRankingCategory] =
-    useState<RestaurantCategory>("pizza");
+    useState<RestaurantCategory>("restaurants");
   const [bucketLists, setBucketLists] = useState<BucketList[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBucketList, setEditingBucketList] =
@@ -150,19 +150,13 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
 
   const renderRankingsTab = () => {
     const rankings = getRankingsByCategory(selectedRankingCategory);
-    const topRestaurants = getTopRestaurants(selectedRankingCategory, 20);
+    const topRestaurants = getTopRestaurants(selectedRankingCategory, 100); // Show all results
     const categories = getAllCategories();
 
     return (
       <View style={styles.tabContent}>
         <View style={styles.categorySelector}>
-          <Text style={styles.sectionLabel}>Category:</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryScroll}
-            contentContainerStyle={styles.categoryScrollContent}
-          >
+          <View style={styles.categoryContainer}>
             {categories.map((cat) => (
               <TouchableOpacity
                 key={cat}
@@ -183,7 +177,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
         <SectionTitle>
           TOP {selectedRankingCategory.toUpperCase()} RESTAURANTS
@@ -464,14 +458,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   categorySelector: {
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    paddingHorizontal: 16,
-    marginBottom: 4,
+  categoryContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   bucketListHeader: {
     flexDirection: "row",
@@ -499,27 +492,24 @@ const styles = StyleSheet.create({
     color: "#999",
     textAlign: "center",
   },
-  categoryScroll: {
-    paddingVertical: 8,
-  },
-  categoryScrollContent: {
-    paddingHorizontal: 16,
-  },
   categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
     backgroundColor: "#f0f0f0",
-    marginRight: 8,
+    marginRight: 6,
+    marginBottom: 6,
     borderWidth: 1,
     borderColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
   },
   categoryChipActive: {
     backgroundColor: "#3449ff",
     borderColor: "#3449ff",
   },
   categoryChipText: {
-    fontSize: 14,
+    fontSize: 11,
     color: "#666",
     fontWeight: "500",
   },
