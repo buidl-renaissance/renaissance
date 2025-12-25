@@ -331,7 +331,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(52, 73, 255, 0.2)",
+    backgroundColor: "rgba(52, 73, 255, 0.1)",
+    borderWidth: 2,
+    borderColor: "#3449ff",
     alignItems: "center",
     justifyContent: "center",
     // Shadow
@@ -345,7 +347,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   floatingBookmarkButtonActive: {
-    backgroundColor: "rgba(52, 73, 255, 0.6)",
+    backgroundColor: "rgba(52, 73, 255, 0.4)",
+    borderWidth: 2,
+    borderColor: "#3449ff",
   },
   floatingCloseButton: {
     width: 44,

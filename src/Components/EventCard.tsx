@@ -180,14 +180,6 @@ export const EventCard: React.FC<EventCardProps> = ({
                       NOW
                     </Text>
                   )}
-                </View>
-                <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
-                  <Text
-                    style={[styles.title, { fontSize: 18, flex: 1 }]}
-                    numberOfLines={2}
-                  >
-                    {decode(event.title)}
-                  </Text>
                   {isBookmarked && (
                     <TouchableOpacity
                       onPress={handleBookmarkBadgePress}
@@ -202,6 +194,14 @@ export const EventCard: React.FC<EventCardProps> = ({
                       />
                     </TouchableOpacity>
                   )}
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+                  <Text
+                    style={[styles.title, { fontSize: 18, flex: 1 }]}
+                    numberOfLines={2}
+                  >
+                    {decode(event.title)}
+                  </Text>
                 </View>
                 {event.venue && options?.showVenue && (
                   <Text style={styles.subtitle}>

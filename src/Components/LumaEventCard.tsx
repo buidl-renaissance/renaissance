@@ -3,6 +3,9 @@ import { StyleSheet, Image, Text, TouchableOpacity, View } from "react-native";
 import moment from "moment";
 import { formatDay, formatMonth } from "../utils/formatDate";
 import { LumaEvent } from "../interfaces";
+import Icon, { IconTypes } from "./Icon";
+import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
+import { EventRegister } from "react-native-event-listeners";
 
 export interface LumaEventCardOptions {
   showDate?: boolean;
@@ -33,6 +36,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
   onSelectEvent,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const start = moment(event.startAt);
@@ -43,6 +47,38 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
       setIsNow(false);
     }
   }, [event.startAt, event.endAt]);
+
+  // Load bookmark status
+  React.useEffect(() => {
+    (async () => {
+      const bookmarked = await getBookmarkStatusForWebEvent(event, 'luma');
+      setIsBookmarked(bookmarked);
+    })();
+  }, [event]);
+
+  // Listen for bookmark changes
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (event.apiId === data.event?.apiId || (data.event?.eventType === 'luma' && data.event?.apiId === event.apiId)) {
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, [event]);
+
+  const handleBookmarkBadgePress = React.useCallback(async (e: any) => {
+    e.stopPropagation();
+    const newBookmarkStatus = await toggleBookmarkForWebEvent(event, 'luma');
+    setIsBookmarked(newBookmarkStatus);
+    EventRegister.emitEvent("BookmarkEvent", {
+      event: { ...event, eventType: 'luma' },
+      isBookmarked: newBookmarkStatus,
+    });
+  }, [event]);
 
   const hostsText = event.hosts
     ?.slice(0, 2)
@@ -133,13 +169,13 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                       NOW
                     </Text>
                   )}
-                  {event.isFree && (
+                  {/* {event.isFree && (
                     <Text
                       style={[
                         styles.subtitle,
                         {
                           fontSize: 8,
-                          backgroundColor: "#4ecdc4",
+                          backgroundColor: "#ff6b6b",
                           color: "white",
                           borderRadius: 4,
                           paddingHorizontal: 3,
@@ -151,8 +187,8 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                     >
                       FREE
                     </Text>
-                  )}
-                  <View
+                  )} */}
+                  {/* <View
                     style={{
                       backgroundColor: "#ff6b6b",
                       borderRadius: 4,
@@ -170,7 +206,21 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                     >
                       LUMA
                     </Text>
-                  </View>
+                  </View> */}
+                  {isBookmarked && (
+                    <TouchableOpacity
+                      onPress={handleBookmarkBadgePress}
+                      style={styles.bookmarkBadge}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon
+                        type={IconTypes.Ionicons}
+                        size={14}
+                        color="#3449ff"
+                        name="bookmark"
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <Text
                   style={[styles.title, { fontSize: 18 }]}
@@ -233,6 +283,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+  },
+  bookmarkBadge: {
+    marginLeft: 6,
+    padding: 2,
   },
 });
 

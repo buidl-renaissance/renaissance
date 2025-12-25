@@ -3,6 +3,9 @@ import { StyleSheet, Image, Text, TouchableOpacity, View } from "react-native";
 import moment from "moment";
 import { formatDay, formatMonth } from "../utils/formatDate";
 import { RAEvent } from "../interfaces";
+import Icon, { IconTypes } from "./Icon";
+import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
+import { EventRegister } from "react-native-event-listeners";
 
 export interface RAEventCardOptions {
   showDate?: boolean;
@@ -35,6 +38,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
   isFeatured = false,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const start = moment(event.startTime);
@@ -45,6 +49,38 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
       setIsNow(false);
     }
   }, [event.startTime, event.endTime]);
+
+  // Load bookmark status
+  React.useEffect(() => {
+    (async () => {
+      const bookmarked = await getBookmarkStatusForWebEvent(event, 'ra');
+      setIsBookmarked(bookmarked);
+    })();
+  }, [event]);
+
+  // Listen for bookmark changes
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (event.id === data.event?.id || (data.event?.eventType === 'ra' && data.event?.id === event.id)) {
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, [event]);
+
+  const handleBookmarkBadgePress = React.useCallback(async (e: any) => {
+    e.stopPropagation();
+    const newBookmarkStatus = await toggleBookmarkForWebEvent(event, 'ra');
+    setIsBookmarked(newBookmarkStatus);
+    EventRegister.emitEvent("BookmarkEvent", {
+      event: { ...event, eventType: 'ra' },
+      isBookmarked: newBookmarkStatus,
+    });
+  }, [event]);
 
   const artistsText = event.artists
     ?.slice(0, 3)
@@ -118,25 +154,6 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                   <Text style={[styles.subtitle, { fontSize: 10 }]}>
                     {formatTimeRange(event)}
                   </Text>
-                  {isNow && (
-                    <Text
-                      style={[
-                        styles.subtitle,
-                        {
-                          fontSize: 8,
-                          backgroundColor: "#7c3aed",
-                          color: "white",
-                          borderRadius: 4,
-                          paddingHorizontal: 3,
-                          paddingVertical: 1,
-                          marginLeft: 3,
-                          overflow: "hidden",
-                        },
-                      ]}
-                    >
-                      NOW
-                    </Text>
-                  )}
                   {event.isTicketed && (
                     <Text
                       style={[
@@ -156,7 +173,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                       TICKETS
                     </Text>
                   )}
-                  <View
+                  {/* <View
                     style={{
                       backgroundColor: "#7c3aed",
                       borderRadius: 4,
@@ -174,7 +191,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                     >
                       RA
                     </Text>
-                  </View>
+                  </View> */}
                   {isFeatured && (
                     <View
                       style={{
@@ -205,8 +222,22 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                         marginLeft: 4,
                       }}
                     >
-                      LIVE
+                      NOW
                     </Text>
+                  )}
+                  {isBookmarked && (
+                    <TouchableOpacity
+                      onPress={handleBookmarkBadgePress}
+                      style={styles.bookmarkBadge}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Icon
+                        type={IconTypes.Ionicons}
+                        size={14}
+                        color="#3449ff"
+                        name="bookmark"
+                      />
+                    </TouchableOpacity>
                   )}
                 </View>
                 <Text
@@ -268,6 +299,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+  },
+  bookmarkBadge: {
+    marginLeft: 6,
+    padding: 2,
   },
 });
 
