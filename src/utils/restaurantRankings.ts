@@ -76,6 +76,6 @@ export const getRestaurantRanking = (
 };
 
 export const getAllCategories = (): RestaurantCategory[] => {
-  return ['restaurants', 'pizza', 'burgers', 'tacos', 'drinks', 'sushi', 'italian', 'asian', 'mexican', 'american', 'dessert', 'seafood', 'bbq', 'vegetarian', 'thai', 'breakfast', 'mediterranean', 'indian', 'chinese'];
+  return ['restaurants', 'pizza', 'burgers', 'tacos', 'drinks', 'sushi', 'italian', 'asian', 'mexican', 'american', 'dessert', 'thai', 'seafood', 'bbq', 'vegetarian', 'indian', 'breakfast', 'mediterranean', 'chinese'];
 };
 

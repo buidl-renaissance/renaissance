@@ -9,6 +9,32 @@ interface RestaurantRankingCardProps {
   previousRank?: number;
 }
 
+// Emoji mapping for restaurant categories
+const getCategoryEmoji = (category: RestaurantCategory | string): string => {
+  const emojiMap: Record<string, string> = {
+    restaurants: "🍽️",
+    pizza: "🍕",
+    burgers: "🍔",
+    tacos: "🌮",
+    drinks: "🥤",
+    sushi: "🍣",
+    italian: "🍝",
+    asian: "🥢",
+    mexican: "🌶️",
+    american: "🍗",
+    dessert: "🍰",
+    seafood: "🦞",
+    bbq: "🍖",
+    vegetarian: "🥗",
+    thai: "🍜",
+    breakfast: "🥞",
+    mediterranean: "🥙",
+    indian: "🍛",
+    chinese: "🥡",
+  };
+  return emojiMap[category] || "";
+};
+
 export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
   ranking,
   previousRank,
@@ -37,13 +63,16 @@ export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
         </View>
         {otherCategories.length > 0 && (
           <View style={styles.categoriesContainer}>
-            {otherCategories.map((category, index) => (
-              <View key={index} style={styles.categoryTag}>
-                <Text style={styles.categoryTagText}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </Text>
-              </View>
-            ))}
+            {otherCategories.map((category, index) => {
+              const emoji = getCategoryEmoji(category);
+              return (
+                <View key={index} style={styles.categoryTag}>
+                  <Text style={styles.categoryTagText}>
+                    {emoji ? `${emoji} ` : ""}{category.charAt(0).toUpperCase() + category.slice(1)}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         )}
       </View>

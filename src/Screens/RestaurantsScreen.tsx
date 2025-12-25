@@ -148,6 +148,32 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
     );
   }, [selectedCategory]);
 
+  // Emoji mapping for restaurant categories
+  const getCategoryEmoji = (category: RestaurantCategory | string): string => {
+    const emojiMap: Record<string, string> = {
+      restaurants: "🍽️",
+      pizza: "🍕",
+      burgers: "🍔",
+      tacos: "🌮",
+      drinks: "🥤",
+      sushi: "🍣",
+      italian: "🍝",
+      asian: "🥢",
+      mexican: "🌶️",
+      american: "🍗",
+      dessert: "🍰",
+      seafood: "🦞",
+      bbq: "🍖",
+      vegetarian: "🥗",
+      thai: "🍜",
+      breakfast: "🥞",
+      mediterranean: "🥙",
+      indian: "🍛",
+      chinese: "🥡",
+    };
+    return emojiMap[category] || "";
+  };
+
   const renderRankingsTab = () => {
     const rankings = getRankingsByCategory(selectedRankingCategory);
     const topRestaurants = getTopRestaurants(selectedRankingCategory, 100); // Show all results
@@ -157,26 +183,29 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
       <View style={styles.tabContent}>
         <View style={styles.categorySelector}>
           <View style={styles.categoryContainer}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                style={[
-                  styles.categoryChip,
-                  selectedRankingCategory === cat && styles.categoryChipActive,
-                ]}
-                onPress={() => setSelectedRankingCategory(cat)}
-              >
-                <Text
+            {categories.map((cat) => {
+              const emoji = getCategoryEmoji(cat);
+              return (
+                <TouchableOpacity
+                  key={cat}
                   style={[
-                    styles.categoryChipText,
-                    selectedRankingCategory === cat &&
-                      styles.categoryChipTextActive,
+                    styles.categoryChip,
+                    selectedRankingCategory === cat && styles.categoryChipActive,
                   ]}
+                  onPress={() => setSelectedRankingCategory(cat)}
                 >
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.categoryChipText,
+                      selectedRankingCategory === cat &&
+                        styles.categoryChipTextActive,
+                    ]}
+                  >
+                    {emoji ? `${emoji} ` : ""}{cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
         <SectionTitle>

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Restaurant } from "../interfaces";
+import { Restaurant, RestaurantCategory } from "../interfaces";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -10,6 +10,32 @@ interface RestaurantCardProps {
   showRanking?: boolean;
   rank?: number;
 }
+
+// Emoji mapping for restaurant categories
+const getCategoryEmoji = (category: RestaurantCategory | string): string => {
+  const emojiMap: Record<string, string> = {
+    restaurants: "🍽️",
+    pizza: "🍕",
+    burgers: "🍔",
+    tacos: "🌮",
+    drinks: "🥤",
+    sushi: "🍣",
+    italian: "🍝",
+    asian: "🥢",
+    mexican: "🌶️",
+    american: "🍗",
+    dessert: "🍰",
+    seafood: "🦞",
+    bbq: "🍖",
+    vegetarian: "🥗",
+    thai: "🍜",
+    breakfast: "🥞",
+    mediterranean: "🥙",
+    indian: "🍛",
+    chinese: "🥡",
+  };
+  return emojiMap[category] || "";
+};
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
@@ -40,11 +66,16 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
         <Text style={styles.name}>{restaurant.name}</Text>
         <Text style={styles.neighborhood}>{restaurant.neighborhood}</Text>
         <View style={styles.categoriesContainer}>
-          {restaurant.categories.slice(0, 3).map((category, index) => (
-            <View key={index} style={styles.categoryTag}>
-              <Text style={styles.categoryText}>{category}</Text>
-            </View>
-          ))}
+          {restaurant.categories.slice(0, 3).map((category, index) => {
+            const emoji = getCategoryEmoji(category);
+            return (
+              <View key={index} style={styles.categoryTag}>
+                <Text style={styles.categoryText}>
+                  {emoji ? `${emoji} ` : ""}{category.charAt(0).toUpperCase() + category.slice(1)}
+                </Text>
+              </View>
+            );
+          })}
         </View>
         <View style={styles.footer}>
           {restaurant.rating && (
