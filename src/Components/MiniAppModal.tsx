@@ -32,18 +32,20 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
   const [loading, setLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
   const [isDismissing, setIsDismissing] = useState(false);
-  const translateY = useRef(new Animated.Value(0)).current;
-  const lastOffset = useRef(0);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const isAtTopRef = useRef(true);
   
+  const translateY = useRef(new Animated.Value(0)).current;
+  
+  // Pan responder for drag handle and title header only
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // Only respond to downward swipes
-        return gestureState.dy > 0;
+        return gestureState.dy > 5;
       },
       onPanResponderGrant: () => {
-        lastOffset.current = 0;
         translateY.setOffset(0);
         translateY.setValue(0);
       },
@@ -59,9 +61,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
-          // Close immediately to prevent modal from showing again
           onClose();
-          // Animate out
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
@@ -80,8 +80,33 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
           }).start();
         }
       },
+      onPanResponderTerminate: () => {
+        translateY.flattenOffset();
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }).start();
+      },
     })
   ).current;
+
+  // Handle scroll events from WebView via injected JavaScript
+  const handleWebViewScrollMessage = useCallback((event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'scroll') {
+        const scrollY = data.scrollY || 0;
+        const wasAtTop = scrollY <= 0;
+        setIsAtTop(wasAtTop);
+        isAtTopRef.current = wasAtTop;
+      }
+    } catch (e) {
+      // Ignore non-JSON messages or messages that aren't scroll events
+      // Other messages are handled by handleMessage
+    }
+  }, []);
 
   // Extract domain from URL for the RPC adapter
   const domain = useMemo(() => {
@@ -170,19 +195,26 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
       setLoading(true);
       setFrameUrl(url);
       setIsDismissing(false);
+      setIsAtTop(true);
+      isAtTopRef.current = true;
       translateY.setValue(0);
     } else if (!isVisible) {
       setFrameUrl(null);
       setIsDismissing(false);
+      setIsAtTop(true);
+      isAtTopRef.current = true;
       translateY.setValue(0);
     }
   }, [isVisible, url, setFrameUrl, translateY]);
 
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
+      // Handle scroll messages separately
+      handleWebViewScrollMessage(event);
+      // Handle other messages via RPC adapter
       onMessage(event);
     },
-    [onMessage]
+    [onMessage, handleWebViewScrollMessage]
   );
 
   const handleNavigationStateChange = useCallback((navState: any) => {
@@ -278,7 +310,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
         </View>
         
         {/* Title header at top */}
-        <View style={styles.titleHeader}>
+        <View style={styles.titleHeader} {...panResponder.panHandlers}>
           <Text style={styles.titleHeaderText} numberOfLines={1}>
             {title || "Mini App"}
           </Text>
@@ -353,6 +385,33 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                 // Inject script after page loads to ensure context is available
                 injectedJavaScript={`
                   (function() {
+                    // Track scroll position for dismiss gesture
+                    let lastScrollY = window.scrollY || window.pageYOffset || 0;
+                    
+                    function handleScroll() {
+                      const scrollY = window.scrollY || window.pageYOffset || 0;
+                      if (Math.abs(scrollY - lastScrollY) > 5) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                          type: 'scroll',
+                          scrollY: scrollY
+                        }));
+                        lastScrollY = scrollY;
+                      }
+                    }
+                    
+                    window.addEventListener('scroll', handleScroll, { passive: true });
+                    window.addEventListener('touchmove', handleScroll, { passive: true });
+                    
+                    // Initial check
+                    handleScroll();
+                    
+                    // Also check on load
+                    if (document.readyState === 'complete') {
+                      handleScroll();
+                    } else {
+                      window.addEventListener('load', handleScroll);
+                    }
+                    
                     // Listen for postMessage (for any apps that use window.postMessage)
                     window.addEventListener('message', function(event) {
                       try {

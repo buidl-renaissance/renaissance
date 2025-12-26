@@ -26,18 +26,23 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
   const [loading, setLoading] = React.useState(true);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [isDismissing, setIsDismissing] = React.useState(false);
-  const translateY = useRef(new Animated.Value(0)).current;
-  const lastOffset = useRef(0);
+  const [isAtTop, setIsAtTop] = React.useState(true);
+  const [isDraggingDown, setIsDraggingDown] = React.useState(false);
+  const isAtTopRef = useRef(true);
+  const webViewRef = useRef<any>(null);
   
+  const translateY = useRef(new Animated.Value(0)).current;
+  
+  // Pan responder for drag handle and title header only
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // Only respond to downward swipes
-        return gestureState.dy > 0;
+        return gestureState.dy > 5;
       },
       onPanResponderGrant: () => {
-        lastOffset.current = 0;
+        setIsDraggingDown(true);
         translateY.setOffset(0);
         translateY.setValue(0);
       },
@@ -48,14 +53,13 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        setIsDraggingDown(false);
         translateY.flattenOffset();
         
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
-          // Close immediately to prevent modal from showing again
           onClose();
-          // Animate out
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
@@ -74,13 +78,41 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
           }).start();
         }
       },
+      onPanResponderTerminate: () => {
+        setIsDraggingDown(false);
+        translateY.flattenOffset();
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }).start();
+      },
     })
   ).current;
+
+
+  // Handle scroll events from WebView via injected JavaScript
+  const handleWebViewMessage = React.useCallback((event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'scroll') {
+        const scrollY = data.scrollY || 0;
+        const wasAtTop = scrollY <= 0;
+        setIsAtTop(wasAtTop);
+        isAtTopRef.current = wasAtTop;
+      }
+    } catch (e) {
+      // Ignore non-JSON messages
+    }
+  }, []);
 
   React.useEffect(() => {
     if (isVisible) {
       setLoading(true);
       setIsDismissing(false);
+      setIsAtTop(true);
+      isAtTopRef.current = true;
       translateY.setValue(0);
       // Load bookmark status when modal opens
       if (eventData && eventType) {
@@ -161,7 +193,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         </View>
         
         {/* Title header at top */}
-        <View style={styles.titleHeader}>
+        <View style={styles.titleHeader} {...panResponder.panHandlers}>
           <View style={styles.titleHeaderContent}>
             <View style={styles.titleHeaderTextContainer}>
               <Text style={styles.titleHeaderText} numberOfLines={1}>
@@ -193,6 +225,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         <View style={styles.webViewContainer}>
           {url && (
             <WebView
+              ref={webViewRef}
               source={{ uri: url }}
               style={styles.webView}
               onLoadStart={() => setLoading(true)}
@@ -214,6 +247,37 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               decelerationRate="normal"
               nestedScrollEnabled={true}
               overScrollMode="always"
+              onMessage={handleWebViewMessage}
+              injectedJavaScript={`
+                (function() {
+                  let lastScrollY = window.scrollY || window.pageYOffset || 0;
+                  
+                  function handleScroll() {
+                    const scrollY = window.scrollY || window.pageYOffset || 0;
+                    if (Math.abs(scrollY - lastScrollY) > 5) {
+                      window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'scroll',
+                        scrollY: scrollY
+                      }));
+                      lastScrollY = scrollY;
+                    }
+                  }
+                  
+                  window.addEventListener('scroll', handleScroll, { passive: true });
+                  window.addEventListener('touchmove', handleScroll, { passive: true });
+                  
+                  // Initial check
+                  handleScroll();
+                  
+                  // Also check on load
+                  if (document.readyState === 'complete') {
+                    handleScroll();
+                  } else {
+                    window.addEventListener('load', handleScroll);
+                  }
+                })();
+                true;
+              `}
               renderLoading={() => (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#3449ff" />

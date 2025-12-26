@@ -58,7 +58,11 @@ import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { EventWebModal } from "../Components/EventWebModal";
 import { MiniAppModal } from "../Components/MiniAppModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
+import { BookmarksModal } from "../Components/BookmarksModal";
+import { MiniAppsModal } from "../Components/MiniAppsModal";
+import { SearchModal } from "../Components/SearchModal";
 import { WalletModal } from "../Components/WalletModal";
+import { CreateFlyerModal } from "../Components/CreateFlyerModal";
 import { LumaEvent, RAEvent } from "../interfaces";
 
 const { height, width } = Dimensions.get("window");
@@ -129,6 +133,18 @@ const CalendarScreen = ({ navigation }) => {
   // State for QR code modal
   const [qrCodeModalVisible, setQrCodeModalVisible] = React.useState<boolean>(false);
 
+  // State for bookmarks modal
+  const [bookmarksModalVisible, setBookmarksModalVisible] = React.useState<boolean>(false);
+
+  // State for mini apps modal
+  const [miniAppsModalVisible, setMiniAppsModalVisible] = React.useState<boolean>(false);
+
+  // State for search modal
+  const [searchModalVisible, setSearchModalVisible] = React.useState<boolean>(false);
+
+  // State for create flyer modal
+  const [createFlyerModalVisible, setCreateFlyerModalVisible] = React.useState<boolean>(false);
+
   // State for wallet modal
   const [walletModalVisible, setWalletModalVisible] = React.useState<boolean>(false);
 
@@ -149,11 +165,11 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleSearchPress = React.useCallback(() => {
-    navigation.push("Search");
+    setSearchModalVisible(true);
   }, []);
 
   const handleBookmarkPress = React.useCallback(() => {
-    navigation.push("Bookmarks");
+    setBookmarksModalVisible(true);
   }, []);
 
   const handleQRCodePress = React.useCallback(() => {
@@ -165,7 +181,45 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleMiniAppsPress = React.useCallback(() => {
-    navigation.push("MiniApps");
+    setMiniAppsModalVisible(true);
+  }, []);
+
+  const handleOpenMiniApp = React.useCallback((app: { url: string; name: string }) => {
+    // Check if this is a native screen
+    if (app.url.startsWith("native://")) {
+      const screenName = app.url.replace("native://", "");
+      navigation.push(screenName);
+      setMiniAppsModalVisible(false);
+    } else {
+      // Open web-based mini app
+      setMiniAppModalUrl(app.url);
+      setMiniAppModalTitle(app.name);
+      setMiniAppModalVisible(true);
+      setMiniAppsModalVisible(false);
+    }
+  }, [navigation]);
+
+  const handleSelectEventFromSearch = React.useCallback((event: DAEvent | LumaEvent | RAEvent, eventType: 'da' | 'luma' | 'ra') => {
+    if (eventType === 'da') {
+      setSelectedEvent(event as DAEvent);
+      setSearchModalVisible(false);
+    } else if (eventType === 'luma') {
+      const lumaEvent = event as LumaEvent;
+      setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
+      setWebModalTitle(lumaEvent.name);
+      setWebModalEventType('luma');
+      setWebModalEventData(lumaEvent);
+      setWebModalVisible(true);
+      setSearchModalVisible(false);
+    } else if (eventType === 'ra') {
+      const raEvent = event as RAEvent;
+      setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
+      setWebModalTitle(raEvent.title);
+      setWebModalEventType('ra');
+      setWebModalEventData(raEvent);
+      setWebModalVisible(true);
+      setSearchModalVisible(false);
+    }
   }, []);
 
   const handleAdminPress = React.useCallback(() => {
@@ -200,7 +254,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleCreateFlyer = React.useCallback(() => {
-    navigation.push("CreateFlyer");
+    setCreateFlyerModalVisible(true);
   }, []);
 
   const handleOpenArt = React.useCallback(() => {
@@ -1075,6 +1129,31 @@ const CalendarScreen = ({ navigation }) => {
       <WalletModal
         isVisible={walletModalVisible}
         onClose={() => setWalletModalVisible(false)}
+      />
+      <CreateFlyerModal
+        isVisible={createFlyerModalVisible}
+        onClose={() => setCreateFlyerModalVisible(false)}
+      />
+      <BookmarksModal
+        isVisible={bookmarksModalVisible}
+        onClose={() => setBookmarksModalVisible(false)}
+      />
+      <MiniAppsModal
+        isVisible={miniAppsModalVisible}
+        onClose={() => setMiniAppsModalVisible(false)}
+        onOpenApp={handleOpenMiniApp}
+        onNavigateToAccount={() => {
+          setMiniAppsModalVisible(false);
+          navigation.push("AccountManagement");
+        }}
+      />
+      <SearchModal
+        isVisible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectEvent={handleSelectEventFromSearch}
+        daEvents={events}
+        lumaEvents={lumaEvents}
+        raEvents={raEvents}
       />
     </View>
   );
