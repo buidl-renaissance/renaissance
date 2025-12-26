@@ -456,19 +456,6 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
-
-  // const [username, setUsername] = React.useState("wiredinsamurai");
-  // const [pub, setPub] = React.useState("test");
-  // const [sig, setSig] = React.useState("test");
-  // console.log(username, pub, sig);
-  // React.useEffect(() => {
-  //     username && pug && sig
-  // }, []);
-
-  const handleLogin = React.useCallback(() => {
-    navigation.push("Login");
-  }, []);
-
   // State for forecast data with bookmark and going counts
   const [forecastData, setForecastData] = React.useState<Array<{
     date: moment.Moment;
