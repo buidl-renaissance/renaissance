@@ -13,7 +13,12 @@ import { RenderHTML } from "../Components/RenderHTML";
 
 import { lightGreen, darkGrey } from "../colors";
 
-const EventPopup = ({ event }) => {
+interface EventPopupProps {
+  event: any;
+  onClose?: () => void;
+}
+
+const EventPopup = ({ event, onClose }: EventPopupProps) => {
   const handleRSVP = React.useCallback(() => {
     // Alert.alert("THIS NEEDS TO BE INTEGRATED!!!");
     if (event.url) {
@@ -28,11 +33,20 @@ const EventPopup = ({ event }) => {
 
   const handleSheetChanges = React.useCallback((index: number) => {
     console.log("handleSheetChanges", index);
-  }, []);
+    if (index === -1 && onClose) {
+      // Modal was dismissed
+      onClose();
+    }
+  }, [onClose]);
 
   React.useEffect(() => {
     if (event) {
-      bottomSheetModalRef.current?.present();
+      // Small delay to ensure any other modals are closed first
+      setTimeout(() => {
+        bottomSheetModalRef.current?.present();
+      }, 100);
+    } else {
+      bottomSheetModalRef.current?.dismiss();
     }
   }, [event]);
 

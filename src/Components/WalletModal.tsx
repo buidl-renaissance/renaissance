@@ -8,9 +8,12 @@ import {
   Alert,
   PanResponder,
   Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "react-native-modal";
+import Icon, { IconTypes } from "./Icon";
 import { getWallet } from "../utils/wallet";
 
 interface WalletModalProps {
@@ -32,8 +35,10 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [totalBalance] = useState("31.40");
   const [isDismissing, setIsDismissing] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const [isDraggingDown, setIsDraggingDown] = useState(false);
+  const isAtTopRef = useRef(true);
   const translateY = useRef(new Animated.Value(0)).current;
-  const lastOffset = useRef(0);
 
   // Mock rewards history
   const [rewardsHistory] = useState<RewardHistory[]>([
@@ -75,15 +80,16 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
     },
   ]);
 
+  // Pan responder for drag handle and title header only
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // Only respond to downward swipes
-        return gestureState.dy > 0;
+        return gestureState.dy > 5;
       },
       onPanResponderGrant: () => {
-        lastOffset.current = 0;
+        setIsDraggingDown(true);
         translateY.setOffset(0);
         translateY.setValue(0);
       },
@@ -94,14 +100,13 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        setIsDraggingDown(false);
         translateY.flattenOffset();
 
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
-          // Close immediately to prevent modal from showing again
           onClose();
-          // Animate out
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
@@ -120,12 +125,89 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
           }).start();
         }
       },
+      onPanResponderTerminate: () => {
+        setIsDraggingDown(false);
+        translateY.flattenOffset();
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }).start();
+      },
     })
   ).current;
+
+  // Pan responder for content area when at top
+  const contentPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to clear downward drags when at top
+        return isAtTopRef.current && gestureState.dy > 10 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
+      },
+      onPanResponderGrant: () => {
+        setIsDraggingDown(true);
+        translateY.setOffset(0);
+        translateY.setValue(0);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow downward movement when at top
+        if (isAtTopRef.current && gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        setIsDraggingDown(false);
+        translateY.flattenOffset();
+
+        // If dragged down more than 100px, dismiss the modal
+        if (gestureState.dy > 100) {
+          setIsDismissing(true);
+          onClose();
+          Animated.timing(translateY, {
+            toValue: 1000,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            translateY.setValue(0);
+            setIsDismissing(false);
+          });
+        } else {
+          // Spring back to original position
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        setIsDraggingDown(false);
+        translateY.flattenOffset();
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }).start();
+      },
+    })
+  ).current;
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const wasAtTop = offsetY <= 0;
+    setIsAtTop(wasAtTop);
+    isAtTopRef.current = wasAtTop;
+  };
 
   useEffect(() => {
     if (isVisible) {
       setIsDismissing(false);
+      setIsAtTop(true);
+      isAtTopRef.current = true;
       translateY.setValue(0);
       loadWalletInfo();
     }
@@ -184,7 +266,26 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
           <View style={styles.dragHandleBar} />
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        {/* Title header */}
+        <View style={styles.titleHeader} {...panResponder.panHandlers}>
+          <Text style={styles.titleHeaderText}>Wallet</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Icon type={IconTypes.Ionicons} name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <View 
+          style={styles.scrollContainer}
+          {...(isAtTop ? contentPanResponder.panHandlers : {})}
+        >
+          <ScrollView 
+            style={styles.scrollView} 
+            contentContainerStyle={styles.content}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            scrollEnabled={!isDraggingDown}
+            showsVerticalScrollIndicator={true}
+          >
           {/* Total Balance */}
           <View style={styles.balanceContainer}>
             <Text style={styles.totalBalance}>${totalBalance}</Text>
@@ -201,7 +302,8 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
               </View>
             )}
           </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
       </Animated.View>
     </Modal>
   );
@@ -230,6 +332,27 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: "#666",
+  },
+  titleHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#000",
+    borderBottomWidth: 1,
+    borderBottomColor: "#1F2937",
+  },
+  titleHeaderText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  closeButton: {
+    padding: 4,
+  },
+  scrollContainer: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

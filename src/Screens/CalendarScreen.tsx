@@ -60,7 +60,6 @@ import { MiniAppModal } from "../Components/MiniAppModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
 import { MiniAppsModal } from "../Components/MiniAppsModal";
-import { SearchModal } from "../Components/SearchModal";
 import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
 import { LumaEvent, RAEvent } from "../interfaces";
@@ -139,8 +138,6 @@ const CalendarScreen = ({ navigation }) => {
   // State for mini apps modal
   const [miniAppsModalVisible, setMiniAppsModalVisible] = React.useState<boolean>(false);
 
-  // State for search modal
-  const [searchModalVisible, setSearchModalVisible] = React.useState<boolean>(false);
 
   // State for create flyer modal
   const [createFlyerModalVisible, setCreateFlyerModalVisible] = React.useState<boolean>(false);
@@ -165,8 +162,8 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleSearchPress = React.useCallback(() => {
-    setSearchModalVisible(true);
-  }, []);
+    navigation.push("Search");
+  }, [navigation]);
 
   const handleBookmarkPress = React.useCallback(() => {
     setBookmarksModalVisible(true);
@@ -199,28 +196,6 @@ const CalendarScreen = ({ navigation }) => {
     }
   }, [navigation]);
 
-  const handleSelectEventFromSearch = React.useCallback((event: DAEvent | LumaEvent | RAEvent, eventType: 'da' | 'luma' | 'ra') => {
-    if (eventType === 'da') {
-      setSelectedEvent(event as DAEvent);
-      setSearchModalVisible(false);
-    } else if (eventType === 'luma') {
-      const lumaEvent = event as LumaEvent;
-      setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
-      setWebModalTitle(lumaEvent.name);
-      setWebModalEventType('luma');
-      setWebModalEventData(lumaEvent);
-      setWebModalVisible(true);
-      setSearchModalVisible(false);
-    } else if (eventType === 'ra') {
-      const raEvent = event as RAEvent;
-      setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
-      setWebModalTitle(raEvent.title);
-      setWebModalEventType('ra');
-      setWebModalEventData(raEvent);
-      setWebModalVisible(true);
-      setSearchModalVisible(false);
-    }
-  }, []);
 
   const handleAdminPress = React.useCallback(() => {
     navigation.push("Admin");
@@ -1098,7 +1073,12 @@ const CalendarScreen = ({ navigation }) => {
         walletBalance="31.40"
       />
       <FloatingProfileButton navigation={navigation} />
-      {selectedEvent && <EventPopup event={selectedEvent} />}
+      {selectedEvent && (
+        <EventPopup 
+          event={selectedEvent} 
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
       <EventWebModal
         isVisible={webModalVisible}
         url={webModalUrl}
@@ -1146,14 +1126,6 @@ const CalendarScreen = ({ navigation }) => {
           setMiniAppsModalVisible(false);
           navigation.push("AccountManagement");
         }}
-      />
-      <SearchModal
-        isVisible={searchModalVisible}
-        onClose={() => setSearchModalVisible(false)}
-        onSelectEvent={handleSelectEventFromSearch}
-        daEvents={events}
-        lumaEvents={lumaEvents}
-        raEvents={raEvents}
       />
     </View>
   );

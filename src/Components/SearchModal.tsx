@@ -35,8 +35,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; sortDate?: number; dateKey?: string }[]
   >([]);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const searchbarRef = React.useRef<any>(null);
 
   const onChangeSearch = (query: string) => setSearchQuery(query);
+
+  // Auto-focus search bar when modal opens
+  React.useEffect(() => {
+    if (isVisible && searchbarRef.current) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        searchbarRef.current?.focus();
+      }, 100);
+    }
+  }, [isVisible]);
 
   React.useEffect(() => {
     const query = searchQuery?.trim().toLowerCase() || "";
@@ -212,7 +223,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         <View style={styles.content}>
           <View style={styles.searchContainer}>
             <Searchbar
-              placeholder="Search events, descriptions, locations, artists..."
+              ref={searchbarRef}
+              placeholder="Search"
               onChangeText={onChangeSearch}
               style={styles.searchbar}
               value={searchQuery}
