@@ -13,14 +13,11 @@ export const useEvents = (query?: EventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       const params = new URLSearchParams(query);
-      console.log("Fetching Detroit Art events...");
-      console.log("PARAMS: ", params.toString());
       const eventsRes = await fetch(
         `https://api.detroiter.network/api/events?${params.toString()}`
       );
       const fetchedEvents = await eventsRes.json();
       setEvents(fetchedEvents.data);
-      console.log(`Fetched ${fetchedEvents.data?.length || 0} Detroit Art events`);
     } catch (err) {
       console.error("Error fetching Detroit Art events:", err);
     }

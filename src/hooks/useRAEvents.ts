@@ -22,7 +22,6 @@ export const useRAEvents = (query?: RAEventsQuery) => {
     try {
       setLoading(true);
       const endpointType = query?.type === "nye" ? "nye" : "upcoming";
-      console.log(`Fetching RA events (${endpointType})...`);
       
       const eventsRes = await fetch(
         `https://ra-events.vercel.app/api/events/${endpointType}`
@@ -37,7 +36,6 @@ export const useRAEvents = (query?: RAEventsQuery) => {
       if (data.success && data.events) {
         setEvents(data.events);
         setTotal(data.total || data.events.length);
-        console.log(`Fetched ${data.events.length} RA events (${data.total} total)`);
       } else {
         setEvents([]);
         setTotal(0);

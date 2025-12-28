@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image,
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
@@ -150,11 +151,10 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
           <View style={styles.profileSection}>
             <View style={styles.avatarContainer}>
               {state.user.pfpUrl ? (
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {state.user.displayName?.charAt(0) || state.user.username?.charAt(0) || "?"}
-                  </Text>
-                </View>
+                <Image
+                  source={{ uri: state.user.pfpUrl }}
+                  style={styles.avatarImage}
+                />
               ) : (
                 <View style={styles.avatar}>
                   <Ionicons
@@ -193,7 +193,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Account Info</Text>
 
-            <View style={styles.infoRow}>
+            <View style={[styles.infoRow, styles.infoRowFirst]}>
               <Text style={styles.infoLabel}>Type</Text>
               <Text style={styles.infoValue}>{getAccountTypeLabel(state.user)}</Text>
             </View>
@@ -206,7 +206,10 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             )}
 
             {state.user.local?.walletAddress && (
-              <View style={styles.infoRow}>
+              <View style={[
+                styles.infoRow,
+                !state.user.farcaster?.custodyAddress && styles.infoRowLast
+              ]}>
                 <Text style={styles.infoLabel}>Wallet</Text>
                 <Text style={styles.infoValue} numberOfLines={1}>
                   {`${state.user.local.walletAddress.slice(0, 10)}...${state.user.local.walletAddress.slice(-8)}`}
@@ -215,7 +218,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             )}
 
             {state.user.farcaster?.custodyAddress && (
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, styles.infoRowLast]}>
                 <Text style={styles.infoLabel}>Custody</Text>
                 <Text style={styles.infoValue} numberOfLines={1}>
                   {`${state.user.farcaster.custodyAddress.slice(0, 10)}...${state.user.farcaster.custodyAddress.slice(-8)}`}
@@ -346,7 +349,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             </View>
             <View style={styles.optionTextContainer}>
               <Text style={styles.optionTitle}>Sign in with Warpcast</Text>
-              <Text style={styles.optionSubtitle}>
+              <Text style={[styles.optionSubtitle, styles.farcasterSubtitle]}>
                 Use your Farcaster account
               </Text>
             </View>
@@ -366,7 +369,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
               <Text style={[styles.optionTitle, styles.guestTitle]}>
                 Continue as Guest
               </Text>
-              <Text style={styles.optionSubtitle}>
+              <Text style={[styles.optionSubtitle, styles.guestSubtitle]}>
                 Anonymous wallet-based account
               </Text>
             </View>
@@ -386,7 +389,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
               <Text style={[styles.optionTitle, styles.emailTitle]}>
                 Sign in with Email
               </Text>
-              <Text style={styles.optionSubtitle}>
+              <Text style={[styles.optionSubtitle, styles.emailSubtitle]}>
                 Use email and password
               </Text>
             </View>
@@ -416,7 +419,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightGreen,
+    backgroundColor: "#F9FAFB",
   },
   keyboardView: {
     flex: 1,
@@ -424,258 +427,369 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     flexGrow: 1,
+    paddingBottom: 40,
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 40,
     marginTop: 20,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 16,
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 20,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: "#666",
+    fontSize: 15,
+    color: "#6B7280",
     marginTop: 8,
     textAlign: "center",
+    lineHeight: 22,
+    paddingHorizontal: 20,
   },
   optionsContainer: {
-    gap: 12,
+    gap: 14,
   },
   optionButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 18,
     borderRadius: 16,
-    marginBottom: 12,
+    marginBottom: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   farcasterButton: {
     backgroundColor: "#8B5CF6",
+    shadowColor: "#8B5CF6",
+    shadowOpacity: 0.3,
   },
   guestButton: {
-    backgroundColor: "#fff",
-    borderWidth: 2,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
     borderColor: "#E5E7EB",
   },
   emailButton: {
-    backgroundColor: "#fff",
-    borderWidth: 2,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
     borderColor: "#E5E7EB",
   },
   optionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.25)",
   },
   guestIcon: {
-    backgroundColor: "#EEF2FF",
+    backgroundColor: "#F3F4F6",
   },
   emailIcon: {
-    backgroundColor: "#EEF2FF",
+    backgroundColor: "#F3F4F6",
   },
   optionTextContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
   },
   optionTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
-    color: "#fff",
+    color: "#FFFFFF",
+    letterSpacing: -0.2,
   },
   guestTitle: {
-    color: "#333",
+    color: "#111827",
   },
   emailTitle: {
-    color: "#333",
+    color: "#111827",
   },
   optionSubtitle: {
     fontSize: 13,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: 2,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  farcasterSubtitle: {
+    color: "rgba(255,255,255,0.85)",
+  },
+  guestSubtitle: {
+    color: "#6B7280",
+  },
+  emailSubtitle: {
+    color: "#6B7280",
   },
   loadingContainer: {
     alignItems: "center",
-    marginTop: 24,
+    marginTop: 32,
+    paddingVertical: 20,
   },
   loadingText: {
-    marginTop: 8,
-    color: "#666",
+    marginTop: 12,
+    color: "#6B7280",
+    fontSize: 14,
   },
   infoBox: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 24,
+    backgroundColor: "#FFFFFF",
+    padding: 18,
+    borderRadius: 16,
+    marginTop: 28,
     alignItems: "flex-start",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   infoText: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
     fontSize: 13,
-    color: "#666",
-    lineHeight: 18,
+    color: "#6B7280",
+    lineHeight: 20,
   },
   // Profile styles
   profileSection: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
     marginTop: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
   avatarContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     backgroundColor: "#EEF2FF",
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
+    shadowColor: "#6366F1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  avatarImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 4,
+    borderColor: "#FFFFFF",
+    shadowColor: "#6366F1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   avatarText: {
-    fontSize: 40,
+    fontSize: 42,
     fontWeight: "bold",
     color: "#6366F1",
   },
   displayName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#111827",
+    letterSpacing: -0.5,
+    marginTop: 4,
   },
   username: {
-    fontSize: 16,
-    color: "#666",
-    marginTop: 4,
+    fontSize: 15,
+    color: "#6B7280",
+    marginTop: 6,
+    fontWeight: "500",
   },
   accountTypeBadge: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#EEF2FF",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: "#E0E7FF",
   },
   accountTypeText: {
     fontSize: 13,
     color: "#6366F1",
-    marginLeft: 6,
-    fontWeight: "500",
+    marginLeft: 8,
+    fontWeight: "600",
   },
   fidText: {
     fontSize: 13,
-    color: "#999",
-    marginTop: 8,
+    color: "#9CA3AF",
+    marginTop: 10,
+    fontWeight: "500",
   },
   infoSection: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#F3F4F6",
+  },
+  infoRowFirst: {
+    paddingTop: 4,
+  },
+  infoRowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 4,
   },
   infoLabel: {
     fontSize: 14,
-    color: "#666",
+    color: "#6B7280",
+    fontWeight: "500",
   },
   infoValue: {
     fontSize: 14,
-    color: "#333",
-    fontWeight: "500",
+    color: "#111827",
+    fontWeight: "600",
     maxWidth: "60%",
+    textAlign: "right",
   },
   signOutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FEE2E2",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 18,
+    borderRadius: 16,
+    marginTop: 12,
+    borderWidth: 1.5,
+    borderColor: "#FEE2E2",
+    shadowColor: "#EF4444",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   signOutText: {
     fontSize: 16,
     fontWeight: "600",
     color: "#EF4444",
-    marginLeft: 8,
+    marginLeft: 10,
   },
   // Form styles
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   backText: {
     fontSize: 16,
-    color: "#333",
+    color: "#374151",
     marginLeft: 8,
+    fontWeight: "500",
   },
   formHeader: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 40,
   },
   formTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 16,
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 20,
+    letterSpacing: -0.5,
   },
   formSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 8,
+    fontSize: 15,
+    color: "#6B7280",
+    marginTop: 10,
     textAlign: "center",
+    lineHeight: 22,
+    paddingHorizontal: 20,
   },
   input: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
     borderColor: "#E5E7EB",
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 14,
+    color: "#111827",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   primaryButton: {
     backgroundColor: "#6366F1",
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
+    shadowColor: "#6366F1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   primaryButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
-    color: "#fff",
+    color: "#FFFFFF",
+    letterSpacing: -0.2,
   },
   switchModeButton: {
     alignItems: "center",
-    marginTop: 16,
+    marginTop: 24,
+    paddingVertical: 12,
   },
   switchModeText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#6366F1",
+    fontWeight: "500",
   },
 });
 

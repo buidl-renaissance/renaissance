@@ -18,7 +18,6 @@ export const useFeaturedRAEvents = () => {
       setLoading(true);
       const eventIds = await getFeaturedRAEvents();
       setFeaturedEventIds(new Set(eventIds));
-      console.log(`Fetched ${eventIds.length} featured RA events`);
     } catch (error) {
       console.error("Error fetching featured RA events:", error);
     } finally {

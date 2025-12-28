@@ -16,14 +16,8 @@ export const FloatingProfileButton = ({ onPress, navigation }: FloatingProfileBu
     if (onPress) {
       onPress();
     } else if (navigation) {
-      if (authState.isAuthenticated && authState.user?.type === "farcaster") {
-        navigation.navigate("FarcasterProfile");
-      } else if (authState.isAuthenticated) {
-        navigation.navigate("AccountManagement");
-      } else {
-        // Navigate to AccountManagement (same as mini app screen) when not authenticated
-        navigation.navigate("AccountManagement");
-      }
+      // Navigate to AccountManagement (same as miniapp screen)
+      navigation.navigate("AccountManagement");
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getWallet } from "../utils/wallet";
+import { useAuth } from "../context/Auth";
+import { getUSDCBalance } from "../api/usdc-balance";
 
 interface WalletScreenProps {
   navigation: any;
@@ -29,25 +31,26 @@ interface TokenBalance {
 }
 
 const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
+  const { state: authState } = useAuth();
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"Tokens" | "Collectibles" | "History">("Tokens");
   const [showReferralBanner, setShowReferralBanner] = useState(true);
-  const [totalBalance] = useState("31.40");
   const [balanceChange] = useState({ value: "0.13", percent: "0.40", isPositive: true });
+  const [usdcBalance, setUsdcBalance] = useState<string>("0");
+  const [isLoadingUSDC, setIsLoadingUSDC] = useState<boolean>(false);
 
-  // Mock token balances
-  const [tokenBalances] = useState<TokenBalance[]>([
+  // Token balances - USDC will be updated with real balance
+  const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([
     {
-      id: "usdc-lending",
-      name: "USDC Lending",
+      id: "usdc",
+      name: "USD Coin",
       symbol: "USDC",
       balance: "0",
       usdValue: "0",
       changePercent: "0",
       isPositive: true,
       icon: "diamond-outline",
-      type: "lending",
-      apy: "5.40",
+      type: "token",
     },
     {
       id: "eth",
@@ -77,13 +80,67 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
     loadWalletInfo();
   }, []);
 
+  useEffect(() => {
+    if (walletAddress) {
+      loadUSDCBalance();
+    }
+  }, [walletAddress]);
+
   const loadWalletInfo = async () => {
     try {
+      // Always use local wallet for consistency
       const wallet = await getWallet();
       setWalletAddress(wallet.address);
     } catch (error) {
       console.error("Error loading wallet:", error);
       Alert.alert("Error", "Failed to load wallet information");
+    }
+  };
+
+  const loadUSDCBalance = async () => {
+    if (!walletAddress) return;
+    
+    try {
+      setIsLoadingUSDC(true);
+      const balance = await getUSDCBalance(walletAddress);
+      setUsdcBalance(balance);
+      
+      // Update token balances with real USDC balance
+      const numericBalance = parseFloat(balance);
+      
+      // Format balance display - show up to 6 decimal places if needed, but remove trailing zeros
+      let formattedBalance: string;
+      if (numericBalance === 0) {
+        formattedBalance = "0";
+      } else if (numericBalance < 0.01) {
+        // For very small amounts, show more precision
+        formattedBalance = numericBalance.toFixed(6).replace(/\.?0+$/, "");
+      } else {
+        // For larger amounts, show up to 2 decimal places
+        formattedBalance = numericBalance.toLocaleString(undefined, { 
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2 
+        });
+      }
+      
+      const usdValue = numericBalance.toFixed(2);
+      
+      setTokenBalances((prev) =>
+        prev.map((token) =>
+          token.id === "usdc"
+            ? {
+                ...token,
+                balance: formattedBalance,
+                usdValue: usdValue,
+              }
+            : token
+        )
+      );
+    } catch (error) {
+      console.error("Error loading USDC balance:", error);
+      // Don't show alert for balance errors, just log it
+    } finally {
+      setIsLoadingUSDC(false);
     }
   };
 
@@ -130,6 +187,15 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ navigation }) => {
       </View>
     </TouchableOpacity>
   );
+
+  // Calculate total balance from all token balances
+  const totalBalance = useMemo(() => {
+    const total = tokenBalances.reduce((sum, token) => {
+      const usdValue = parseFloat(token.usdValue) || 0;
+      return sum + usdValue;
+    }, 0);
+    return total.toFixed(2);
+  }, [tokenBalances]);
 
   const cashBalances = tokenBalances.filter((t) => t.type === "lending");
   const otherBalances = tokenBalances.filter((t) => t.type === "token");

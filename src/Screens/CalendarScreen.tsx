@@ -47,6 +47,7 @@ import { useLumaEvents } from "../hooks/useLumaEvents";
 import { useRAEvents } from "../hooks/useRAEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { useAuth } from "../context/Auth";
+import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import * as Linking from "expo-linking";
@@ -76,6 +77,7 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 const CalendarScreen = ({ navigation }) => {
   const [events] = useEvents();
   const { state: authState } = useAuth();
+  const { balance: walletBalance } = useUSDCBalance();
   
   // Memoize query objects to prevent unnecessary re-fetches
   const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
@@ -463,20 +465,6 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     setEventsGroup(groupsArray);
-    
-    // Debug logging
-    console.log("COMPUTE EVENT GROUPS with Luma and RA events");
-    groupsArray.forEach((group: any) => {
-      console.log(`\n${group.title} - ${group.data.length} events`);
-      group.data.forEach((event: any, index: number) => {
-        const startTime = event.eventType === "luma" 
-          ? moment(event.startAt).format("h:mm a")
-          : event.eventType === "ra"
-          ? moment(event.startTime).format("h:mm a")
-          : moment(event.start_date).format("h:mm a");
-        console.log(`  ${index + 1}. [${event.eventType}] ${startTime} - ${event.title || event.name}`);
-      });
-    });
   }, [filteredEvents, lumaEvents, raEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
@@ -1052,6 +1040,7 @@ const CalendarScreen = ({ navigation }) => {
                         height: imageHeight,
                         width: "100%",
                         resizeMode: "cover",
+                        backgroundColor: "#E5E7EB",
                       }}
                     />
                   </TouchableOpacity>
@@ -1070,7 +1059,7 @@ const CalendarScreen = ({ navigation }) => {
         onAppsPress={handleMiniAppsPress}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
-        walletBalance="31.40"
+        walletBalance={walletBalance}
       />
       <FloatingProfileButton navigation={navigation} />
       {selectedEvent && (

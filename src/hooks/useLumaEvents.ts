@@ -18,7 +18,6 @@ export const useLumaEvents = (query?: LumaEventsQuery) => {
     try {
       setLoading(true);
       const city = cityRef.current;
-      console.log("Fetching Luma events for:", city);
       
       const eventsRes = await fetch(
         `https://luma-events-inky.vercel.app/api/events/${city}`
@@ -32,7 +31,6 @@ export const useLumaEvents = (query?: LumaEventsQuery) => {
       
       if (data.success && data.events) {
         setEvents(data.events);
-        console.log(`Fetched ${data.events.length} Luma events`);
       } else {
         setEvents([]);
       }

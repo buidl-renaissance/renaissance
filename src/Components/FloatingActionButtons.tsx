@@ -12,7 +12,7 @@ interface FloatingActionButtonsProps {
   onAppsPress?: () => void;
   onAdminPress?: () => void;
   showAdmin?: boolean;
-  walletBalance?: string;
+  walletBalance?: string | null;
 }
 
 export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
