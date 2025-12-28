@@ -59,7 +59,7 @@ const DateTimePicker: React.FC<{
         isVisible={open}
         mode={mode}
         date={date}
-        isDarkModeEnabled={true}
+        isDarkModeEnabled={false}
         onConfirm={handleChangeDate}
         onCancel={() => setOpen(false)}
       />

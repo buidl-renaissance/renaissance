@@ -807,7 +807,7 @@ const CalendarScreen = ({ navigation }) => {
                       width: "100%",
                       height: 180,
                       borderRadius: 12,
-                      backgroundColor: "#1F2937",
+                      backgroundColor: "#E5E7EB",
                     }}
                   />
                   <View style={{ marginTop: 8 }}>
@@ -816,7 +816,7 @@ const CalendarScreen = ({ navigation }) => {
                         width: "60%",
                         height: 12,
                         borderRadius: 4,
-                        backgroundColor: "#1F2937",
+                        backgroundColor: "#E5E7EB",
                         marginTop: 4,
                       }}
                     />

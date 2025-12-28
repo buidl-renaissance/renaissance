@@ -337,6 +337,53 @@ export const getFlyers = async () => {
   return result.data;
 };
 
+export const extractFlyerData = async (imageBase64: string) => {
+  try {
+    // Check if base64 is valid
+    if (!imageBase64 || imageBase64.trim() === '') {
+      throw new Error("Base64 image is empty");
+    }
+
+    const response = await fetch(`https://events.builddetroit.xyz/api/events/extract`, {
+      method: "POST",
+      body: JSON.stringify({
+        imageBase64: imageBase64,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+
+    // Check if response is ok
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Extraction API error:", response.status, errorText);
+      throw new Error(`Extraction failed: ${response.status} ${errorText}`);
+    }
+
+    // Get response text first to check if it's empty
+    const responseText = await response.text();
+    
+    if (!responseText || responseText.trim() === '') {
+      console.error("Empty response from extraction API");
+      throw new Error("Empty response from extraction API");
+    }
+
+    // Parse JSON
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError: any) {
+      console.error("Failed to parse JSON response:", responseText);
+      throw new Error(`Invalid JSON response: ${parseError?.message || 'Unknown parse error'}`);
+    }
+
+    console.log("EXTRACTED FLYER DATA: ", result);
+    return result.data || result; // Returns { title?, description?, venue?, start_date?, end_date? }
+  } catch (error) {
+    console.error("Error extracting flyer data:", error);
+    throw error;
+  }
+};
+
 export const createFlyer = async (
   image,
   title?,

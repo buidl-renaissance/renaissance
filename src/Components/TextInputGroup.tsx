@@ -7,10 +7,12 @@ const TextInputStyles: StyleProp<TextStyle> = {
     padding: 10,
     marginBottom: 12,
     backgroundColor: 'white',
+    color: '#000000',
 };
 
 const TextLabelStyles: StyleProp<TextStyle> = {
     marginVertical: 6,
+    color: '#000000',
 }
 
 interface TextInputGroupProps extends TextInputProps {

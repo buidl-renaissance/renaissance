@@ -12,7 +12,6 @@ import CalendarScreen from "../Screens/CalendarScreen";
 // import CollectScreen from '../Screens/CollectScreen';
 import ActivityScreen from "../Screens/ActivityScreen";
 import AddContentScreen from "../Screens/AddContentScreen";
-import CreateEventScreen from "../Screens/CreateEventScreen";
 import FilesScreen from "../Screens/FilesScreen";
 import GrantCreationScreen from "../Screens/GrantCreationScreen";
 import ProposalCreationScreen from "../Screens/ProposalCreationScreen";
@@ -30,7 +29,6 @@ import ChatScreen from "../Screens/ChatScreen";
 import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
 import ContentUploadScreen from "../Screens/ContentUploadScreen";
-import CreateFlyerScreen from "../Screens/CreateFlyerScreen";
 import DPoPAuthScreen from "../Screens/DPoPAuthScreen";
 import VerifyScreen from "../Screens/VerifyScreen";
 import MiniAppScreen from "../Screens/MiniAppScreen";
@@ -61,9 +59,8 @@ type HomeNavigationStackParamList = {
   ContentUpload: undefined;
   Chat: undefined;
   Collect: undefined;
-  CreateEvent: undefined;
-  CreateFlyer: undefined;
   CreateProposal: undefined;
+  CreateFlyer: undefined;
   DPoPAuth: undefined;
   Event: undefined;
   EventEdit: undefined;
@@ -185,26 +182,6 @@ const HomeNavigationStack = () => {
       <Stack.Screen
         component={EventEditScreen}
         name="EventEdit"
-        options={{
-          headerStyle: {
-            backgroundColor: "#d2e4dd",
-          },
-          headerTintColor: "#000",
-        }}
-      />
-      <Stack.Screen
-        component={CreateEventScreen}
-        name="CreateEvent"
-        options={{
-          headerStyle: {
-            backgroundColor: "#d2e4dd",
-          },
-          headerTintColor: "#000",
-        }}
-      />
-      <Stack.Screen
-        component={CreateFlyerScreen}
-        name="CreateFlyer"
         options={{
           headerStyle: {
             backgroundColor: "#d2e4dd",
