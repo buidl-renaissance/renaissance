@@ -452,15 +452,18 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
 
   const screenHeight = Dimensions.get("window").height;
   const screenWidth = Dimensions.get("window").width;
-  const initialHeight = screenHeight / 3;
+  const initialHeight = screenHeight * 0.4; // Increased from screenHeight / 3 to give more space
   const fullHeight = screenHeight * 0.9;
   const containerHeight = (image && !isExtracting) ? fullHeight : initialHeight;
+  const isUploadStep = !image || (isExtracting && !extractedData);
 
   return (
     <Modal
       isVisible={isVisible && !isDismissing}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
+      onSwipeComplete={isUploadStep ? onClose : undefined}
+      swipeDirection={isUploadStep ? "down" : undefined}
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
@@ -491,24 +494,33 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
         </View>
 
         <SafeAreaView style={styles.safeArea}>
+          {/* Swipe Indicator - only show during upload step */}
+          {isUploadStep && (
+            <View style={styles.swipeIndicatorContainer}>
+              <View style={styles.swipeIndicator} />
+            </View>
+          )}
+          
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Create Event</Text>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleCreate}
-              disabled={!isFormValid}
-            >
-              <Icon
-                type={IconTypes.Ionicons}
-                name="checkmark"
-                size={24}
-                color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
-              />
-            </TouchableOpacity>
+            {!isUploadStep && (
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={handleCreate}
+                disabled={!isFormValid}
+              >
+                <Icon
+                  type={IconTypes.Ionicons}
+                  name="checkmark"
+                  size={24}
+                  color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
+                />
+              </TouchableOpacity>
+            )}
           </View>
 
-          {!image || (isExtracting && !extractedData) ? (
+          {isUploadStep ? (
             // Upload UI or Extracting UI
             <View style={styles.uploadContainer}>
               <View style={styles.uploadButton}>
@@ -870,13 +882,24 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 1,
   },
+  swipeIndicatorContainer: {
+    alignItems: "center",
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  swipeIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 16,
+    paddingBottom: 32,
   },
   headerTitle: {
     fontSize: 20,
@@ -896,6 +919,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
+    paddingBottom: 66,
   },
   uploadButton: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
