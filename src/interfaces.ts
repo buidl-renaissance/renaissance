@@ -315,6 +315,37 @@ export interface RAEvent {
   isFeatured?: boolean;
 }
 
+export interface MeetupGroup {
+  id: string;
+  name: string;
+  urlname: string;
+  timezone: string;
+  keyGroupPhoto?: {
+    baseUrl: string;
+    highResUrl: string;
+    id: string;
+  };
+}
+
+export interface MeetupVenue {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+export interface MeetupEvent {
+  id: number;
+  eventId: string;
+  title: string;
+  description: string;
+  dateTime: string;
+  venue: MeetupVenue | null;
+  group: MeetupGroup;
+  eventUrl: string;
+}
+
 export type RestaurantCategory = 'restaurants' | 'pizza' | 'burgers' | 'tacos' | 'drinks' | 'sushi' | 'italian' | 'asian' | 'mexican' | 'american' | 'dessert' | 'seafood' | 'bbq' | 'vegetarian' | 'breakfast' | 'mediterranean' | 'thai' | 'indian' | 'chinese';
 
 export interface Restaurant {

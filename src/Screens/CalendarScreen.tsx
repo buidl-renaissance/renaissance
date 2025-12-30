@@ -45,6 +45,7 @@ import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
 import { useLumaEvents } from "../hooks/useLumaEvents";
 import { useRAEvents } from "../hooks/useRAEvents";
+import { useMeetupEvents } from "../hooks/useMeetupEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { useAuth } from "../context/Auth";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
@@ -55,6 +56,7 @@ import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
 import { LumaEventCard } from "../Components/LumaEventCard";
 import { RAEventCard } from "../Components/RAEventCard";
+import { MeetupEventCard } from "../Components/MeetupEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { EventWebModal } from "../Components/EventWebModal";
 import { MiniAppModal } from "../Components/MiniAppModal";
@@ -63,7 +65,7 @@ import { BookmarksModal } from "../Components/BookmarksModal";
 import { MiniAppsModal } from "../Components/MiniAppsModal";
 import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
-import { LumaEvent, RAEvent } from "../interfaces";
+import { LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
 
 const { height, width } = Dimensions.get("window");
 
@@ -85,6 +87,7 @@ const CalendarScreen = ({ navigation }) => {
   const { events: raEvents } = useRAEvents();
   // NYE-specific RA events use the dedicated NYE endpoint.
   const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
+  const { events: meetupEvents } = useMeetupEvents();
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -92,7 +95,7 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
+    { data: (DAEvent | LumaEvent | RAEvent | MeetupEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
@@ -123,7 +126,7 @@ const CalendarScreen = ({ navigation }) => {
   const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
   const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
   const [webModalTitle, setWebModalTitle] = React.useState<string>("");
-  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | undefined>(undefined);
+  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | 'meetup' | undefined>(undefined);
   const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
 
   // State for mini app modal
@@ -421,6 +424,28 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    // Process Meetup events
+    meetupEvents.map((event: MeetupEvent) => {
+      const start = moment(event.dateTime);
+      // Since we don't have an end time, assume event lasts 2 hours
+      const end = moment(event.dateTime).add(2, 'hours');
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const date = start.format("MMMM Do");
+        const subtitle = start.format("dddd");
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
+            title: date,
+            subtitle: subtitle,
+            data: [],
+            sortDate: start.valueOf(),
+            dateKey: dateKey, // Store dateKey for matching
+          };
+        }
+        groups[dateKey].data.push({ ...event, eventType: "meetup" });
+      }
+    });
+
     // Sort events within each group by start time
     Object.values(groups).forEach((group: any) => {
       group.data.sort((a, b) => {
@@ -431,6 +456,8 @@ const CalendarScreen = ({ navigation }) => {
           aStart = moment(a.startAt);
         } else if (a.eventType === "ra") {
           aStart = moment(a.startTime);
+        } else if (a.eventType === "meetup") {
+          aStart = moment(a.dateTime);
         } else {
           // DA events and flyer events use start_date
           aStart = moment(a.start_date);
@@ -441,6 +468,8 @@ const CalendarScreen = ({ navigation }) => {
           bStart = moment(b.startAt);
         } else if (b.eventType === "ra") {
           bStart = moment(b.startTime);
+        } else if (b.eventType === "meetup") {
+          bStart = moment(b.dateTime);
         } else {
           // DA events and flyer events use start_date
           bStart = moment(b.start_date);
@@ -465,7 +494,23 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     setEventsGroup(groupsArray);
-  }, [filteredEvents, lumaEvents, raEvents, isFeatured]);
+    
+    // Debug logging
+    console.log("COMPUTE EVENT GROUPS with Luma, RA, and Meetup events");
+    groupsArray.forEach((group: any) => {
+      console.log(`\n${group.title} - ${group.data.length} events`);
+      group.data.forEach((event: any, index: number) => {
+        const startTime = event.eventType === "luma" 
+          ? moment(event.startAt).format("h:mm a")
+          : event.eventType === "ra"
+          ? moment(event.startTime).format("h:mm a")
+          : event.eventType === "meetup"
+          ? moment(event.dateTime).format("h:mm a")
+          : moment(event.start_date).format("h:mm a");
+        console.log(`  ${index + 1}. [${event.eventType}] ${startTime} - ${event.title || event.name}`);
+      });
+    });
+  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -529,6 +574,9 @@ const CalendarScreen = ({ navigation }) => {
             } else if (eventType === 'ra' && event.id) {
               isBookmarked = await getBookmarkStatusForWebEvent(event, 'ra');
               isGoing = await getGoingStatusForWebEvent(event, 'ra');
+            } else if (eventType === 'meetup' && event.eventId) {
+              isBookmarked = await getBookmarkStatusForWebEvent(event, 'meetup');
+              isGoing = await getGoingStatusForWebEvent(event, 'meetup');
             }
 
             if (isBookmarked) {
@@ -1008,6 +1056,29 @@ const CalendarScreen = ({ navigation }) => {
             );
           }
 
+          if (eventType === "meetup") {
+            const meetupEvent = item as MeetupEvent;
+            return (
+              <View style={{ paddingHorizontal: 16 }}>
+                <MeetupEventCard
+                  event={meetupEvent}
+                  options={{
+                    showLocation: true,
+                    showImage: true,
+                    showGroup: true,
+                  }}
+                  onSelectEvent={() => {
+                    setWebModalUrl(meetupEvent.eventUrl);
+                    setWebModalTitle(meetupEvent.title);
+                    setWebModalEventType('meetup');
+                    setWebModalEventData(meetupEvent);
+                    setWebModalVisible(true);
+                  }}
+                />
+              </View>
+            );
+          }
+
           const daEvent = item as DAEvent;
           const imageHeight = daEvent.image_data?.width
             ? (daEvent.image_data?.height / daEvent.image_data?.width) *
@@ -1021,7 +1092,6 @@ const CalendarScreen = ({ navigation }) => {
                 <EventCard
                   event={daEvent}
                   options={{
-                    showBookmark: true,
                     showVenue: true,
                     showImage: true,
                   }}

@@ -1,4 +1,4 @@
-import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
+import { DAEvent, LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getGoingStatus = async (event: DAEvent): Promise<boolean> => {
@@ -28,10 +28,10 @@ export const toggleGoingStatus = async (event: DAEvent) => {
   }
 };
 
-// Going status for web events (Luma/RA/DA with URLs)
+// Going status for web events (Luma/RA/DA/Meetup with URLs)
 export const getGoingStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent,
-  eventType: 'luma' | 'ra' | 'da'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup'
 ): Promise<boolean> => {
   if (eventType === 'da' && 'id' in event) {
     // Use existing DA event going system
@@ -45,14 +45,19 @@ export const getGoingStatusForWebEvent = async (
     // Check RA event going status
     const result = await AsyncStorage.getItem(`Going-ra-${event.id}`);
     return result ? true : false;
+  } else if (eventType === 'meetup' && 'eventId' in event) {
+    // Check Meetup event going status
+    const meetupEvent = event as MeetupEvent;
+    const result = await AsyncStorage.getItem(`Going-meetup-${meetupEvent.eventId}`);
+    return result ? true : false;
   }
   return false;
 };
 
-// Toggle going status for web events (Luma/RA/DA with URLs)
+// Toggle going status for web events (Luma/RA/DA/Meetup with URLs)
 export const toggleGoingStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent,
-  eventType: 'luma' | 'ra' | 'da'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup'
 ): Promise<boolean> => {
   const isGoing = await getGoingStatusForWebEvent(event, eventType);
 
@@ -95,14 +100,31 @@ export const toggleGoingStatusForWebEvent = async (
     }
     await AsyncStorage.setItem('GoingRAEvents', JSON.stringify(goingRAEvents));
     return !isGoing;
+  } else if (eventType === 'meetup' && 'eventId' in event) {
+    // Handle Meetup events - store full event data
+    const meetupEvent = event as MeetupEvent;
+    const goingData = await AsyncStorage.getItem('GoingMeetupEvents');
+    let goingMeetupEvents: MeetupEvent[] = goingData ? JSON.parse(goingData) : [];
+
+    if (isGoing) {
+      // Remove going status
+      goingMeetupEvents = goingMeetupEvents.filter((e: MeetupEvent) => e.eventId !== meetupEvent.eventId);
+      await AsyncStorage.removeItem(`Going-meetup-${meetupEvent.eventId}`);
+    } else {
+      // Add going status
+      goingMeetupEvents.push(meetupEvent);
+      await AsyncStorage.setItem(`Going-meetup-${meetupEvent.eventId}`, "1");
+    }
+    await AsyncStorage.setItem('GoingMeetupEvents', JSON.stringify(goingMeetupEvents));
+    return !isGoing;
   }
 
   return false;
 };
 
-// Get all going events (DA by ID lookup, Luma/RA from stored data)
-export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent; eventType: 'da' | 'luma' | 'ra' }>> => {
-  const goingEvents: Array<{ event: DAEvent | LumaEvent | RAEvent; eventType: 'da' | 'luma' | 'ra' }> = [];
+// Get all going events (DA by ID lookup, Luma/RA/Meetup from stored data)
+export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }>> => {
+  const goingEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }> = [];
 
   // Get DA event IDs
   const daGoingIds = await getGoingEvents();
@@ -147,6 +169,19 @@ export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | Luma
     }
   } catch (error) {
     console.error("Error loading RA going events:", error);
+  }
+
+  // Get Meetup events
+  try {
+    const meetupGoingData = await AsyncStorage.getItem('GoingMeetupEvents');
+    if (meetupGoingData) {
+      const meetupEvents: MeetupEvent[] = JSON.parse(meetupGoingData);
+      meetupEvents.forEach((event: MeetupEvent) => {
+        goingEvents.push({ event, eventType: 'meetup' });
+      });
+    }
+  } catch (error) {
+    console.error("Error loading Meetup going events:", error);
   }
 
   return goingEvents;

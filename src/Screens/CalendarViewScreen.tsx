@@ -168,7 +168,6 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
               <EventCard
                 event={daEvent}
                 options={{
-                  showBookmark: true,
                   showVenue: true,
                   showImage: true,
                 }}
