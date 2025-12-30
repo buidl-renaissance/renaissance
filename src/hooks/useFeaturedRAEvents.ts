@@ -61,10 +61,8 @@ export const useFeaturedRAEvents = () => {
       let success: boolean;
       if (wasFeatured) {
         success = await removeFeaturedRAEvent(eventId);
-        console.log(`Removed featured: ${event.title}`);
       } else {
         success = await addFeaturedRAEvent(event);
-        console.log(`Added featured: ${event.title}`);
       }
 
       // Revert on failure

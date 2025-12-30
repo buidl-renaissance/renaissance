@@ -255,8 +255,8 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                 uri: event.coverUrl,
               }}
               style={{
-                height: 55,
-                width: 55,
+                height: 63,
+                width: 63,
                 resizeMode: "cover",
                 borderRadius: 4,
               }}

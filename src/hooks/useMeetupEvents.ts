@@ -15,7 +15,6 @@ export const useMeetupEvents = (query?: MeetupEventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Fetching Meetup events...");
       
       const eventsRes = await fetch(
         `https://meetup.builddetroit.xyz/api/meetup/events`
@@ -29,7 +28,6 @@ export const useMeetupEvents = (query?: MeetupEventsQuery) => {
       
       if (data.events) {
         setEvents(data.events);
-        console.log(`Fetched ${data.events.length} Meetup events`);
       } else {
         setEvents([]);
       }

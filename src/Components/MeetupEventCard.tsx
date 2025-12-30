@@ -87,7 +87,16 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
     ? `${event.venue.name}${event.venue.city ? `, ${event.venue.city}` : ''}`
     : null;
 
-  const groupPhotoUrl = event.group.keyGroupPhoto?.highResUrl;
+  // Default to event image, fallback to group image
+  // Access featuredEventPhoto from eventData (nested structure)
+  const eventData = (event as any).eventData;
+  const eventImageUrl = eventData?.featuredEventPhoto?.highResUrl || eventData?.featuredEventPhoto?.baseUrl;
+  const groupPhotoUrl = event.group?.keyGroupPhoto?.highResUrl;
+  const imageUrl = eventImageUrl || groupPhotoUrl;
+
+  // Get attendee count from RSVPs - access from eventData
+  const rsvps = eventData?.rsvps;
+  const attendeeCount = rsvps?.totalCount;
 
   return (
     <View style={styles.container}>
@@ -205,19 +214,24 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                 {event.group?.name && options?.showGroup && (
                   <Text style={styles.subtitle}>Group: {event.group.name}</Text>
                 )}
+                {attendeeCount !== null && attendeeCount !== undefined && attendeeCount > 0 && (
+                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
+                    {attendeeCount} {attendeeCount === 1 ? 'attendee' : 'attendees'}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
         </TouchableOpacity>
-        {options.showImage && groupPhotoUrl && (
+        {options.showImage && imageUrl && (
           <TouchableOpacity style={{ padding: 8 }} onPress={onSelectEvent}>
             <Image
               source={{
-                uri: groupPhotoUrl,
+                uri: imageUrl,
               }}
               style={{
-                height: 55,
-                width: 55,
+                height: 63,
+                width: 63,
                 resizeMode: "cover",
                 borderRadius: 4,
               }}

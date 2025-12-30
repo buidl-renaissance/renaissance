@@ -494,22 +494,6 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     setEventsGroup(groupsArray);
-    
-    // Debug logging
-    console.log("COMPUTE EVENT GROUPS with Luma, RA, and Meetup events");
-    groupsArray.forEach((group: any) => {
-      console.log(`\n${group.title} - ${group.data.length} events`);
-      group.data.forEach((event: any, index: number) => {
-        const startTime = event.eventType === "luma" 
-          ? moment(event.startAt).format("h:mm a")
-          : event.eventType === "ra"
-          ? moment(event.startTime).format("h:mm a")
-          : event.eventType === "meetup"
-          ? moment(event.dateTime).format("h:mm a")
-          : moment(event.start_date).format("h:mm a");
-        console.log(`  ${index + 1}. [${event.eventType}] ${startTime} - ${event.title || event.name}`);
-      });
-    });
   }, [filteredEvents, lumaEvents, raEvents, meetupEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
@@ -1003,7 +987,6 @@ const CalendarScreen = ({ navigation }) => {
                 event={item}
                 onSelectEvent={() => {
                   // Could open event details or edit screen
-                  console.log("Flyer event pressed:", item);
                 }}
               />
             );

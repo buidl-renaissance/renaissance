@@ -344,6 +344,43 @@ export interface MeetupEvent {
   venue: MeetupVenue | null;
   group: MeetupGroup;
   eventUrl: string;
+  eventData?: {
+    featuredEventPhoto?: {
+      baseUrl: string;
+      highResUrl: string;
+      id: string;
+      __typename?: string;
+    };
+    rsvps?: {
+      totalCount?: number;
+      count?: number;
+      yesRsvpCount?: number;
+      goingCount?: number;
+      edges?: any[];
+      __typename?: string;
+    };
+    [key: string]: any;
+  };
+  featuredEventPhoto?: {
+    baseUrl: string;
+    highResUrl: string;
+    id: string;
+    __typename?: string;
+  };
+  rsvps?: {
+    totalCount?: number;
+    count?: number;
+    yesRsvpCount?: number;
+    goingCount?: number;
+    edges?: any[];
+  };
+  RSVPs?: {
+    totalCount?: number;
+    count?: number;
+    yesRsvpCount?: number;
+    goingCount?: number;
+    edges?: any[];
+  };
 }
 
 export type RestaurantCategory = 'restaurants' | 'pizza' | 'burgers' | 'tacos' | 'drinks' | 'sushi' | 'italian' | 'asian' | 'mexican' | 'american' | 'dessert' | 'seafood' | 'bbq' | 'vegetarian' | 'breakfast' | 'mediterranean' | 'thai' | 'indian' | 'chinese';
