@@ -62,6 +62,7 @@ import { MeetupEventCard } from "../Components/MeetupEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { SportsGameCard } from "../Components/SportsGameCard";
 import { InstagramEventCard } from "../Components/InstagramEventCard";
+import { InstagramPostModal } from "../Components/InstagramPostModal";
 import { EventWebModal } from "../Components/EventWebModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
@@ -138,6 +139,15 @@ const CalendarScreen = ({ navigation }) => {
     title: "",
     eventType: undefined,
     eventData: null,
+  });
+
+  // State for Instagram post modal
+  const [instagramModalState, setInstagramModalState] = React.useState<{
+    visible: boolean;
+    event: InstagramEvent | null;
+  }>({
+    visible: false,
+    event: null,
   });
 
   // State for mini app modal
@@ -1010,6 +1020,21 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
+  // Instagram modal handlers
+  const handleCloseInstagramModal = React.useCallback(() => {
+    setInstagramModalState({
+      visible: false,
+      event: null,
+    });
+  }, []);
+
+  const openInstagramModal = React.useCallback((event: InstagramEvent) => {
+    setInstagramModalState({
+      visible: true,
+      event,
+    });
+  }, []);
+
   const handleToggleFeatured = React.useCallback(async (eventData: any) => {
     const success = await toggleFeatured(eventData);
     // Event groups will automatically recompute via useMemo when isFeatured changes
@@ -1160,9 +1185,7 @@ const CalendarScreen = ({ navigation }) => {
                     showArtists: true,
                   }}
                   onSelectEvent={() => {
-                    // Use instagramUrl from API, fallback to ticketUrl or construct from postCode
-                    const url = instagramEvent.instagramUrl || instagramEvent.metadata?.ticketUrl || `https://www.instagram.com/p/${instagramEvent.postCode}/`;
-                    openWebModal(url, instagramEvent.name, 'instagram', instagramEvent);
+                    openInstagramModal(instagramEvent);
                   }}
                 />
               </View>
@@ -1235,6 +1258,11 @@ const CalendarScreen = ({ navigation }) => {
         onClose={handleCloseWebModal}
         eventType={webModalState.eventType}
         eventData={webModalState.eventData}
+      />
+      <InstagramPostModal
+        isVisible={instagramModalState.visible}
+        event={instagramModalState.event}
+        onClose={handleCloseInstagramModal}
       />
       <QRCodeModal
         isVisible={qrCodeModalVisible}
