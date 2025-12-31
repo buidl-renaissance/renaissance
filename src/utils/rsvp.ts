@@ -1,4 +1,4 @@
-import { DAEvent, LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
+import { DAEvent, LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getGoingStatus = async (event: DAEvent): Promise<boolean> => {
@@ -28,10 +28,10 @@ export const toggleGoingStatus = async (event: DAEvent) => {
   }
 };
 
-// Going status for web events (Luma/RA/DA/Meetup with URLs)
+// Going status for web events (Luma/RA/DA/Meetup/Instagram with URLs)
 export const getGoingStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
-  eventType: 'luma' | 'ra' | 'da' | 'meetup'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | InstagramEvent,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup' | 'instagram'
 ): Promise<boolean> => {
   if (eventType === 'da' && 'id' in event) {
     // Use existing DA event going system
@@ -50,14 +50,19 @@ export const getGoingStatusForWebEvent = async (
     const meetupEvent = event as MeetupEvent;
     const result = await AsyncStorage.getItem(`Going-meetup-${meetupEvent.eventId}`);
     return result ? true : false;
+  } else if (eventType === 'instagram' && 'id' in event) {
+    // Check Instagram event going status
+    const instagramEvent = event as InstagramEvent;
+    const result = await AsyncStorage.getItem(`Going-instagram-${instagramEvent.id}`);
+    return result ? true : false;
   }
   return false;
 };
 
-// Toggle going status for web events (Luma/RA/DA/Meetup with URLs)
+// Toggle going status for web events (Luma/RA/DA/Meetup/Instagram with URLs)
 export const toggleGoingStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
-  eventType: 'luma' | 'ra' | 'da' | 'meetup'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | InstagramEvent,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup' | 'instagram'
 ): Promise<boolean> => {
   const isGoing = await getGoingStatusForWebEvent(event, eventType);
 
@@ -117,14 +122,31 @@ export const toggleGoingStatusForWebEvent = async (
     }
     await AsyncStorage.setItem('GoingMeetupEvents', JSON.stringify(goingMeetupEvents));
     return !isGoing;
+  } else if (eventType === 'instagram' && 'id' in event) {
+    // Handle Instagram events - store full event data
+    const instagramEvent = event as InstagramEvent;
+    const goingData = await AsyncStorage.getItem('GoingInstagramEvents');
+    let goingInstagramEvents: InstagramEvent[] = goingData ? JSON.parse(goingData) : [];
+
+    if (isGoing) {
+      // Remove going status
+      goingInstagramEvents = goingInstagramEvents.filter((e: InstagramEvent) => e.id !== instagramEvent.id);
+      await AsyncStorage.removeItem(`Going-instagram-${instagramEvent.id}`);
+    } else {
+      // Add going status
+      goingInstagramEvents.push(instagramEvent);
+      await AsyncStorage.setItem(`Going-instagram-${instagramEvent.id}`, "1");
+    }
+    await AsyncStorage.setItem('GoingInstagramEvents', JSON.stringify(goingInstagramEvents));
+    return !isGoing;
   }
 
   return false;
 };
 
-// Get all going events (DA by ID lookup, Luma/RA/Meetup from stored data)
-export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }>> => {
-  const goingEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }> = [];
+// Get all going events (DA by ID lookup, Luma/RA/Meetup/Instagram from stored data)
+export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'instagram' }>> => {
+  const goingEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'instagram' }> = [];
 
   // Get DA event IDs
   const daGoingIds = await getGoingEvents();
@@ -182,6 +204,19 @@ export const getAllGoingEvents = async (): Promise<Array<{ event: DAEvent | Luma
     }
   } catch (error) {
     console.error("Error loading Meetup going events:", error);
+  }
+
+  // Get Instagram events
+  try {
+    const instagramGoingData = await AsyncStorage.getItem('GoingInstagramEvents');
+    if (instagramGoingData) {
+      const instagramEvents: InstagramEvent[] = JSON.parse(instagramGoingData);
+      instagramEvents.forEach((event: InstagramEvent) => {
+        goingEvents.push({ event, eventType: 'instagram' });
+      });
+    }
+  } catch (error) {
+    console.error("Error loading Instagram going events:", error);
   }
 
   return goingEvents;

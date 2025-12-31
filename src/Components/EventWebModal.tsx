@@ -11,7 +11,7 @@ interface EventWebModalProps {
   url: string | null;
   title?: string;
   onClose: () => void;
-  eventType?: 'ra' | 'luma' | 'da' | 'meetup' | 'sports';
+  eventType?: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram';
   eventData?: any;
 }
 
@@ -165,6 +165,8 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       } else if (eventType === 'meetup' && eventData.eventId === data.event?.eventId) {
         setIsBookmarked(data.isBookmarked);
       } else if (eventType === 'sports' && eventData.id === data.event?.id) {
+        setIsBookmarked(data.isBookmarked);
+      } else if (eventType === 'instagram' && eventData.id === data.event?.id) {
         setIsBookmarked(data.isBookmarked);
       }
     });

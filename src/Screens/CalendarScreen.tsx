@@ -48,6 +48,7 @@ import { useRAEvents } from "../hooks/useRAEvents";
 import { useMeetupEvents } from "../hooks/useMeetupEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { useSportsGames } from "../hooks/useSportsGames";
+import { useInstagramEvents } from "../hooks/useInstagramEvents";
 import { useAuth } from "../context/Auth";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { FlyerCard } from "../Components/FlyerCard";
@@ -60,13 +61,14 @@ import { RAEventCard } from "../Components/RAEventCard";
 import { MeetupEventCard } from "../Components/MeetupEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { SportsGameCard } from "../Components/SportsGameCard";
+import { InstagramEventCard } from "../Components/InstagramEventCard";
 import { EventWebModal } from "../Components/EventWebModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
 import { MiniAppsModal } from "../Components/MiniAppsModal";
 import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
-import { LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
+import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 
 const { height, width } = Dimensions.get("window");
@@ -91,6 +93,7 @@ const CalendarScreen = ({ navigation }) => {
   const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
   const { events: meetupEvents } = useMeetupEvents();
   const { games: sportsGames } = useSportsGames();
+  const { events: instagramEvents } = useInstagramEvents();
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -127,7 +130,7 @@ const CalendarScreen = ({ navigation }) => {
     visible: boolean;
     url: string | null;
     title: string;
-    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined;
+    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | undefined;
     eventData: any;
   }>({
     visible: false,
@@ -465,12 +468,24 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    // Process Instagram events
+    instagramEvents.forEach((event: InstagramEvent) => {
+      const start = moment(event.startDatetime);
+      const end = event.endDatetime ? moment(event.endDatetime) : moment(event.startDatetime).add(4, 'hours');
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "instagram" });
+      }
+    });
+
     // Sort events within each group by start time - optimized
     const getEventStartTime = (event: any): number => {
       if (event.eventType === "luma") return moment(event.startAt).valueOf();
       if (event.eventType === "ra") return moment(event.startTime).valueOf();
       if (event.eventType === "meetup") return moment(event.dateTime).valueOf();
       if (event.eventType === "sports") return moment(event.startTime).valueOf();
+      if (event.eventType === "instagram") return moment(event.startDatetime).valueOf();
       return moment(event.start_date).valueOf();
     };
     
@@ -488,7 +503,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, isFeatured]);
+  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -576,6 +591,11 @@ const CalendarScreen = ({ navigation }) => {
                   } else if (eventType === 'sports' && event.id) {
                     bookmarked = await getBookmarkStatusForWebEvent(event, 'sports');
                     going = false;
+                  } else if (eventType === 'instagram' && event.id) {
+                    [bookmarked, going] = await Promise.all([
+                      getBookmarkStatusForWebEvent(event, 'instagram'),
+                      getGoingStatusForWebEvent(event, 'instagram')
+                    ]);
                   }
                   
                   return { dateKey, isBookmarked: bookmarked, isGoing: going };
@@ -978,7 +998,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
   
   // Helper to open modal with batched state update
-  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined, eventData: any) => {
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | undefined, eventData: any) => {
     // Batch all state updates in a single call for immediate modal appearance
     // The key prop on WebView will ensure proper cleanup/remount when URL changes
     setWebModalState({
@@ -1027,6 +1047,7 @@ const CalendarScreen = ({ navigation }) => {
           if (eventType === 'ra' && (item as RAEvent).id) return `ra-${(item as RAEvent).id}`;
           if (eventType === 'meetup' && (item as MeetupEvent).eventId) return `meetup-${(item as MeetupEvent).eventId}`;
           if (eventType === 'sports' && (item as SportsGame).id) return `sports-${(item as SportsGame).id}`;
+          if (eventType === 'instagram' && (item as InstagramEvent).id) return `instagram-${(item as InstagramEvent).id}`;
           if ((item as DAEvent).id) return `da-${(item as DAEvent).id}`;
           return `event-${index}`;
         }}
@@ -1121,6 +1142,27 @@ const CalendarScreen = ({ navigation }) => {
                     if (sportsGame.link) {
                       openWebModal(sportsGame.link, `${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`, 'sports', sportsGame);
                     }
+                  }}
+                />
+              </View>
+            );
+          }
+
+          if (eventType === "instagram") {
+            const instagramEvent = item as InstagramEvent;
+            return (
+              <View style={{ paddingHorizontal: 16 }}>
+                <InstagramEventCard
+                  event={instagramEvent}
+                  options={{
+                    showVenue: true,
+                    showImage: true,
+                    showArtists: true,
+                  }}
+                  onSelectEvent={() => {
+                    // Use instagramUrl from API, fallback to ticketUrl or construct from postCode
+                    const url = instagramEvent.instagramUrl || instagramEvent.metadata?.ticketUrl || `https://www.instagram.com/p/${instagramEvent.postCode}/`;
+                    openWebModal(url, instagramEvent.name, 'instagram', instagramEvent);
                   }}
                 />
               </View>

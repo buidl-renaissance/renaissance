@@ -474,3 +474,25 @@ export interface SportsGame {
   homeTeam: SportsGameTeam;
   awayTeam: SportsGameTeam;
 }
+
+export interface InstagramEvent {
+  id: number;
+  postCode: string;
+  instagramUrl: string;
+  imageUrl: string;
+  name: string;
+  description: string | null;
+  type: string;
+  startDatetime: string;
+  endDatetime: string | null;
+  artistNames: string[];
+  venue: string;
+  location: string;
+  metadata: {
+    price: string | null;
+    ticketUrl: string | null;
+    additionalInfo: string | null;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
