@@ -71,7 +71,7 @@ type HomeNavigationStackParamList = {
   Home: undefined;
   Login: undefined;
   Map: undefined;
-  MiniApp: { url?: string; title?: string } | undefined;
+  MiniApp: { url?: string; title?: string; emoji?: string } | undefined;
   MiniApps: undefined;
   ProposalList: undefined;
   ProposalDetail: undefined;
@@ -412,6 +412,8 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: "#000",
           title: "Mini App",
+          animationEnabled: true,
+          gestureEnabled: true,
         }}
       />
       <Stack.Screen

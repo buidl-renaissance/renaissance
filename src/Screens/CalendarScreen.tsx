@@ -214,7 +214,7 @@ const CalendarScreen = ({ navigation }) => {
     setMiniAppsModalVisible(true);
   }, []);
 
-  const handleOpenMiniApp = React.useCallback((app: { url: string; name: string }) => {
+  const handleOpenMiniApp = React.useCallback((app: { url: string; name: string; icon?: string }) => {
     try {
       // Check if this is a native screen
       if (app.url.startsWith("native://")) {
@@ -232,6 +232,7 @@ const CalendarScreen = ({ navigation }) => {
         navigation.push("MiniApp", {
           url: app.url,
           title: app.name,
+          emoji: app.icon || "🧩",
         });
         setMiniAppsModalVisible(false);
       }
@@ -284,6 +285,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://buymyspot.com/detroit",
       title: "Parking",
+      emoji: "🅿️",
     });
   }, [navigation]);
 
@@ -291,6 +293,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://co.lab.builddetroit.xyz/",
       title: "Co.Lab",
+      emoji: "🤝",
     });
   }, [navigation]);
 
@@ -298,6 +301,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://collectorquest.ai",
       title: "Quests",
+      emoji: "🏆",
     });
   }, [navigation]);
 
@@ -309,6 +313,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://gloabi-chat.vercel.app/",
       title: "Gloabi",
+      emoji: "💬",
     });
   }, [navigation]);
 
@@ -316,6 +321,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://mystic-island.yourland.network/",
       title: "Mystic Island",
+      emoji: "🏝️",
     });
   }, [navigation]);
 
@@ -323,6 +329,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://dynodetroit.com",
       title: "Dyno Detroit",
+      emoji: "🧗",
     });
   }, [navigation]);
 
@@ -330,6 +337,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://hotbones.com",
       title: "Hot Bones",
+      emoji: "🧘",
     });
   }, [navigation]);
 
@@ -337,6 +345,7 @@ const CalendarScreen = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://www.thebeaconhq.com/",
       title: "The Beacon HQ",
+      emoji: "🎮",
     });
   }, [navigation]);
 

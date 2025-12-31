@@ -35,6 +35,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://www.artdetroitnow.com/",
       title: "Art Detroit Now",
+      emoji: "📅",
     });
   }, [navigation]);
 
@@ -42,6 +43,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     navigation.push("MiniApp", {
       url: "https://www.artclvb.xyz/",
       title: "ArtClvb",
+      emoji: "🎨",
     });
   }, [navigation]);
 

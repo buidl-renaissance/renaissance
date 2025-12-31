@@ -145,6 +145,7 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
         navigation.navigate("MiniApp", {
           url: app.url,
           title: app.name,
+          emoji: app.icon,
         });
       }
     } catch (error) {

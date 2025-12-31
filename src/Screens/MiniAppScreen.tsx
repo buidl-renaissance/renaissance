@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Text,
   SafeAreaView,
+  InteractionManager,
+  Animated,
 } from "react-native";
 import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
@@ -20,11 +22,15 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   
   const frameUrl = route.params?.url || state.currentFrameUrl;
   const title = route.params?.title || "Mini App";
+  const emoji = route.params?.emoji || "🧩";
   
   const [canGoBack, setCanGoBack] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const splashOpacity = useRef(new Animated.Value(1)).current;
   
   // Extract domain from URL for the RPC adapter
   const domain = useMemo(() => {
@@ -82,6 +88,29 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   useEffect(() => {
     canGoBackRef.current = canGoBack;
   }, [canGoBack]);
+
+  // Reset splash screen when URL changes
+  useEffect(() => {
+    setShowSplash(true);
+    splashOpacity.setValue(1);
+    setIsReady(true); // Start loading immediately
+    setHasError(false);
+    setErrorMessage(null);
+  }, [frameUrl]);
+
+  // Fade out splash screen once WebView finishes loading
+  useEffect(() => {
+    if (isReady && !state.isLoading && !hasError && showSplash) {
+      // Fade out quickly when WebView is loaded
+      Animated.timing(splashOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowSplash(false);
+      });
+    }
+  }, [isReady, state.isLoading, hasError, showSplash]);
 
   // Set navigation header once on mount
   useEffect(() => {
@@ -267,13 +296,11 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
           true;
         `;
         
-        // Use setTimeout to ensure WebView is fully ready
-        setTimeout(() => {
-          if (webViewRef.current) {
-            webViewRef.current.injectJavaScript(injectCode);
-            console.log("[MiniAppScreen] Injected context into WebView");
-          }
-        }, 300); // Slightly longer delay to ensure WebView JS context is ready
+        // Inject immediately - WebView is ready after onLoadEnd
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(injectCode);
+          console.log("[MiniAppScreen] Injected context into WebView");
+        }
       }
     }
   }, [setIsLoading, sdk]);
@@ -284,6 +311,9 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     setIsLoading(false);
     setHasError(true);
     setErrorMessage(nativeEvent.description || "Failed to load mini app");
+    
+    // Hide splash screen on error
+    setShowSplash(false);
     
     // Clear timeout on error
     if (timeoutRef.current) {
@@ -298,6 +328,9 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     setIsLoading(false);
     setHasError(true);
     setErrorMessage(`HTTP Error ${nativeEvent.statusCode || "Unknown"}: Failed to load mini app`);
+    
+    // Hide splash screen on error
+    setShowSplash(false);
     
     // Clear timeout on error
     if (timeoutRef.current) {
@@ -356,69 +389,100 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Splash Screen - Shows immediately while transitioning */}
+      {showSplash && (
+        <Animated.View 
+          style={[
+            styles.splashContainer,
+            { opacity: splashOpacity }
+          ]}
+          pointerEvents={isReady ? "none" : "auto"}
+        >
+          <View style={styles.splashContent}>
+            <Text style={styles.splashEmoji}>{emoji}</Text>
+            <Text style={styles.splashTitle}>{title}</Text>
+            <ActivityIndicator 
+              size="large" 
+              color="#8B5CF6" 
+              style={styles.splashLoader}
+            />
+            <Text style={styles.splashSubtext}>Loading mini app...</Text>
+          </View>
+        </Animated.View>
+      )}
+
       <View style={styles.webViewContainer}>
-        {state.isLoading && !hasError && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#8B5CF6" />
-          </View>
-        )}
-        {hasError ? (
-          <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-            <Text style={styles.errorText}>Failed to load mini app</Text>
-            <Text style={styles.errorSubtext}>{errorMessage || "An error occurred while loading the app"}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={() => {
-                setHasError(false);
-                setErrorMessage(null);
-                setIsLoading(true);
-                if (webViewRef.current) {
-                  webViewRef.current.reload();
-                }
-              }}
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => {
-                setFrameUrl(null);
-                navigation.goBack();
-              }}
-            >
-              <Text style={styles.backButtonText}>Go Back</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <WebView
-            ref={webViewRef}
-            source={{ uri: frameUrl }}
-            style={styles.webView}
-            onMessage={handleMessage}
-            onNavigationStateChange={handleNavigationStateChange}
-            onLoadStart={handleLoadStart}
-            onLoadEnd={handleLoadEnd}
-            onError={handleError}
-            onHttpError={handleHttpError}
-            javaScriptEnabled
-            domStorageEnabled
-            allowsInlineMediaPlayback
-            mediaPlaybackRequiresUserAction={false}
-            allowsBackForwardNavigationGestures
-            sharedCookiesEnabled
-            thirdPartyCookiesEnabled
-            originWhitelist={["*"]}
-            // Safari-like scrolling
-            scrollEnabled={true}
-            bounces={true}
-            showsVerticalScrollIndicator={true}
-            showsHorizontalScrollIndicator={false}
-            decelerationRate="normal"
-            nestedScrollEnabled={true}
-            overScrollMode="always"
-          // Inject script to set up Farcaster Frame SDK communication
-          injectedJavaScriptBeforeContentLoaded={`
+        {/* Render WebView immediately to start loading */}
+        {isReady && (
+          <>
+            {state.isLoading && !hasError && !showSplash && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#8B5CF6" />
+              </View>
+            )}
+            {hasError ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+                <Text style={styles.errorText}>Failed to load mini app</Text>
+                <Text style={styles.errorSubtext}>{errorMessage || "An error occurred while loading the app"}</Text>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => {
+                    setHasError(false);
+                    setErrorMessage(null);
+                    setIsLoading(true);
+                    if (webViewRef.current) {
+                      webViewRef.current.reload();
+                    }
+                  }}
+                >
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => {
+                    setFrameUrl(null);
+                    navigation.goBack();
+                  }}
+                >
+                  <Text style={styles.backButtonText}>Go Back</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <WebView
+                ref={webViewRef}
+                source={{ uri: frameUrl }}
+                style={styles.webView}
+                onMessage={handleMessage}
+                onNavigationStateChange={handleNavigationStateChange}
+                onLoadStart={handleLoadStart}
+                onLoadEnd={handleLoadEnd}
+                onError={handleError}
+                onHttpError={handleHttpError}
+                javaScriptEnabled
+                domStorageEnabled
+                allowsInlineMediaPlayback
+                mediaPlaybackRequiresUserAction={false}
+                allowsBackForwardNavigationGestures
+                sharedCookiesEnabled
+                thirdPartyCookiesEnabled
+                originWhitelist={["*"]}
+                // Performance optimizations
+                startInLoadingState={true}
+                cacheEnabled={true}
+                cacheMode="LOAD_DEFAULT"
+                // Start loading immediately
+                onShouldStartLoadWithRequest={() => true}
+                // Safari-like scrolling
+                scrollEnabled={true}
+                bounces={true}
+                showsVerticalScrollIndicator={true}
+                showsHorizontalScrollIndicator={false}
+                decelerationRate="normal"
+                nestedScrollEnabled={true}
+                overScrollMode="always"
+                // Inject script to set up Farcaster Frame SDK communication
+                injectedJavaScriptBeforeContentLoaded={`
             (function() {
               // Create a message channel for frame communication
               window.ReactNativeWebView = window.ReactNativeWebView || {};
@@ -487,7 +551,9 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             })();
             true;
           `}
-          />
+              />
+            )}
+          </>
         )}
       </View>
 
@@ -521,6 +587,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  splashContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 100,
+  },
+  splashContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  splashEmoji: {
+    fontSize: 64,
+    marginBottom: 8,
+  },
+  splashTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: 16,
+    marginBottom: 32,
+  },
+  splashLoader: {
+    marginBottom: 16,
+  },
+  splashSubtext: {
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
   },
   webViewContainer: {
     flex: 1,

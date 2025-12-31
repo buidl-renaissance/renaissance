@@ -341,6 +341,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
         <View 
           style={styles.scrollContainer}
           {...(isAtTop ? contentPanResponder.panHandlers : {})}
+          collapsable={false}
         >
           <ScrollView
             ref={scrollViewRef}
