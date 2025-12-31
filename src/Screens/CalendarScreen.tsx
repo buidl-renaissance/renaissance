@@ -98,9 +98,6 @@ const CalendarScreen = ({ navigation }) => {
   const [flyers] = useFlyers();
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
-  const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
-  >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
   );
@@ -340,27 +337,33 @@ const CalendarScreen = ({ navigation }) => {
     );
   }, [events, filter]);
 
-  React.useEffect(() => {
-    const groups = {};
+  // Memoize event grouping to avoid recalculation
+  const eventsGroup = React.useMemo(() => {
+    const groups: { [key: string]: { data: any[]; title: string; subtitle: string; sortDate: number; dateKey: string } } = {};
+    
+    // Helper to get or create group
+    const getOrCreateGroup = (dateKey: string, sortDate: number) => {
+      if (!groups[dateKey]) {
+        const date = moment(sortDate);
+        groups[dateKey] = {
+          title: date.format("MMMM Do"),
+          subtitle: date.format("dddd"),
+          data: [],
+          sortDate: sortDate,
+          dateKey: dateKey,
+        };
+      }
+      return groups[dateKey];
+    };
     
     // Process existing events
-    filteredEvents.map((event: DAEvent) => {
+    filteredEvents.forEach((event: DAEvent) => {
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
-        const dateKey = start.format("YYYY-MM-DD"); // Use sortable key
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(), // Store timestamp for sorting
-            dateKey: dateKey, // Store dateKey for matching
-          };
-        }
-        groups[dateKey].data.push({ ...event, eventType: "da" });
+        const dateKey = start.format("YYYY-MM-DD");
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "da" });
       }
     });
 
@@ -383,147 +386,85 @@ const CalendarScreen = ({ navigation }) => {
     // }
 
     // Process Luma events
-    lumaEvents.map((event: LumaEvent) => {
+    lumaEvents.forEach((event: LumaEvent) => {
       const start = moment(event.startAt);
       const end = moment(event.endAt);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(),
-            dateKey: dateKey, // Store dateKey for matching
-          };
-        }
-        groups[dateKey].data.push({ ...event, eventType: "luma" });
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "luma" });
       }
     });
 
-    // Process RA events
-    raEvents.map((event: RAEvent) => {
+    // Process RA events - batch featured checks
+    const featuredIds = new Set<string>();
+    raEvents.forEach((event: RAEvent) => {
+      if (isFeatured(event.id)) {
+        featuredIds.add(event.id);
+      }
+    });
+    
+    raEvents.forEach((event: RAEvent) => {
       const start = moment(event.startTime);
       const end = moment(event.endTime);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(),
-            dateKey: dateKey, // Store dateKey for matching
-          };
-        }
-        groups[dateKey].data.push({ 
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ 
           ...event, 
           eventType: "ra",
-          isFeatured: isFeatured(event.id)
+          isFeatured: featuredIds.has(event.id)
         });
       }
     });
 
     // Process Meetup events
-    meetupEvents.map((event: MeetupEvent) => {
+    meetupEvents.forEach((event: MeetupEvent) => {
       const start = moment(event.dateTime);
       // Since we don't have an end time, assume event lasts 2 hours
       const end = moment(event.dateTime).add(2, 'hours');
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(),
-            dateKey: dateKey, // Store dateKey for matching
-          };
-        }
-        groups[dateKey].data.push({ ...event, eventType: "meetup" });
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "meetup" });
       }
     });
 
     // Process Sports games
-    sportsGames.map((game: SportsGame) => {
+    sportsGames.forEach((game: SportsGame) => {
       const start = moment(game.startTime);
       // Assume games last 3 hours
       const end = moment(game.startTime).add(3, 'hours');
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(),
-            dateKey: dateKey, // Store dateKey for matching
-          };
-        }
-        groups[dateKey].data.push({ ...game, eventType: "sports" });
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...game, eventType: "sports" });
       }
     });
 
-    // Sort events within each group by start time
+    // Sort events within each group by start time - optimized
+    const getEventStartTime = (event: any): number => {
+      if (event.eventType === "luma") return moment(event.startAt).valueOf();
+      if (event.eventType === "ra") return moment(event.startTime).valueOf();
+      if (event.eventType === "meetup") return moment(event.dateTime).valueOf();
+      if (event.eventType === "sports") return moment(event.startTime).valueOf();
+      return moment(event.start_date).valueOf();
+    };
+    
     Object.values(groups).forEach((group: any) => {
-      group.data.sort((a, b) => {
-        let aStart, bStart;
-        
-        // Get start time for event a
-        if (a.eventType === "luma") {
-          aStart = moment(a.startAt);
-        } else if (a.eventType === "ra") {
-          aStart = moment(a.startTime);
-        } else if (a.eventType === "meetup") {
-          aStart = moment(a.dateTime);
-        } else if (a.eventType === "sports") {
-          aStart = moment(a.startTime);
-        } else {
-          // DA events and flyer events use start_date
-          aStart = moment(a.start_date);
-        }
-        
-        // Get start time for event b
-        if (b.eventType === "luma") {
-          bStart = moment(b.startAt);
-        } else if (b.eventType === "ra") {
-          bStart = moment(b.startTime);
-        } else if (b.eventType === "meetup") {
-          bStart = moment(b.dateTime);
-        } else if (b.eventType === "sports") {
-          bStart = moment(b.startTime);
-        } else {
-          // DA events and flyer events use start_date
-          bStart = moment(b.start_date);
-        }
-        
-        // Validate both dates are valid
-        if (!aStart.isValid()) {
-          console.warn("Invalid start date for event:", a);
-          return 1; // Push invalid events to end
-        }
-        if (!bStart.isValid()) {
-          console.warn("Invalid start date for event:", b);
-          return -1; // Push invalid events to end
-        }
-        
-        return aStart.diff(bStart);
+      group.data.sort((a: any, b: any) => {
+        const aTime = getEventStartTime(a);
+        const bTime = getEventStartTime(b);
+        if (!aTime || !bTime) return 0;
+        return aTime - bTime;
       });
     });
 
     // Sort groups by date chronologically
-    const groupsArray = Object.values(groups) as any;
+    const groupsArray = Object.values(groups);
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
-    setEventsGroup(groupsArray);
+    return groupsArray;
   }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
@@ -542,7 +483,7 @@ const CalendarScreen = ({ navigation }) => {
     goingCount: number;
   }>>([]);
 
-  // Calculate event counts for the next 7 days
+  // Calculate event counts for the next 7 days - optimized with batching
   React.useEffect(() => {
     const calculateForecast = async () => {
       const today = moment().startOf("day");
@@ -561,8 +502,13 @@ const CalendarScreen = ({ navigation }) => {
       const goingCountMap: { [key: string]: number } = {};
 
       // Get bookmark and going IDs once
-      const bookmarkIds = await getBookmarks();
-      const goingIds = await getGoingEvents();
+      const [bookmarkIds, goingIds] = await Promise.all([
+        getBookmarks(),
+        getGoingEvents()
+      ]);
+
+      // Batch async bookmark checks
+      const asyncBookmarkChecks: Promise<{ dateKey: string; isBookmarked: boolean; isGoing: boolean }>[] = [];
 
       // Process eventsGroup to build count maps
       for (const group of eventsGroup) {
@@ -579,22 +525,40 @@ const CalendarScreen = ({ navigation }) => {
 
           try {
             if (eventType === 'da' && event.id) {
-              // Check DA event bookmark and going status
+              // Check DA event bookmark and going status (synchronous)
               isBookmarked = bookmarkIds.includes(event.id);
               isGoing = goingIds.includes(event.id);
-            } else if (eventType === 'luma' && event.apiId) {
-              isBookmarked = await getBookmarkStatusForWebEvent(event, 'luma');
-              isGoing = await getGoingStatusForWebEvent(event, 'luma');
-            } else if (eventType === 'ra' && event.id) {
-              isBookmarked = await getBookmarkStatusForWebEvent(event, 'ra');
-              isGoing = await getGoingStatusForWebEvent(event, 'ra');
-            } else if (eventType === 'meetup' && event.eventId) {
-              isBookmarked = await getBookmarkStatusForWebEvent(event, 'meetup');
-              isGoing = await getGoingStatusForWebEvent(event, 'meetup');
-            } else if (eventType === 'sports' && event.id) {
-              isBookmarked = await getBookmarkStatusForWebEvent(event, 'sports');
-              // Sports games don't have going status
-              isGoing = false;
+            } else {
+              // Batch async checks for web events
+              asyncBookmarkChecks.push(
+                (async () => {
+                  let bookmarked = false;
+                  let going = false;
+                  
+                  if (eventType === 'luma' && event.apiId) {
+                    [bookmarked, going] = await Promise.all([
+                      getBookmarkStatusForWebEvent(event, 'luma'),
+                      getGoingStatusForWebEvent(event, 'luma')
+                    ]);
+                  } else if (eventType === 'ra' && event.id) {
+                    [bookmarked, going] = await Promise.all([
+                      getBookmarkStatusForWebEvent(event, 'ra'),
+                      getGoingStatusForWebEvent(event, 'ra')
+                    ]);
+                  } else if (eventType === 'meetup' && event.eventId) {
+                    [bookmarked, going] = await Promise.all([
+                      getBookmarkStatusForWebEvent(event, 'meetup'),
+                      getGoingStatusForWebEvent(event, 'meetup')
+                    ]);
+                  } else if (eventType === 'sports' && event.id) {
+                    bookmarked = await getBookmarkStatusForWebEvent(event, 'sports');
+                    going = false;
+                  }
+                  
+                  return { dateKey, isBookmarked: bookmarked, isGoing: going };
+                })()
+              );
+              continue; // Skip synchronous counting for async events
             }
 
             if (isBookmarked) {
@@ -608,6 +572,17 @@ const CalendarScreen = ({ navigation }) => {
           }
         }
       }
+      
+      // Process all async bookmark checks in parallel
+      const asyncResults = await Promise.all(asyncBookmarkChecks);
+      asyncResults.forEach(({ dateKey, isBookmarked, isGoing }) => {
+        if (isBookmarked) {
+          bookmarkedCountMap[dateKey] = (bookmarkedCountMap[dateKey] || 0) + 1;
+        }
+        if (isGoing) {
+          goingCountMap[dateKey] = (goingCountMap[dateKey] || 0) + 1;
+        }
+      });
 
       // Generate 7 days starting from today
       for (let i = 0; i < 7; i++) {
@@ -705,7 +680,8 @@ const CalendarScreen = ({ navigation }) => {
     [eventsGroup]
   );
 
-  const sectionHeader = () => {
+  // Memoize section header to avoid recreation on every render
+  const sectionHeader = React.useMemo(() => {
     return (
       <View>
         <HeroBanner>
@@ -969,22 +945,24 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  };
+  }, [weather, flyers, nyeRaEvents, nyeLoading, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent]);
 
   const handleCloseWebModal = React.useCallback(() => {
+    // Close modal immediately, clear data after
     setWebModalVisible(false);
-    setWebModalUrl(null);
-    setWebModalTitle("");
-    setWebModalEventType(undefined);
-    setWebModalEventData(null);
+    // Clear data in next tick to avoid blocking
+    setTimeout(() => {
+      setWebModalUrl(null);
+      setWebModalTitle("");
+      setWebModalEventType(undefined);
+      setWebModalEventData(null);
+    }, 0);
   }, []);
 
   const handleToggleFeatured = React.useCallback(async (eventData: any) => {
     const success = await toggleFeatured(eventData);
-    if (success) {
-      // Force re-computation of event groups to reflect the change
-      setEventsGroup((prev) => [...prev]);
-    }
+    // Event groups will automatically recompute via useMemo when isFeatured changes
+    // No need to force update
   }, [toggleFeatured]);
 
   return (
@@ -1007,11 +985,25 @@ const CalendarScreen = ({ navigation }) => {
       <SectionList
         ref={sectionListRef}
         sections={eventsGroup}
-        ListHeaderComponent={sectionHeader()}
+        ListHeaderComponent={sectionHeader}
         stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section: { title, subtitle } }) => (
           <SectionHeader title={title} subtitle={subtitle} />
         )}
+        keyExtractor={(item, index) => {
+          const eventType = (item as any).eventType;
+          if (eventType === 'luma' && (item as LumaEvent).apiId) return `luma-${(item as LumaEvent).apiId}`;
+          if (eventType === 'ra' && (item as RAEvent).id) return `ra-${(item as RAEvent).id}`;
+          if (eventType === 'meetup' && (item as MeetupEvent).eventId) return `meetup-${(item as MeetupEvent).eventId}`;
+          if (eventType === 'sports' && (item as SportsGame).id) return `sports-${(item as SportsGame).id}`;
+          if ((item as DAEvent).id) return `da-${(item as DAEvent).id}`;
+          return `event-${index}`;
+        }}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={10}
+        windowSize={10}
         renderItem={({ item }) => {
           const eventType = (item as any).eventType;
 

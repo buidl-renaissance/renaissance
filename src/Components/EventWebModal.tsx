@@ -114,15 +114,25 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       setIsAtTop(true);
       isAtTopRef.current = true;
       translateY.setValue(0);
-      // Load bookmark status when modal opens
+      // Load bookmark status asynchronously (non-blocking)
+      // Show modal immediately, update bookmark status after
       if (eventData && eventType) {
-        (async () => {
-          const bookmarked = await getBookmarkStatusForWebEvent(eventData, eventType);
-          setIsBookmarked(bookmarked);
-        })();
+        // Use requestIdleCallback or setTimeout to defer bookmark check
+        const timeoutId = setTimeout(async () => {
+          try {
+            const bookmarked = await getBookmarkStatusForWebEvent(eventData, eventType);
+            setIsBookmarked(bookmarked);
+          } catch (error) {
+            console.error("Error loading bookmark status:", error);
+          }
+        }, 0);
+        return () => clearTimeout(timeoutId);
       }
+    } else {
+      // Reset bookmark status when modal closes
+      setIsBookmarked(false);
     }
-  }, [isVisible, url, eventData, eventType, translateY]);
+  }, [isVisible, eventData, eventType]);
 
   React.useEffect(() => {
     if (!eventData || !eventType) return;
@@ -180,8 +190,9 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       animationIn="slideInUp"
       animationOut="slideOutDown"
       useNativeDriver
-      hideModalContentWhileAnimating
+      hideModalContentWhileAnimating={false}
       backdropOpacity={0.5}
+      propagateSwipe
     >
       <Animated.View 
         style={[
@@ -227,13 +238,18 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
 
         {/* WebView */}
         <View style={styles.webViewContainer}>
-          {url && (
+          {url && isVisible && (
             <WebView
               ref={webViewRef}
               source={{ uri: url }}
               style={styles.webView}
               onLoadStart={() => setLoading(true)}
               onLoadEnd={() => setLoading(false)}
+              onError={(syntheticEvent) => {
+                const { nativeEvent } = syntheticEvent;
+                console.warn('WebView error: ', nativeEvent);
+                setLoading(false);
+              }}
               startInLoadingState={true}
               javaScriptEnabled
               domStorageEnabled
@@ -251,34 +267,33 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               decelerationRate="normal"
               nestedScrollEnabled={true}
               overScrollMode="always"
+              cacheEnabled={true}
+              cacheMode="LOAD_DEFAULT"
               onMessage={handleWebViewMessage}
               injectedJavaScript={`
                 (function() {
                   let lastScrollY = window.scrollY || window.pageYOffset || 0;
+                  let rafId = null;
                   
                   function handleScroll() {
-                    const scrollY = window.scrollY || window.pageYOffset || 0;
-                    if (Math.abs(scrollY - lastScrollY) > 5) {
-                      window.ReactNativeWebView.postMessage(JSON.stringify({
-                        type: 'scroll',
-                        scrollY: scrollY
-                      }));
-                      lastScrollY = scrollY;
-                    }
+                    if (rafId) return;
+                    rafId = requestAnimationFrame(() => {
+                      const scrollY = window.scrollY || window.pageYOffset || 0;
+                      if (Math.abs(scrollY - lastScrollY) > 5) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                          type: 'scroll',
+                          scrollY: scrollY
+                        }));
+                        lastScrollY = scrollY;
+                      }
+                      rafId = null;
+                    });
                   }
                   
                   window.addEventListener('scroll', handleScroll, { passive: true });
-                  window.addEventListener('touchmove', handleScroll, { passive: true });
                   
-                  // Initial check
-                  handleScroll();
-                  
-                  // Also check on load
-                  if (document.readyState === 'complete') {
-                    handleScroll();
-                  } else {
-                    window.addEventListener('load', handleScroll);
-                  }
+                  // Initial check after a short delay
+                  setTimeout(handleScroll, 100);
                 })();
                 true;
               `}
