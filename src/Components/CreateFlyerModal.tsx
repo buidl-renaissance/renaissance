@@ -52,14 +52,12 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
 
   const [isDismissing, setIsDismissing] = React.useState(false);
   const [isImagePressed, setIsImagePressed] = React.useState(false);
-  const [isAtTop, setIsAtTop] = React.useState(true);
   const [isDraggingDown, setIsDraggingDown] = React.useState(false);
   const [isVenueModalVisible, setIsVenueModalVisible] = React.useState(false);
   const [venueSearchQuery, setVenueSearchQuery] = React.useState("");
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] = React.useState(false);
   const [isEndDatePickerVisible, setIsEndDatePickerVisible] = React.useState(false);
   const venueSearchbarRef = React.useRef<any>(null);
-  const isAtTopRef = useRef(true);
   const translateY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const titleInputRef = useRef<View>(null);
@@ -121,73 +119,11 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
     })
   ).current;
 
-  // Pan responder for content area when at top
-  const contentPanResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => isAtTopRef.current,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return isAtTopRef.current && gestureState.dy > 5;
-      },
-      onPanResponderGrant: () => {
-        setIsDraggingDown(true);
-        translateY.setOffset(0);
-        translateY.setValue(0);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (isAtTopRef.current && gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        setIsDraggingDown(false);
-        translateY.flattenOffset();
-
-        if (gestureState.dy > 100) {
-          setIsDismissing(true);
-          onClose();
-          Animated.timing(translateY, {
-            toValue: 1000,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            translateY.setValue(0);
-            setIsDismissing(false);
-          });
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 50,
-            friction: 7,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        setIsDraggingDown(false);
-        translateY.flattenOffset();
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 50,
-          friction: 7,
-        }).start();
-      },
-    })
-  ).current;
-
-  const handleScroll = React.useCallback((event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const wasAtTop = offsetY <= 0;
-    setIsAtTop(wasAtTop);
-    isAtTopRef.current = wasAtTop;
-  }, []);
 
   React.useEffect(() => {
     if (isVisible) {
       setIsDismissing(false);
       translateY.setValue(0);
-      setIsAtTop(true);
-      isAtTopRef.current = true;
       // Reset form when modal opens
       onChangeTitle("");
       onChangeDesc("");
@@ -457,6 +393,14 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   const containerHeight = (image && !isExtracting) ? fullHeight : initialHeight;
   const isUploadStep = !image || (isExtracting && !extractedData);
 
+  // Reset focused input when modal closes
+  React.useEffect(() => {
+    if (!isVisible) {
+      focusedInputRef.current = null;
+      Keyboard.dismiss();
+    }
+  }, [isVisible]);
+
   return (
     <Modal
       isVisible={isVisible && !isDismissing}
@@ -468,8 +412,9 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
       animationIn="slideInUp"
       animationOut="slideOutDown"
       useNativeDriver
-      hideModalContentWhileAnimating
+      hideModalContentWhileAnimating={false}
       backdropOpacity={0.5}
+      propagateSwipe={false}
     >
       <Animated.View
         style={[
@@ -477,6 +422,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
           {
             transform: [{ translateY }],
             height: containerHeight,
+            maxHeight: screenHeight * 0.95,
           },
         ]}
       >
@@ -523,32 +469,30 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
           {isUploadStep ? (
             // Upload UI or Extracting UI
             <View style={styles.uploadContainer}>
-              <View style={styles.uploadButton}>
-                {isExtracting ? (
-                  <>
-                    <ActivityIndicator size="large" color="#fff" />
-                    <Text style={styles.uploadTitle}>Extracting flyer details</Text>
-                    <Text style={styles.uploadSubtitle}>Please wait...</Text>
-                  </>
-                ) : (
-                  <>
-                    <TouchableOpacity
-                      onPress={pickImage}
-                      activeOpacity={0.8}
-                      style={styles.uploadIconContainer}
-                    >
-                      <Icon
-                        type={IconTypes.Ionicons}
-                        name="cloud-upload-outline"
-                        size={48}
-                        color="#fff"
-                      />
-                    </TouchableOpacity>
-                    <Text style={styles.uploadTitle}>Upload Flyer</Text>
-                    <Text style={styles.uploadSubtitle}>Tap to select an image</Text>
-                  </>
-                )}
-              </View>
+              {isExtracting ? (
+                <View style={styles.uploadButton}>
+                  <ActivityIndicator size="large" color="#fff" />
+                  <Text style={styles.uploadTitle}>Extracting flyer details</Text>
+                  <Text style={styles.uploadSubtitle}>Please wait...</Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={pickImage}
+                  activeOpacity={0.8}
+                  style={styles.uploadButton}
+                >
+                  <View style={styles.uploadIconContainer}>
+                    <Icon
+                      type={IconTypes.Ionicons}
+                      name="cloud-upload-outline"
+                      size={48}
+                      color="#fff"
+                    />
+                  </View>
+                  <Text style={styles.uploadTitle}>Upload Flyer</Text>
+                  <Text style={styles.uploadSubtitle}>Tap to select an image</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             // Form UI
@@ -559,7 +503,6 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
             >
               <View
                 style={{ flex: 1 }}
-                {...(isAtTop ? contentPanResponder.panHandlers : {})}
                 collapsable={false}
               >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -568,14 +511,13 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                     style={styles.scrollView}
                     contentContainerStyle={[
                       styles.scrollContent,
-                      { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 80 }
+                      { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 120 }
                     ]}
                     keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
+                    showsVerticalScrollIndicator={true}
                     keyboardDismissMode="interactive"
-                    scrollEnabled={!isDraggingDown}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
+                    scrollEnabled={true}
+                    nestedScrollEnabled={true}
                   >
                     {/* Image Card - only show when not extracting */}
                     {!isExtracting && image && image[0] && (
@@ -869,6 +811,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     overflow: "hidden",
     position: "relative",
+    backgroundColor: "#1E40AF", // Fallback background color
   },
   gradientContainer: {
     position: "absolute",
@@ -954,7 +897,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 80,
+    paddingBottom: 120, // Extra padding to ensure content isn't cut off
   },
   imageCardWrapper: {
     marginBottom: 24,

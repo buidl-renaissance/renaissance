@@ -63,6 +63,7 @@ import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { SportsGameCard } from "../Components/SportsGameCard";
 import { InstagramEventCard } from "../Components/InstagramEventCard";
 import { InstagramPostModal } from "../Components/InstagramPostModal";
+import { DAEventModal } from "../Components/DAEventModal";
 import { EventWebModal } from "../Components/EventWebModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
@@ -82,7 +83,7 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 
 const CalendarScreen = ({ navigation }) => {
-  const [events] = useEvents();
+  const { events } = useEvents();
   const { state: authState } = useAuth();
   const { balance: walletBalance } = useUSDCBalance();
   
@@ -145,6 +146,15 @@ const CalendarScreen = ({ navigation }) => {
   const [instagramModalState, setInstagramModalState] = React.useState<{
     visible: boolean;
     event: InstagramEvent | null;
+  }>({
+    visible: false,
+    event: null,
+  });
+
+  // State for DA event modal
+  const [daModalState, setDaModalState] = React.useState<{
+    visible: boolean;
+    event: DAEvent | null;
   }>({
     visible: false,
     event: null,
@@ -1035,6 +1045,26 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
+  // DA modal handlers
+  const handleCloseDAModal = React.useCallback(() => {
+    setDaModalState({
+      visible: false,
+      event: null,
+    });
+  }, []);
+
+  const openDAModal = React.useCallback((event: DAEvent) => {
+    setDaModalState({
+      visible: true,
+      event,
+    });
+  }, []);
+
+  const handleDAViewDetails = React.useCallback((url: string, title: string, event: DAEvent) => {
+    handleCloseDAModal();
+    openWebModal(url, title, 'da', event);
+  }, [handleCloseDAModal, openWebModal]);
+
   const handleToggleFeatured = React.useCallback(async (eventData: any) => {
     const success = await toggleFeatured(eventData);
     // Event groups will automatically recompute via useMemo when isFeatured changes
@@ -1208,11 +1238,15 @@ const CalendarScreen = ({ navigation }) => {
                     showVenue: true,
                     showImage: true,
                   }}
-                  onSelectEvent={() => handlePressEvent(daEvent)}
+                  onSelectEvent={() => {
+                    openDAModal(daEvent);
+                  }}
                 />
                 {daEvent.featured && daEvent.image && (
                   <TouchableOpacity
-                    onPress={() => handlePressEvent(daEvent)}
+                    onPress={() => {
+                      openDAModal(daEvent);
+                    }}
                     style={{ paddingVertical: 16 }}
                   >
                     <Image
@@ -1263,6 +1297,12 @@ const CalendarScreen = ({ navigation }) => {
         isVisible={instagramModalState.visible}
         event={instagramModalState.event}
         onClose={handleCloseInstagramModal}
+      />
+      <DAEventModal
+        isVisible={daModalState.visible}
+        event={daModalState.event}
+        onClose={handleCloseDAModal}
+        onOpenWebView={handleDAViewDetails}
       />
       <QRCodeModal
         isVisible={qrCodeModalVisible}

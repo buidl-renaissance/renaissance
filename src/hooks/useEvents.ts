@@ -8,18 +8,38 @@ export interface EventsQuery {
 
 export const useEvents = (query?: EventsQuery) => {
   const [events, setEvents] = React.useState<DAEvent[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<Error | null>(null);
   const hasFetchedRef = React.useRef(false);
 
   const updateEvents = React.useCallback(async () => {
     try {
+      setLoading(true);
+      
       const params = new URLSearchParams(query);
       const eventsRes = await fetch(
         `https://api.detroiter.network/api/events?${params.toString()}`
       );
+      
+      if (!eventsRes.ok) {
+        throw new Error(`Failed to fetch DA events: ${eventsRes.status}`);
+      }
+
       const fetchedEvents = await eventsRes.json();
-      setEvents(fetchedEvents.data);
+      
+      if (fetchedEvents.data) {
+        setEvents(fetchedEvents.data);
+      } else {
+        setEvents([]);
+      }
+      
+      setError(null);
     } catch (err) {
       console.error("Error fetching Detroit Art events:", err);
+      setError(err as Error);
+      setEvents([]);
+    } finally {
+      setLoading(false);
     }
   }, [query]);
 
@@ -40,5 +60,5 @@ export const useEvents = (query?: EventsQuery) => {
     return () => clearInterval(interval);
   }, [updateEvents]);
 
-  return [events];
+  return { events, loading, error, refresh: updateEvents };
 };

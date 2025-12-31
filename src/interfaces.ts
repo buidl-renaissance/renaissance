@@ -112,7 +112,9 @@ export interface DAEvent {
   start_date: string | null;
   stats?: DAEventStats;
   title: string;
+  url?: string;
   venue?: DAVenue;
+  content?: string;
 }
 
 export interface WeatherPeriod {

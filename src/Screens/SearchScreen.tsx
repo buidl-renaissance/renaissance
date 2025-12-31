@@ -32,7 +32,7 @@ const SearchScreen = ({ navigation, route }) => {
     headerTitle: () => <HeaderTitleImage />,
   });
 
-  const [events] = useEvents();
+  const { events } = useEvents();
   const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
   const { events: lumaEvents } = useLumaEvents(lumaQuery);
   const { events: raEvents } = useRAEvents();
