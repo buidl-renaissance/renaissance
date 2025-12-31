@@ -183,3 +183,4 @@ export function generateEventQRCode(eventId: string, eventType: 'da' | 'luma' | 
   return `renaissance:checkin:${eventType}:${eventId}`;
 }
 
+

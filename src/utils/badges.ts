@@ -198,3 +198,4 @@ export function getBadgeById(id: string): Omit<Badge, 'unlockedAt' | 'progress'>
   return BADGE_DEFINITIONS.find(b => b.id === id);
 }
 
+

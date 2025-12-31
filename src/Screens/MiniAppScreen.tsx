@@ -30,6 +30,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   const [isReady, setIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const webViewKeyRef = useRef(0); // Force remount on URL change
   const splashOpacity = useRef(new Animated.Value(1)).current;
   
   // Extract domain from URL for the RPC adapter
@@ -89,14 +90,34 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     canGoBackRef.current = canGoBack;
   }, [canGoBack]);
 
-  // Reset splash screen when URL changes
+  // Reset splash screen and force WebView remount when URL changes
   useEffect(() => {
+    // Stop previous WebView if it exists
+    if (webViewRef.current) {
+      try {
+        webViewRef.current.stopLoading();
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+    }
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
+    // Force WebView remount by incrementing key
+    webViewKeyRef.current += 1;
+    
+    // Reset all state
     setShowSplash(true);
     splashOpacity.setValue(1);
     setIsReady(true); // Start loading immediately
     setHasError(false);
     setErrorMessage(null);
-  }, [frameUrl]);
+    setIsLoading(true);
+  }, [frameUrl, setIsLoading]);
 
   // Fade out splash screen once WebView finishes loading
   useEffect(() => {
@@ -200,11 +221,19 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     };
   }, [setPrimaryButtonClickHandler]);
 
-  // Cleanup timeout on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      // Stop WebView loading on unmount
+      if (webViewRef.current) {
+        try {
+          webViewRef.current.stopLoading();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
       }
     };
   }, []);
@@ -450,6 +479,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
               </View>
             ) : (
               <WebView
+                key={`${frameUrl}-${webViewKeyRef.current}`}
                 ref={webViewRef}
                 source={{ uri: frameUrl }}
                 style={styles.webView}
@@ -469,8 +499,8 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
                 originWhitelist={["*"]}
                 // Performance optimizations
                 startInLoadingState={true}
-                cacheEnabled={true}
-                cacheMode="LOAD_DEFAULT"
+                cacheEnabled={false}
+                cacheMode="LOAD_NO_CACHE"
                 // Start loading immediately
                 onShouldStartLoadWithRequest={() => true}
                 // Safari-like scrolling
