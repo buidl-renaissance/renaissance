@@ -33,7 +33,11 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
   const [canGoBack, setCanGoBack] = useState(false);
   const [isDismissing, setIsDismissing] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isAtTopRef = useRef(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const webViewKeyRef = useRef(0);
   
   const translateY = useRef(new Animated.Value(0)).current;
   
@@ -61,6 +65,19 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
+          // Stop WebView immediately to prevent freeze
+          if (webViewRef.current) {
+            try {
+              webViewRef.current.stopLoading();
+            } catch (e) {
+              // Ignore errors
+            }
+          }
+          // Clear timeout
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
           onClose();
           Animated.timing(translateY, {
             toValue: 1000,
@@ -118,14 +135,28 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
     }
   }, [url]);
 
-  // Memoize SDK instance
-  const sdk = useMemo(() => createSdk(), [createSdk]);
+  // Memoize SDK instance with error handling
+  const sdk = useMemo(() => {
+    try {
+      return createSdk();
+    } catch (error) {
+      console.error("[MiniAppModal] Error creating SDK:", error);
+      return null;
+    }
+  }, [createSdk]);
 
-  // Set up the WebView RPC adapter
+  // Set up the WebView RPC adapter with safe fallbacks
+  const safeDomain = domain || "localhost";
+  const safeSdk = sdk || {
+    context: { user: { fid: 0 }, client: { platformType: "mobile" as const } },
+    close: () => {},
+  };
+
+  // Always call the hook (hooks must be called unconditionally)
   const { onMessage, emit } = useWebViewRpcAdapter({
     webViewRef: webViewRef as React.RefObject<WebView>,
-    domain,
-    sdk,
+    domain: safeDomain,
+    sdk: safeSdk,
     debug: __DEV__,
   });
 
@@ -189,32 +220,84 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
     };
   }, [setPrimaryButtonClickHandler, isVisible]);
 
-  // Reset loading state when modal opens
+  // Reset loading state when modal opens/closes
   useEffect(() => {
     if (isVisible && url) {
+      // Increment key to force fresh WebView instance
+      webViewKeyRef.current += 1;
       setLoading(true);
+      setHasError(false);
+      setErrorMessage(null);
       setFrameUrl(url);
       setIsDismissing(false);
       setIsAtTop(true);
       isAtTopRef.current = true;
       translateY.setValue(0);
+      
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     } else if (!isVisible) {
+      // Aggressive cleanup when modal closes
       setFrameUrl(null);
       setIsDismissing(false);
       setIsAtTop(true);
       isAtTopRef.current = true;
       translateY.setValue(0);
+      setHasError(false);
+      setErrorMessage(null);
+      setLoading(true);
+      
+      // Clear timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      
+      // Stop WebView loading and clean up
+      if (webViewRef.current) {
+        try {
+          webViewRef.current.stopLoading();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
     }
   }, [isVisible, url, setFrameUrl, translateY]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (webViewRef.current) {
+        try {
+          webViewRef.current.stopLoading();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    };
+  }, []);
+
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
+      // Don't process messages if modal is not visible or is dismissing
+      if (!isVisible || isDismissing) {
+        return;
+      }
       // Handle scroll messages separately
       handleWebViewScrollMessage(event);
       // Handle other messages via RPC adapter
-      onMessage(event);
+      try {
+        onMessage(event);
+      } catch (error) {
+        console.error("[MiniAppModal] Error handling message:", error);
+      }
     },
-    [onMessage, handleWebViewScrollMessage]
+    [onMessage, handleWebViewScrollMessage, isVisible, isDismissing]
   );
 
   const handleNavigationStateChange = useCallback((navState: any) => {
@@ -224,14 +307,38 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
   const handleLoadStart = useCallback(() => {
     setLoading(true);
     setIsLoading(true);
-  }, [setIsLoading]);
+    setHasError(false);
+    setErrorMessage(null);
+    
+    // Set a timeout to prevent infinite loading (30 seconds)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      if (loading || state.isLoading) {
+        console.warn("[MiniAppModal] Load timeout - taking too long to load");
+        setLoading(false);
+        setIsLoading(false);
+        setHasError(true);
+        setErrorMessage("The mini app is taking too long to load. Please check your connection and try again.");
+      }
+    }, 30000); // 30 second timeout
+  }, [setIsLoading, loading, state.isLoading]);
 
   const handleLoadEnd = useCallback(() => {
     setLoading(false);
     setIsLoading(false);
+    setHasError(false);
+    setErrorMessage(null);
+    
+    // Clear timeout on successful load
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     
     // Send initial context to mini app when page loads
-    if (emitRef.current && sdk && webViewRef.current) {
+    if (emitRef.current && sdk && webViewRef.current && isVisible) {
       const isAuthenticated = !!sdk.context?.user?.fid && sdk.context.user.fid > 0;
       console.log("[MiniAppModal] Page loaded, context available:", {
         user: sdk.context?.user,
@@ -282,19 +389,92 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
         }, 300);
       }
     }
-  }, [setIsLoading, sdk]);
+  }, [setIsLoading, sdk, isVisible]);
+
+  const handleError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error("[MiniAppModal] WebView error:", nativeEvent);
+    setLoading(false);
+    setIsLoading(false);
+    setHasError(true);
+    setErrorMessage(nativeEvent.description || "Failed to load mini app");
+    
+    // Clear timeout on error
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const handleHttpError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error("[MiniAppModal] WebView HTTP error:", nativeEvent);
+    setLoading(false);
+    setIsLoading(false);
+    setHasError(true);
+    setErrorMessage(`HTTP Error ${nativeEvent.statusCode || "Unknown"}: Failed to load mini app`);
+    
+    // Clear timeout on error
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
 
   return (
     <Modal
       isVisible={isVisible && !isDismissing}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
+      onBackdropPress={() => {
+        setIsDismissing(true);
+        if (webViewRef.current) {
+          try {
+            webViewRef.current.stopLoading();
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        onClose();
+      }}
+      onBackButtonPress={() => {
+        setIsDismissing(true);
+        if (webViewRef.current) {
+          try {
+            webViewRef.current.stopLoading();
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        onClose();
+      }}
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
       useNativeDriver
       hideModalContentWhileAnimating
       backdropOpacity={0.5}
+      onModalHide={() => {
+        // Additional cleanup when modal animation completes
+        if (webViewRef.current) {
+          try {
+            webViewRef.current.stopLoading();
+            webViewRef.current = null;
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      }}
     >
       <Animated.View 
         style={[
@@ -323,43 +503,82 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
 
         {/* WebView */}
         <View style={styles.webViewContainer}>
-          {url && (
+          {url && isVisible && !isDismissing ? (
             <>
-              {state.isLoading && loading && (
-                <View style={styles.loadingOverlay}>
-                  <ActivityIndicator size="large" color="#8B5CF6" />
+              {hasError ? (
+                <View style={styles.errorContainer}>
+                  <Icon
+                    type={IconTypes.Ionicons}
+                    name="alert-circle-outline"
+                    size={64}
+                    color="#EF4444"
+                  />
+                  <Text style={styles.errorText}>Failed to load mini app</Text>
+                  <Text style={styles.errorSubtext}>
+                    {errorMessage || "An error occurred while loading the app"}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => {
+                      setHasError(false);
+                      setErrorMessage(null);
+                      setLoading(true);
+                      setIsLoading(true);
+                      webViewKeyRef.current += 1;
+                      if (webViewRef.current) {
+                        webViewRef.current.reload();
+                      }
+                    }}
+                  >
+                    <Text style={styles.retryButtonText}>Retry</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-              <WebView
-                ref={webViewRef}
-                source={{ uri: url }}
-                style={styles.webView}
-                onMessage={handleMessage}
-                onNavigationStateChange={handleNavigationStateChange}
-                onLoadStart={handleLoadStart}
-                onLoadEnd={handleLoadEnd}
-                javaScriptEnabled
-                domStorageEnabled
-                allowsInlineMediaPlayback
-                mediaPlaybackRequiresUserAction={false}
-                allowsBackForwardNavigationGestures
-                sharedCookiesEnabled
-                thirdPartyCookiesEnabled
-                originWhitelist={["*"]}
-                scrollEnabled={true}
-                bounces={true}
-                showsVerticalScrollIndicator={true}
-                showsHorizontalScrollIndicator={false}
-                decelerationRate="normal"
-                nestedScrollEnabled={true}
-                overScrollMode="always"
-                startInLoadingState={true}
-                renderLoading={() => (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#8B5CF6" />
-                    <Text style={styles.loadingText}>Loading mini app...</Text>
-                  </View>
-                )}
+              ) : (
+                <>
+                  {state.isLoading && loading && (
+                    <View style={styles.loadingOverlay}>
+                      <ActivityIndicator size="large" color="#8B5CF6" />
+                    </View>
+                  )}
+                  <WebView
+                    key={`${url}-${webViewKeyRef.current}`}
+                    ref={webViewRef}
+                    source={{ uri: url }}
+                    style={styles.webView}
+                    onMessage={handleMessage}
+                    onNavigationStateChange={handleNavigationStateChange}
+                    onLoadStart={handleLoadStart}
+                    onLoadEnd={handleLoadEnd}
+                    onError={handleError}
+                    onHttpError={handleHttpError}
+                    javaScriptEnabled
+                    domStorageEnabled
+                    allowsInlineMediaPlayback
+                    mediaPlaybackRequiresUserAction={false}
+                    allowsBackForwardNavigationGestures
+                    sharedCookiesEnabled
+                    thirdPartyCookiesEnabled
+                    originWhitelist={["*"]}
+                    scrollEnabled={true}
+                    bounces={true}
+                    showsVerticalScrollIndicator={true}
+                    showsHorizontalScrollIndicator={false}
+                    decelerationRate="normal"
+                    nestedScrollEnabled={true}
+                    overScrollMode="always"
+                    startInLoadingState={true}
+                    cacheEnabled={false}
+                    cacheMode="LOAD_NO_CACHE"
+                    renderLoading={() => (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#8B5CF6" />
+                        <Text style={styles.loadingText}>Loading mini app...</Text>
+                      </View>
+                    )}
+                    onShouldStartLoadWithRequest={(request) => {
+                      // Only allow navigation if modal is still visible
+                      return isVisible && !isDismissing;
+                    }}
                 // Inject script to set up Farcaster Frame SDK communication
                 injectedJavaScriptBeforeContentLoaded={`
                   (function() {
@@ -453,9 +672,11 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                   })();
                   true;
                 `}
-              />
+                  />
+                </>
+              )}
             </>
-          )}
+          ) : null}
         </View>
 
         {/* Floating action buttons */}
@@ -480,7 +701,26 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
           ))}
           
           {/* Close button */}
-          <TouchableOpacity onPress={onClose} style={styles.floatingCloseButton}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsDismissing(true);
+              // Stop WebView immediately to prevent freeze
+              if (webViewRef.current) {
+                try {
+                  webViewRef.current.stopLoading();
+                } catch (e) {
+                  // Ignore errors
+                }
+              }
+              // Clear timeout
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+              }
+              onClose();
+            }}
+            style={styles.floatingCloseButton}
+          >
             <Icon
               type={IconTypes.Ionicons}
               name="close"
@@ -623,6 +863,39 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: "#666",
     fontSize: 14,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 16,
+    textAlign: "center",
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 8,
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
+  retryButton: {
+    marginTop: 24,
+    backgroundColor: "#8B5CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   primaryButtonContainer: {
     padding: 16,

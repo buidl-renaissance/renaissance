@@ -32,6 +32,7 @@ import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
 import * as Linking from "expo-linking";
+import { setupFarcasterAuthListener } from "./src/utils/farcasterAuth";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -89,26 +90,80 @@ export default function App() {
     };
   }, []);
 
-  // Handle deep links for auth callbacks
+  // Handle deep links for auth callbacks and shared URLs
   React.useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
       console.log("[App] Deep link received:", event.url);
+      
+      // Check if this is a shared URL (http/https)
+      const url = event.url;
+      if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+        console.log("[App] Shared URL detected, navigating to MiniApp:", url);
+        // Wait for navigation to be ready
+        if (isReadyRef.current && navigationRef.current) {
+          (navigationRef.current as any).navigate("MiniApp", {
+            url: url,
+            title: "Shared Link",
+          });
+        } else {
+          // If navigation isn't ready yet, wait a bit and try again
+          setTimeout(() => {
+            if (isReadyRef.current && navigationRef.current) {
+              (navigationRef.current as any).navigate("MiniApp", {
+                url: url,
+                title: "Shared Link",
+              });
+            }
+          }, 500);
+        }
+        return;
+      }
+      
       // Deep links for auth sessions are handled by Neynar auth utilities
       // and by the navigation container for screen navigation
     };
 
     const subscription = Linking.addEventListener("url", handleDeepLink);
 
-    // Check for initial URL (app opened via deep link)
+    // Check for initial URL (app opened via deep link or shared content)
     Linking.getInitialURL().then((url) => {
       if (url) {
         console.log("[App] Initial URL:", url);
+        
+        // Check if this is a shared URL (http/https)
+        if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+          console.log("[App] Initial shared URL detected, navigating to MiniApp:", url);
+          // Wait for navigation to be ready
+          if (isReadyRef.current && navigationRef.current) {
+            (navigationRef.current as any).navigate("MiniApp", {
+              url: url,
+              title: "Shared Link",
+            });
+          } else {
+            // If navigation isn't ready yet, wait a bit and try again
+            setTimeout(() => {
+              if (isReadyRef.current && navigationRef.current) {
+                (navigationRef.current as any).navigate("MiniApp", {
+                  url: url,
+                  title: "Shared Link",
+                });
+              }
+            }, 500);
+          }
+        }
       }
     });
 
     return () => {
       subscription.remove();
     };
+  }, []);
+
+  // Set up Farcaster auth listener
+  React.useEffect(() => {
+    console.log("[App] Setting up Farcaster auth listener");
+    const cleanup = setupFarcasterAuthListener();
+    return cleanup;
   }, []);
 
   return (

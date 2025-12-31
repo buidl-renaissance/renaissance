@@ -22,6 +22,9 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   const title = route.params?.title || "Mini App";
   
   const [canGoBack, setCanGoBack] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Extract domain from URL for the RPC adapter
   const domain = useMemo(() => {
@@ -34,7 +37,14 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   }, [frameUrl]);
   
   // Memoize SDK instance - but note context is now a dynamic getter
-  const sdk = useMemo(() => createSdk(), [createSdk]);
+  const sdk = useMemo(() => {
+    try {
+      return createSdk();
+    } catch (error) {
+      console.error("[MiniAppScreen] Error creating SDK:", error);
+      return null;
+    }
+  }, [createSdk]);
   
   // Log current auth state for debugging
   useEffect(() => {
@@ -46,14 +56,24 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
         type: authState.user.type,
       } : null,
     });
-    console.log("[MiniAppScreen] SDK context.user:", sdk.context?.user);
+    if (sdk) {
+      console.log("[MiniAppScreen] SDK context.user:", sdk.context?.user);
+    }
   }, [authState.user, sdk]);
 
-  // Set up the WebView RPC adapter
+  // Set up the WebView RPC adapter with error handling
+  // Use a safe domain and SDK to prevent crashes
+  const safeDomain = domain || "localhost";
+  const safeSdk = sdk || {
+    context: { user: { fid: 0 }, client: { platformType: "mobile" as const } },
+    close: () => {},
+  };
+  
+  // Always call the hook (hooks must be called unconditionally)
   const { onMessage, emit } = useWebViewRpcAdapter({
     webViewRef: webViewRef as React.RefObject<WebView>,
-    domain,
-    sdk,
+    domain: safeDomain,
+    sdk: safeSdk,
     debug: __DEV__,
   });
 
@@ -151,6 +171,15 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     };
   }, [setPrimaryButtonClickHandler]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
       onMessage(event);
@@ -164,10 +193,33 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
 
   const handleLoadStart = useCallback(() => {
     setIsLoading(true);
-  }, [setIsLoading]);
+    setHasError(false);
+    setErrorMessage(null);
+    
+    // Set a timeout to prevent infinite loading (30 seconds)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      if (state.isLoading) {
+        console.warn("[MiniAppScreen] Load timeout - taking too long to load");
+        setIsLoading(false);
+        setHasError(true);
+        setErrorMessage("The mini app is taking too long to load. Please check your connection and try again.");
+      }
+    }, 30000); // 30 second timeout
+  }, [setIsLoading, state.isLoading]);
 
   const handleLoadEnd = useCallback(() => {
     setIsLoading(false);
+    setHasError(false);
+    setErrorMessage(null);
+    
+    // Clear timeout on successful load
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     // Send initial context to mini app when page loads
     // The mini app can also call sdk.context or sdk.signIn() via RPC
     if (emitRef.current && sdk && webViewRef.current) {
@@ -226,6 +278,45 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     }
   }, [setIsLoading, sdk]);
 
+  const handleError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error("[MiniAppScreen] WebView error:", nativeEvent);
+    setIsLoading(false);
+    setHasError(true);
+    setErrorMessage(nativeEvent.description || "Failed to load mini app");
+    
+    // Clear timeout on error
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const handleHttpError = useCallback((syntheticEvent: any) => {
+    const { nativeEvent } = syntheticEvent;
+    console.error("[MiniAppScreen] WebView HTTP error:", nativeEvent);
+    setIsLoading(false);
+    setHasError(true);
+    setErrorMessage(`HTTP Error ${nativeEvent.statusCode || "Unknown"}: Failed to load mini app`);
+    
+    // Clear timeout on error
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  // Validate URL before rendering WebView
+  const isValidUrl = useMemo(() => {
+    if (!frameUrl) return false;
+    try {
+      const url = new URL(frameUrl);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, [frameUrl]);
+
   if (!frameUrl) {
     return (
       <SafeAreaView style={styles.container}>
@@ -240,38 +331,92 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     );
   }
 
+  if (!isValidUrl) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Text style={styles.emptyText}>Invalid URL</Text>
+          <Text style={styles.emptySubtext}>
+            The mini app URL is invalid or malformed
+          </Text>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              setFrameUrl(null);
+              navigation.goBack();
+            }}
+          >
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.webViewContainer}>
-        {state.isLoading && (
+        {state.isLoading && !hasError && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color="#8B5CF6" />
           </View>
         )}
-        <WebView
-          ref={webViewRef}
-          source={{ uri: frameUrl }}
-          style={styles.webView}
-          onMessage={handleMessage}
-          onNavigationStateChange={handleNavigationStateChange}
-          onLoadStart={handleLoadStart}
-          onLoadEnd={handleLoadEnd}
-          javaScriptEnabled
-          domStorageEnabled
-          allowsInlineMediaPlayback
-          mediaPlaybackRequiresUserAction={false}
-          allowsBackForwardNavigationGestures
-          sharedCookiesEnabled
-          thirdPartyCookiesEnabled
-          originWhitelist={["*"]}
-          // Safari-like scrolling
-          scrollEnabled={true}
-          bounces={true}
-          showsVerticalScrollIndicator={true}
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="normal"
-          nestedScrollEnabled={true}
-          overScrollMode="always"
+        {hasError ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+            <Text style={styles.errorText}>Failed to load mini app</Text>
+            <Text style={styles.errorSubtext}>{errorMessage || "An error occurred while loading the app"}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setHasError(false);
+                setErrorMessage(null);
+                setIsLoading(true);
+                if (webViewRef.current) {
+                  webViewRef.current.reload();
+                }
+              }}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => {
+                setFrameUrl(null);
+                navigation.goBack();
+              }}
+            >
+              <Text style={styles.backButtonText}>Go Back</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <WebView
+            ref={webViewRef}
+            source={{ uri: frameUrl }}
+            style={styles.webView}
+            onMessage={handleMessage}
+            onNavigationStateChange={handleNavigationStateChange}
+            onLoadStart={handleLoadStart}
+            onLoadEnd={handleLoadEnd}
+            onError={handleError}
+            onHttpError={handleHttpError}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            allowsBackForwardNavigationGestures
+            sharedCookiesEnabled
+            thirdPartyCookiesEnabled
+            originWhitelist={["*"]}
+            // Safari-like scrolling
+            scrollEnabled={true}
+            bounces={true}
+            showsVerticalScrollIndicator={true}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="normal"
+            nestedScrollEnabled={true}
+            overScrollMode="always"
           // Inject script to set up Farcaster Frame SDK communication
           injectedJavaScriptBeforeContentLoaded={`
             (function() {
@@ -342,7 +487,8 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             })();
             true;
           `}
-        />
+          />
+        )}
       </View>
 
       {/* Primary Button */}
@@ -411,6 +557,49 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 8,
     textAlign: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#fff",
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 16,
+    textAlign: "center",
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 8,
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
+  retryButton: {
+    marginTop: 24,
+    backgroundColor: "#8B5CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  backButton: {
+    marginTop: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  backButtonText: {
+    color: "#8B5CF6",
+    fontSize: 16,
+    fontWeight: "600",
   },
   headerButton: {
     padding: 8,

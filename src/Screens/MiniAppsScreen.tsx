@@ -129,16 +129,27 @@ const MiniAppsScreen: React.FC<MiniAppsScreenProps> = ({ navigation }) => {
   }, [navigation, authState.isAuthenticated]);
 
   const handleOpenApp = (app: MiniApp) => {
-    // Check if this is a native screen
-    if (app.url.startsWith("native://")) {
-      const screenName = app.url.replace("native://", "");
-      navigation.push(screenName);
-    } else {
-      // Open web-based mini app
-      navigation.navigate("MiniApp", {
-        url: app.url,
-        title: app.name,
-      });
+    try {
+      // Check if this is a native screen
+      if (app.url.startsWith("native://")) {
+        const screenName = app.url.replace("native://", "");
+        navigation.push(screenName);
+      } else {
+        // Validate URL before navigating
+        if (!app.url || app.url.trim() === "") {
+          console.error("[MiniAppsScreen] Invalid URL for app:", app.name);
+          return;
+        }
+        
+        // Open web-based mini app
+        navigation.navigate("MiniApp", {
+          url: app.url,
+          title: app.name,
+        });
+      }
+    } catch (error) {
+      console.error("[MiniAppsScreen] Error opening app:", app.name, error);
+      // Don't freeze the app - just log the error
     }
   };
 

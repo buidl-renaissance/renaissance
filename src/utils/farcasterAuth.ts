@@ -53,10 +53,17 @@ export async function initiateWarpcastAuth(): Promise<AuthResult> {
     console.log("[FarcasterAuth] Channel created:", {
       channelToken: channel.data?.channelToken,
       url: channel.data?.url,
+      hasError: !!channel.error,
+      error: channel.error,
     });
 
+    if (channel.error) {
+      console.error("[FarcasterAuth] Channel creation error:", channel.error);
+      throw new Error(channel.error.message || "Failed to create auth channel");
+    }
+
     if (!channel.data?.channelToken || !channel.data?.url) {
-      throw new Error("Failed to create auth channel");
+      throw new Error("Failed to create auth channel: missing channelToken or url");
     }
 
     const { channelToken, url: farcasterUrl } = channel.data;
@@ -94,17 +101,34 @@ export async function initiateWarpcastAuth(): Promise<AuthResult> {
 
     // Poll for completion
     const result = await pollForCompletion(channelToken);
-    console.log("[FarcasterAuth] Auth completed:", result);
+    console.log("[FarcasterAuth] Auth completed:", {
+      fid: result.fid,
+      username: result.username,
+      hasPfpUrl: !!result.pfpUrl,
+    });
 
     // Call the global callback to update auth state
-    if ((global as any).__authFarcasterCallback && result.fid) {
-      (global as any).__authFarcasterCallback({
-        fid: result.fid,
-        username: result.username,
-        displayName: result.displayName,
-        pfpUrl: result.pfpUrl,
-        custodyAddress: result.custodyAddress,
-        verifications: result.verifications,
+    const callback = (global as any).__authFarcasterCallback;
+    if (callback && result.fid) {
+      try {
+        console.log("[FarcasterAuth] Calling auth callback with FID:", result.fid);
+        await callback({
+          fid: result.fid,
+          username: result.username,
+          displayName: result.displayName,
+          pfpUrl: result.pfpUrl,
+          custodyAddress: result.custodyAddress,
+          verifications: result.verifications,
+        });
+        console.log("[FarcasterAuth] Auth callback completed successfully");
+      } catch (error) {
+        console.error("[FarcasterAuth] Error in auth callback:", error);
+        // Don't throw - the result is still valid
+      }
+    } else {
+      console.warn("[FarcasterAuth] No auth callback registered or missing FID", {
+        hasCallback: !!callback,
+        hasFid: !!result.fid,
       });
     }
 
@@ -155,14 +179,41 @@ function pollForCompletion(
 
       try {
         const status = await appClient.status({ channelToken });
-        console.log("[FarcasterAuth] Poll status:", status.data?.state);
+        console.log("[FarcasterAuth] Poll status:", {
+          state: status.data?.state,
+          fid: status.data?.fid,
+          hasData: !!status.data,
+          error: status.error,
+        });
+
+        if (status.error) {
+          console.error("[FarcasterAuth] Status error:", status.error);
+          // Continue polling for transient errors
+          if (status.error.message?.includes("not found") && attempts < 10) {
+            // Channel might not be ready yet, continue polling
+            return;
+          }
+          // For other errors, reject after a few attempts
+          if (attempts > 5) {
+            clearInterval(currentAuthSession?.pollInterval);
+            currentAuthSession = null;
+            reject(new Error(status.error.message || "Authentication failed"));
+            return;
+          }
+          return;
+        }
 
         if (status.data?.state === "completed") {
           clearInterval(currentAuthSession?.pollInterval);
           currentAuthSession = null;
 
+          if (!status.data.fid) {
+            reject(new Error("Authentication completed but no FID received"));
+            return;
+          }
+
           const result: AuthResult = {
-            fid: status.data.fid!,
+            fid: status.data.fid,
             username: status.data.username,
             displayName: status.data.displayName,
             pfpUrl: status.data.pfpUrl,
@@ -173,10 +224,25 @@ function pollForCompletion(
           };
 
           resolve(result);
+          return;
         }
-      } catch (error) {
+
+        if (status.data?.state === "rejected" || status.data?.state === "failed") {
+          clearInterval(currentAuthSession?.pollInterval);
+          currentAuthSession = null;
+          reject(new Error("Authentication was rejected or failed"));
+          return;
+        }
+      } catch (error: any) {
         console.error("[FarcasterAuth] Poll error:", error);
-        // Continue polling despite errors
+        // After several attempts, reject if we keep getting errors
+        if (attempts > 10) {
+          clearInterval(currentAuthSession?.pollInterval);
+          currentAuthSession = null;
+          reject(new Error(error.message || "Authentication polling failed"));
+          return;
+        }
+        // Continue polling for transient errors
       }
     };
 
@@ -211,6 +277,8 @@ export function handleAuthCallback(url: string): void {
   // Parse the URL for any data
   // The actual user data comes from polling the relay, not the callback URL
   // The callback just indicates the user has returned to the app
+  // The polling function should pick up the completion status
+  // This is mainly for logging/debugging purposes
 }
 
 /**
@@ -285,10 +353,17 @@ export async function createSignInRequest(
 
     console.log("[FarcasterAuth] SignIn channel created:", {
       channelToken: channel.data?.channelToken,
+      hasError: !!channel.error,
+      error: channel.error,
     });
 
+    if (channel.error) {
+      console.error("[FarcasterAuth] SignIn channel creation error:", channel.error);
+      throw new Error(channel.error.message || "Failed to create signIn channel");
+    }
+
     if (!channel.data?.channelToken || !channel.data?.url) {
-      throw new Error("Failed to create signIn channel");
+      throw new Error("Failed to create signIn channel: missing channelToken or url");
     }
 
     const { channelToken, url: farcasterUrl } = channel.data;

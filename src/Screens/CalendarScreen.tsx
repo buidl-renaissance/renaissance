@@ -61,7 +61,6 @@ import { MeetupEventCard } from "../Components/MeetupEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
 import { SportsGameCard } from "../Components/SportsGameCard";
 import { EventWebModal } from "../Components/EventWebModal";
-import { MiniAppModal } from "../Components/MiniAppModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
 import { MiniAppsModal } from "../Components/MiniAppsModal";
@@ -139,9 +138,6 @@ const CalendarScreen = ({ navigation }) => {
   });
 
   // State for mini app modal
-  const [miniAppModalVisible, setMiniAppModalVisible] = React.useState<boolean>(false);
-  const [miniAppModalUrl, setMiniAppModalUrl] = React.useState<string | null>(null);
-  const [miniAppModalTitle, setMiniAppModalTitle] = React.useState<string>("");
 
   // State for QR code modal
   const [qrCodeModalVisible, setQrCodeModalVisible] = React.useState<boolean>(false);
@@ -196,17 +192,28 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleOpenMiniApp = React.useCallback((app: { url: string; name: string }) => {
-    // Check if this is a native screen
-    if (app.url.startsWith("native://")) {
-      const screenName = app.url.replace("native://", "");
-      navigation.push(screenName);
-      setMiniAppsModalVisible(false);
-    } else {
-      // Open web-based mini app
-      setMiniAppModalUrl(app.url);
-      setMiniAppModalTitle(app.name);
-      setMiniAppModalVisible(true);
-      setMiniAppsModalVisible(false);
+    try {
+      // Check if this is a native screen
+      if (app.url.startsWith("native://")) {
+        const screenName = app.url.replace("native://", "");
+        navigation.push(screenName);
+        setMiniAppsModalVisible(false);
+      } else {
+        // Validate URL before navigating
+        if (!app.url || app.url.trim() === "") {
+          console.error("[CalendarScreen] Invalid URL for app:", app.name);
+          return;
+        }
+        
+        // Navigate to MiniApp screen instead of using modal
+        navigation.push("MiniApp", {
+          url: app.url,
+          title: app.name,
+        });
+        setMiniAppsModalVisible(false);
+      }
+    } catch (error) {
+      console.error("[CalendarScreen] Error opening mini app:", app.name, error);
     }
   }, [navigation]);
 
@@ -251,56 +258,64 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleOpenParking = React.useCallback(() => {
-    setMiniAppModalUrl("https://buymyspot.com/detroit");
-    setMiniAppModalTitle("Parking");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://buymyspot.com/detroit",
+      title: "Parking",
+    });
+  }, [navigation]);
 
   const handleOpenCoLab = React.useCallback(() => {
-    setMiniAppModalUrl("https://co.lab.builddetroit.xyz/");
-    setMiniAppModalTitle("Co.Lab");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://co.lab.builddetroit.xyz/",
+      title: "Co.Lab",
+    });
+  }, [navigation]);
 
   const handleOpenCollectorQuest = React.useCallback(() => {
-    setMiniAppModalUrl("https://collectorquest.ai");
-    setMiniAppModalTitle("Quests");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://collectorquest.ai",
+      title: "Quests",
+    });
+  }, [navigation]);
 
   const handleOpenRestaurants = React.useCallback(() => {
     navigation.push("Restaurants");
   }, []);
 
   const handleOpenGloabi = React.useCallback(() => {
-    setMiniAppModalUrl("https://gloabi-chat.vercel.app/");
-    setMiniAppModalTitle("Gloabi");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://gloabi-chat.vercel.app/",
+      title: "Gloabi",
+    });
+  }, [navigation]);
 
   const handleOpenMysticIsland = React.useCallback(() => {
-    setMiniAppModalUrl("https://mystic-island.yourland.network/");
-    setMiniAppModalTitle("Mystic Island");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://mystic-island.yourland.network/",
+      title: "Mystic Island",
+    });
+  }, [navigation]);
 
   const handleOpenDynoDetroit = React.useCallback(() => {
-    setMiniAppModalUrl("https://dynodetroit.com");
-    setMiniAppModalTitle("Dyno Detroit");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://dynodetroit.com",
+      title: "Dyno Detroit",
+    });
+  }, [navigation]);
 
   const handleOpenHotBones = React.useCallback(() => {
-    setMiniAppModalUrl("https://hotbones.com");
-    setMiniAppModalTitle("Hot Bones");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://hotbones.com",
+      title: "Hot Bones",
+    });
+  }, [navigation]);
 
   const handleOpenBeaconHQ = React.useCallback(() => {
-    setMiniAppModalUrl("https://www.thebeaconhq.com/");
-    setMiniAppModalTitle("The Beacon HQ");
-    setMiniAppModalVisible(true);
-  }, []);
+    navigation.push("MiniApp", {
+      url: "https://www.thebeaconhq.com/",
+      title: "The Beacon HQ",
+    });
+  }, [navigation]);
 
   React.useEffect(() => {
     setFilteredEvents(
@@ -1178,16 +1193,6 @@ const CalendarScreen = ({ navigation }) => {
         onClose={handleCloseWebModal}
         eventType={webModalState.eventType}
         eventData={webModalState.eventData}
-      />
-      <MiniAppModal
-        isVisible={miniAppModalVisible}
-        url={miniAppModalUrl}
-        title={miniAppModalTitle}
-        onClose={() => {
-          setMiniAppModalVisible(false);
-          setMiniAppModalUrl(null);
-          setMiniAppModalTitle("");
-        }}
       />
       <QRCodeModal
         isVisible={qrCodeModalVisible}
