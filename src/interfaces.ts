@@ -431,3 +431,46 @@ export interface FoodPost {
   likes: number;
   timestamp: string;
 }
+
+export interface SportsGameTeam {
+  id: number;
+  teamId: string;
+  sport: string;
+  uid: string | null;
+  displayName: string;
+  abbreviation: string;
+  shortDisplayName: string;
+  color: string | null;
+  alternateColor: string | null;
+  logo: string;
+  logoDark: string;
+  isActive: boolean;
+  isAllStar: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SportsGame {
+  id: number;
+  gameId: string;
+  sport: string;
+  season: number;
+  seasonType: number;
+  startTime: string;
+  gameState: string;
+  venue: string;
+  venueCity: string;
+  venueState: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  period: number | null;
+  periodType: string;
+  statusDetail: string;
+  link: string;
+  createdAt: string;
+  updatedAt: string;
+  homeTeam: SportsGameTeam;
+  awayTeam: SportsGameTeam;
+}

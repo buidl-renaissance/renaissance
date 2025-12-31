@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { DAEvent, LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
+import { SportsGame } from "../api/sports-games";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { schedulePushNotification } from "./notifications";
 
@@ -46,10 +47,10 @@ export const toggleBookmark = async (event: DAEvent) => {
     }
 };
 
-// Bookmark status for web events (Luma/RA/DA/Meetup with URLs)
+// Bookmark status for web events (Luma/RA/DA/Meetup/Sports with URLs)
 export const getBookmarkStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
-  eventType: 'luma' | 'ra' | 'da' | 'meetup'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup' | 'sports'
 ): Promise<boolean> => {
   if (eventType === 'da' && 'id' in event) {
     // Use existing DA event bookmark system
@@ -68,14 +69,19 @@ export const getBookmarkStatusForWebEvent = async (
     const meetupEvent = event as MeetupEvent;
     const result = await AsyncStorage.getItem(`Bookmark-meetup-${meetupEvent.eventId}`);
     return result ? true : false;
+  } else if (eventType === 'sports' && 'id' in event) {
+    // Check Sports game bookmarks
+    const sportsGame = event as SportsGame;
+    const result = await AsyncStorage.getItem(`Bookmark-sports-${sportsGame.id}`);
+    return result ? true : false;
   }
   return false;
 };
 
-// Toggle bookmark for web events (Luma/RA/DA/Meetup with URLs)
+// Toggle bookmark for web events (Luma/RA/DA/Meetup/Sports with URLs)
 export const toggleBookmarkForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent,
-  eventType: 'luma' | 'ra' | 'da' | 'meetup'
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame,
+  eventType: 'luma' | 'ra' | 'da' | 'meetup' | 'sports'
 ): Promise<boolean> => {
   const isBookmarked = await getBookmarkStatusForWebEvent(event, eventType);
 
@@ -173,14 +179,50 @@ export const toggleBookmarkForWebEvent = async (
     }
     await AsyncStorage.setItem('BookmarkedMeetupEvents', JSON.stringify(bookmarkedMeetupEvents));
     return !isBookmarked;
+  } else if (eventType === 'sports' && 'id' in event) {
+    // Handle Sports games - store full game data
+    const sportsGame = event as SportsGame;
+    const bookmarksData = await AsyncStorage.getItem('BookmarkedSportsGames');
+    let bookmarkedSportsGames: SportsGame[] = bookmarksData ? JSON.parse(bookmarksData) : [];
+
+    if (isBookmarked) {
+      // Remove bookmark
+      bookmarkedSportsGames = bookmarkedSportsGames.filter((g: SportsGame) => g.id !== sportsGame.id);
+      await AsyncStorage.removeItem(`Bookmark-sports-${sportsGame.id}`);
+    } else {
+      // Add bookmark
+      bookmarkedSportsGames.push(sportsGame);
+      await AsyncStorage.setItem(`Bookmark-sports-${sportsGame.id}`, "1");
+      try {
+        // Schedule notification for Sports games
+        const startTime = moment(sportsGame.startTime);
+        await schedulePushNotification({
+          content: {
+            title: "Game Starts in 1 Hour",
+            body: `${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`,
+            data: {
+              event: sportsGame,
+              eventType: 'sports',
+            },
+          },
+          trigger: {
+            date: startTime.subtract(1, "hour").toDate(),
+          },
+        });
+      } catch (error) {
+        // Ignore notification errors
+      }
+    }
+    await AsyncStorage.setItem('BookmarkedSportsGames', JSON.stringify(bookmarkedSportsGames));
+    return !isBookmarked;
   }
 
   return false;
 };
 
-// Get all bookmarked events (DA by ID lookup, Luma/RA/Meetup from stored data)
-export const getBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }>> => {
-  const bookmarkedEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' }> = [];
+// Get all bookmarked events (DA by ID lookup, Luma/RA/Meetup/Sports from stored data)
+export const getBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' }>> => {
+  const bookmarkedEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' }> = [];
 
   // Get DA event IDs
   const daBookmarkIds = await getBookmarks();
@@ -240,13 +282,26 @@ export const getBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | Lu
     console.error("Error loading Meetup bookmarks:", error);
   }
 
+  // Get Sports games
+  try {
+    const sportsBookmarksData = await AsyncStorage.getItem('BookmarkedSportsGames');
+    if (sportsBookmarksData) {
+      const sportsGames: SportsGame[] = JSON.parse(sportsBookmarksData);
+      sportsGames.forEach((game: SportsGame) => {
+        bookmarkedEvents.push({ event: game, eventType: 'sports' });
+      });
+    }
+  } catch (error) {
+    console.error("Error loading Sports bookmarks:", error);
+  }
+
   return bookmarkedEvents;
 };
 
 // Remove bookmarked event
 export const removeBookmarkedEvent = async (
   eventId: string | number,
-  eventType: 'luma' | 'ra' | 'da' | 'meetup'
+  eventType: 'luma' | 'ra' | 'da' | 'meetup' | 'sports'
 ): Promise<void> => {
   if (eventType === 'da') {
     const bookmarks = await getBookmarks();
@@ -276,6 +331,14 @@ export const removeBookmarkedEvent = async (
       const filtered = bookmarkedEvents.filter((e: MeetupEvent) => e.eventId !== eventId);
       await AsyncStorage.setItem('BookmarkedMeetupEvents', JSON.stringify(filtered));
       await AsyncStorage.removeItem(`Bookmark-meetup-${eventId}`);
+    }
+  } else if (eventType === 'sports') {
+    const bookmarksData = await AsyncStorage.getItem('BookmarkedSportsGames');
+    if (bookmarksData) {
+      const bookmarkedGames: SportsGame[] = JSON.parse(bookmarksData);
+      const filtered = bookmarkedGames.filter((g: SportsGame) => g.id !== eventId);
+      await AsyncStorage.setItem('BookmarkedSportsGames', JSON.stringify(filtered));
+      await AsyncStorage.removeItem(`Bookmark-sports-${eventId}`);
     }
   }
 };

@@ -47,6 +47,7 @@ import { useLumaEvents } from "../hooks/useLumaEvents";
 import { useRAEvents } from "../hooks/useRAEvents";
 import { useMeetupEvents } from "../hooks/useMeetupEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
+import { useSportsGames } from "../hooks/useSportsGames";
 import { useAuth } from "../context/Auth";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { FlyerCard } from "../Components/FlyerCard";
@@ -58,6 +59,7 @@ import { LumaEventCard } from "../Components/LumaEventCard";
 import { RAEventCard } from "../Components/RAEventCard";
 import { MeetupEventCard } from "../Components/MeetupEventCard";
 import { FlyerEventCard } from "../Components/FlyerEventCard";
+import { SportsGameCard } from "../Components/SportsGameCard";
 import { EventWebModal } from "../Components/EventWebModal";
 import { MiniAppModal } from "../Components/MiniAppModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
@@ -66,6 +68,7 @@ import { MiniAppsModal } from "../Components/MiniAppsModal";
 import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
 import { LumaEvent, RAEvent, MeetupEvent } from "../interfaces";
+import { SportsGame } from "../api/sports-games";
 
 const { height, width } = Dimensions.get("window");
 
@@ -88,6 +91,7 @@ const CalendarScreen = ({ navigation }) => {
   // NYE-specific RA events use the dedicated NYE endpoint.
   const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
   const { events: meetupEvents } = useMeetupEvents();
+  const { games: sportsGames } = useSportsGames();
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -95,7 +99,7 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filteredEvents, setFilteredEvents] = React.useState<DAEvent[]>([]);
   const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent | MeetupEvent)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
+    { data: (DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame)[]; title: string; subtitle: string; type?: string; sortDate?: number; dateKey?: string }[]
   >([]);
   const [selectedEvent, setSelectedEvent] = React.useState<DAEvent | null>(
     null
@@ -126,7 +130,7 @@ const CalendarScreen = ({ navigation }) => {
   const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
   const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
   const [webModalTitle, setWebModalTitle] = React.useState<string>("");
-  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | 'meetup' | undefined>(undefined);
+  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined>(undefined);
   const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
 
   // State for mini app modal
@@ -446,6 +450,28 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    // Process Sports games
+    sportsGames.map((game: SportsGame) => {
+      const start = moment(game.startTime);
+      // Assume games last 3 hours
+      const end = moment(game.startTime).add(3, 'hours');
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const date = start.format("MMMM Do");
+        const subtitle = start.format("dddd");
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
+            title: date,
+            subtitle: subtitle,
+            data: [],
+            sortDate: start.valueOf(),
+            dateKey: dateKey, // Store dateKey for matching
+          };
+        }
+        groups[dateKey].data.push({ ...game, eventType: "sports" });
+      }
+    });
+
     // Sort events within each group by start time
     Object.values(groups).forEach((group: any) => {
       group.data.sort((a, b) => {
@@ -458,6 +484,8 @@ const CalendarScreen = ({ navigation }) => {
           aStart = moment(a.startTime);
         } else if (a.eventType === "meetup") {
           aStart = moment(a.dateTime);
+        } else if (a.eventType === "sports") {
+          aStart = moment(a.startTime);
         } else {
           // DA events and flyer events use start_date
           aStart = moment(a.start_date);
@@ -470,6 +498,8 @@ const CalendarScreen = ({ navigation }) => {
           bStart = moment(b.startTime);
         } else if (b.eventType === "meetup") {
           bStart = moment(b.dateTime);
+        } else if (b.eventType === "sports") {
+          bStart = moment(b.startTime);
         } else {
           // DA events and flyer events use start_date
           bStart = moment(b.start_date);
@@ -494,7 +524,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     setEventsGroup(groupsArray);
-  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, isFeatured]);
+  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -561,6 +591,10 @@ const CalendarScreen = ({ navigation }) => {
             } else if (eventType === 'meetup' && event.eventId) {
               isBookmarked = await getBookmarkStatusForWebEvent(event, 'meetup');
               isGoing = await getGoingStatusForWebEvent(event, 'meetup');
+            } else if (eventType === 'sports' && event.id) {
+              isBookmarked = await getBookmarkStatusForWebEvent(event, 'sports');
+              // Sports games don't have going status
+              isGoing = false;
             }
 
             if (isBookmarked) {
@@ -1056,6 +1090,30 @@ const CalendarScreen = ({ navigation }) => {
                     setWebModalEventType('meetup');
                     setWebModalEventData(meetupEvent);
                     setWebModalVisible(true);
+                  }}
+                />
+              </View>
+            );
+          }
+
+          if (eventType === "sports") {
+            const sportsGame = item as SportsGame;
+            return (
+              <View style={{ paddingHorizontal: 16 }}>
+                <SportsGameCard
+                  game={sportsGame}
+                  options={{
+                    showVenue: true,
+                    showImage: true,
+                  }}
+                  onSelectEvent={() => {
+                    if (sportsGame.link) {
+                      setWebModalUrl(sportsGame.link);
+                      setWebModalTitle(`${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`);
+                      setWebModalEventType('sports');
+                      setWebModalEventData(sportsGame);
+                      setWebModalVisible(true);
+                    }
                   }}
                 />
               </View>
