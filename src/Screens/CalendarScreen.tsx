@@ -123,12 +123,20 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filter, setFilter] = React.useState<string>("all");
   
-  // State for web modal
-  const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
-  const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
-  const [webModalTitle, setWebModalTitle] = React.useState<string>("");
-  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined>(undefined);
-  const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
+  // State for web modal - batched for better performance
+  const [webModalState, setWebModalState] = React.useState<{
+    visible: boolean;
+    url: string | null;
+    title: string;
+    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined;
+    eventData: any;
+  }>({
+    visible: false,
+    url: null,
+    title: "",
+    eventType: undefined,
+    eventData: null,
+  });
 
   // State for mini app modal
   const [miniAppModalVisible, setMiniAppModalVisible] = React.useState<boolean>(false);
@@ -879,11 +887,7 @@ const CalendarScreen = ({ navigation }) => {
                   <TouchableOpacity
                     key={raEvent.id}
                     onPress={() => {
-                      setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
-                      setWebModalTitle(raEvent.title);
-                      setWebModalEventType("ra");
-                      setWebModalEventData(raEvent);
-                      setWebModalVisible(true);
+                    openWebModal(`https://ra.co${raEvent.contentUrl}`, raEvent.title, "ra", raEvent);
                     }}
                     activeOpacity={0.85}
                     style={{
@@ -948,15 +952,27 @@ const CalendarScreen = ({ navigation }) => {
   }, [weather, flyers, nyeRaEvents, nyeLoading, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent]);
 
   const handleCloseWebModal = React.useCallback(() => {
-    // Close modal immediately, clear data after
-    setWebModalVisible(false);
-    // Clear data in next tick to avoid blocking
-    setTimeout(() => {
-      setWebModalUrl(null);
-      setWebModalTitle("");
-      setWebModalEventType(undefined);
-      setWebModalEventData(null);
-    }, 0);
+    // Close modal immediately with batched state update
+    setWebModalState({
+      visible: false,
+      url: null,
+      title: "",
+      eventType: undefined,
+      eventData: null,
+    });
+  }, []);
+  
+  // Helper to open modal with batched state update
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | undefined, eventData: any) => {
+    // Batch all state updates in a single call for immediate modal appearance
+    // The key prop on WebView will ensure proper cleanup/remount when URL changes
+    setWebModalState({
+      visible: true,
+      url,
+      title,
+      eventType,
+      eventData,
+    });
   }, []);
 
   const handleToggleFeatured = React.useCallback(async (eventData: any) => {
@@ -1030,11 +1046,7 @@ const CalendarScreen = ({ navigation }) => {
                     showHosts: true,
                   }}
                   onSelectEvent={() => {
-                    setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
-                    setWebModalTitle(lumaEvent.name);
-                    setWebModalEventType('luma');
-                    setWebModalEventData(lumaEvent);
-                    setWebModalVisible(true);
+                    openWebModal(`https://lu.ma/${lumaEvent.url}`, lumaEvent.name, 'luma', lumaEvent);
                   }}
                 />
               </View>
@@ -1054,11 +1066,7 @@ const CalendarScreen = ({ navigation }) => {
                   }}
                   isFeatured={raEvent.isFeatured}
                   onSelectEvent={() => {
-                    setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
-                    setWebModalTitle(raEvent.title);
-                    setWebModalEventType('ra');
-                    setWebModalEventData(raEvent);
-                    setWebModalVisible(true);
+                    openWebModal(`https://ra.co${raEvent.contentUrl}`, raEvent.title, 'ra', raEvent);
                   }}
                 />
               </View>
@@ -1077,11 +1085,7 @@ const CalendarScreen = ({ navigation }) => {
                     showGroup: true,
                   }}
                   onSelectEvent={() => {
-                    setWebModalUrl(meetupEvent.eventUrl);
-                    setWebModalTitle(meetupEvent.title);
-                    setWebModalEventType('meetup');
-                    setWebModalEventData(meetupEvent);
-                    setWebModalVisible(true);
+                    openWebModal(meetupEvent.eventUrl, meetupEvent.title, 'meetup', meetupEvent);
                   }}
                 />
               </View>
@@ -1100,11 +1104,7 @@ const CalendarScreen = ({ navigation }) => {
                   }}
                   onSelectEvent={() => {
                     if (sportsGame.link) {
-                      setWebModalUrl(sportsGame.link);
-                      setWebModalTitle(`${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`);
-                      setWebModalEventType('sports');
-                      setWebModalEventData(sportsGame);
-                      setWebModalVisible(true);
+                      openWebModal(sportsGame.link, `${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`, 'sports', sportsGame);
                     }
                   }}
                 />
@@ -1172,12 +1172,12 @@ const CalendarScreen = ({ navigation }) => {
         />
       )}
       <EventWebModal
-        isVisible={webModalVisible}
-        url={webModalUrl}
-        title={webModalTitle}
+        isVisible={webModalState.visible}
+        url={webModalState.url}
+        title={webModalState.title}
         onClose={handleCloseWebModal}
-        eventType={webModalEventType}
-        eventData={webModalEventData}
+        eventType={webModalState.eventType}
+        eventData={webModalState.eventData}
       />
       <MiniAppModal
         isVisible={miniAppModalVisible}
@@ -1240,16 +1240,18 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   cardContainer: {
-    backgroundColor: "white",
-    // backgroundColor: '#d2e4dd',
+    backgroundColor: "#FFFFFF", // Explicit solid white for efficient shadow calculation
     height: 180,
     margin: 8,
     padding: 16,
     borderRadius: 12,
     borderColor: "#ddd",
     borderWidth: 1,
-    shadowColor: "black",
+    shadowColor: "#000",
     shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   venueContainer: {
     flex: 1,

@@ -30,6 +30,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
   const [isDraggingDown, setIsDraggingDown] = React.useState(false);
   const isAtTopRef = useRef(true);
   const webViewRef = useRef<any>(null);
+  const webViewKeyRef = useRef(0); // Increment to force complete remount
   
   const translateY = useRef(new Animated.Value(0)).current;
   
@@ -109,6 +110,8 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
 
   React.useEffect(() => {
     if (isVisible) {
+      // Increment key to force fresh WebView instance
+      webViewKeyRef.current += 1;
       setLoading(true);
       setIsDismissing(false);
       setIsAtTop(true);
@@ -129,8 +132,23 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         return () => clearTimeout(timeoutId);
       }
     } else {
-      // Reset bookmark status when modal closes
+      // Aggressive cleanup when modal closes
       setIsBookmarked(false);
+      setLoading(true);
+      setIsAtTop(true);
+      isAtTopRef.current = true;
+      
+      // Clean up WebView
+      if (webViewRef.current) {
+        try {
+          // Stop any ongoing loading
+          webViewRef.current.stopLoading();
+          // Clear the ref to allow garbage collection
+          webViewRef.current = null;
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
     }
   }, [isVisible, eventData, eventType]);
 
@@ -157,6 +175,21 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       }
     };
   }, [eventData, eventType]);
+
+  // Cleanup on component unmount
+  React.useEffect(() => {
+    return () => {
+      // Cleanup WebView on unmount
+      if (webViewRef.current) {
+        try {
+          webViewRef.current.stopLoading();
+          webViewRef.current = null;
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    };
+  }, []);
 
   const handleToggleBookmark = React.useCallback(async () => {
     if (!eventData || !eventType) return;
@@ -189,10 +222,24 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
+      animationInTiming={250}
+      animationOutTiming={200}
       useNativeDriver
       hideModalContentWhileAnimating={false}
       backdropOpacity={0.5}
       propagateSwipe
+      avoidKeyboard={false}
+      onModalHide={() => {
+        // Additional cleanup when modal animation completes
+        if (webViewRef.current) {
+          try {
+            webViewRef.current.stopLoading();
+            webViewRef.current = null;
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+      }}
     >
       <Animated.View 
         style={[
@@ -236,10 +283,11 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
           </View>
         </View>
 
-        {/* WebView */}
+        {/* WebView - Only render when modal is visible to prevent memory leaks */}
         <View style={styles.webViewContainer}>
-          {url && isVisible && (
+          {url && isVisible && !isDismissing && (
             <WebView
+              key={`${url}-${webViewKeyRef.current}`} // Force complete remount each time
               ref={webViewRef}
               source={{ uri: url }}
               style={styles.webView}
@@ -250,14 +298,18 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
                 console.warn('WebView error: ', nativeEvent);
                 setLoading(false);
               }}
-              startInLoadingState={true}
+              onShouldStartLoadWithRequest={(request) => {
+                // Only allow navigation if modal is still visible
+                return isVisible && !isDismissing;
+              }}
+              startInLoadingState={false}
               javaScriptEnabled
-              domStorageEnabled
+              domStorageEnabled={false} // Disable DOM storage to reduce memory
               allowsInlineMediaPlayback
               mediaPlaybackRequiresUserAction={false}
               allowsBackForwardNavigationGestures
-              sharedCookiesEnabled
-              thirdPartyCookiesEnabled
+              sharedCookiesEnabled={false} // Disable shared cookies to reduce memory
+              thirdPartyCookiesEnabled={false} // Disable third-party cookies
               originWhitelist={["*"]}
               // Safari-like scrolling
               scrollEnabled={true}
@@ -267,33 +319,46 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               decelerationRate="normal"
               nestedScrollEnabled={true}
               overScrollMode="always"
-              cacheEnabled={true}
-              cacheMode="LOAD_DEFAULT"
+              cacheEnabled={false} // Disable cache to prevent accumulation
+              cacheMode="LOAD_NO_CACHE"
               onMessage={handleWebViewMessage}
               injectedJavaScript={`
                 (function() {
                   let lastScrollY = window.scrollY || window.pageYOffset || 0;
                   let rafId = null;
+                  let isActive = true;
                   
                   function handleScroll() {
-                    if (rafId) return;
+                    if (!isActive || rafId) return;
                     rafId = requestAnimationFrame(() => {
+                      if (!isActive) return;
                       const scrollY = window.scrollY || window.pageYOffset || 0;
                       if (Math.abs(scrollY - lastScrollY) > 5) {
-                        window.ReactNativeWebView.postMessage(JSON.stringify({
-                          type: 'scroll',
-                          scrollY: scrollY
-                        }));
+                        try {
+                          window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: 'scroll',
+                            scrollY: scrollY
+                          }));
+                        } catch (e) {
+                          // WebView may be unmounted
+                        }
                         lastScrollY = scrollY;
                       }
                       rafId = null;
                     });
                   }
                   
-                  window.addEventListener('scroll', handleScroll, { passive: true });
+                  const scrollHandler = handleScroll;
+                  window.addEventListener('scroll', scrollHandler, { passive: true });
                   
                   // Initial check after a short delay
-                  setTimeout(handleScroll, 100);
+                  setTimeout(scrollHandler, 100);
+                  
+                  // Cleanup function
+                  window.addEventListener('beforeunload', () => {
+                    isActive = false;
+                    window.removeEventListener('scroll', scrollHandler);
+                  });
                 })();
                 true;
               `}
@@ -414,7 +479,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(185, 192, 255, 0.8)",
+    backgroundColor: "#B9C0FF", // Solid color for efficient shadow calculation (was rgba(185, 192, 255, 0.8))
     borderWidth: 2,
     borderColor: "#3449ff",
     alignItems: "center",
@@ -430,7 +495,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   floatingBookmarkButtonActive: {
-    backgroundColor: "rgba(52, 73, 255, 0.4)",
+    backgroundColor: "#6B7FFF", // Solid color for efficient shadow calculation (was rgba(52, 73, 255, 0.4))
     borderWidth: 2,
     borderColor: "#3449ff",
   },
@@ -438,7 +503,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     // Shadow

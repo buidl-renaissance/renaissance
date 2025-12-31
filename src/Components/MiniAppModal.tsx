@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",

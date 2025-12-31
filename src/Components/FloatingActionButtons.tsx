@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   topButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     borderRadius: 20,
     paddingHorizontal: 6,
     paddingVertical: 4,
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 1)",
+    borderColor: "#FFFFFF",
   },
   balanceText: {
     fontSize: 14,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     borderRadius: 30,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.9)",
+    borderColor: "#FFFFFF",
   },
   navButton: {
     alignItems: "center",
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.9)",
+    borderColor: "#FFFFFF",
   },
 });
 

@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     right: 16, // Align with action buttons container
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
     borderRadius: 20,
     paddingHorizontal: 6,
     paddingVertical: 4,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 1)",
+    borderColor: "#FFFFFF",
   },
   loginButton: {
     paddingHorizontal: 10,
