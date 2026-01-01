@@ -36,6 +36,7 @@ export const FloatingProfileButton = ({ onPress, navigation }: FloatingProfileBu
     <TouchableOpacity onPress={handlePress} style={styles.button} activeOpacity={0.8}>
       {authState.user?.pfpUrl ? (
         <Image
+          key={authState.user.pfpUrl}
           source={{ uri: authState.user.pfpUrl }}
           style={styles.profileImage}
         />

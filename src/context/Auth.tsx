@@ -246,12 +246,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         pfpUrl: params?.pfpUrl,
       };
 
+      console.log("[Auth] Signing in with wallet, backendUserId:", params?.backendUserId);
+      console.log("[Auth] User object being saved:", {
+        ...user,
+        local: { ...user.local, walletAddress: wallet.address.slice(0, 10) + "..." },
+      });
+
       await saveAuth(user);
       setState({
         user,
         isLoading: false,
         isAuthenticated: true,
       });
+
+      console.log("[Auth] User saved and state updated with backendUserId:", user.local?.backendUserId);
 
       return user;
     } catch (error) {
@@ -400,30 +408,63 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Fall back to loading saved auth
         await loadSavedAuth();
       }
-    } else if (state.user?.type === "local_wallet" && state.user.local?.backendUserId) {
+    } else if (state.user?.type === "local_wallet") {
       try {
-        console.log("[Auth] Refreshing local wallet user profile from backend...");
-        const userData = await getUserById(state.user.local.backendUserId);
+        // Try to get backendUserId - either from state or by fetching
+        let backendUserId = state.user.local?.backendUserId;
         
-        const updatedUser: AuthUser = {
-          ...state.user,
-          pfpUrl: userData.profilePicture || state.user.pfpUrl,
-          username: userData.username || state.user.username,
-          displayName: userData.username || state.user.displayName,
-          local: {
-            ...state.user.local,
-            username: userData.username || state.user.local.username,
-            displayName: userData.username || state.user.local.displayName,
-          },
-        };
+        if (!backendUserId && state.user.local?.walletAddress) {
+          console.log("[Auth] BackendUserId not stored, fetching by wallet address...");
+          const { getUserByWalletAddress } = await import("../api/user");
+          try {
+            const userData = await getUserByWalletAddress(state.user.local.walletAddress);
+            const user = Array.isArray(userData) ? userData[0] : userData;
+            backendUserId = user?.id;
+          } catch (error) {
+            console.error("[Auth] Error fetching user by wallet address:", error);
+          }
+        }
+        
+        if (backendUserId) {
+          console.log("[Auth] Refreshing local wallet user profile from backend...", { backendUserId });
+          const userData = await getUserById(backendUserId);
+          console.log("[Auth] Backend user data:", { 
+            profilePicture: userData.profilePicture ? `${userData.profilePicture.substring(0, 50)}...` : null,
+            username: userData.username 
+          });
+          
+          // Add cache-busting parameter to profile picture URL to force refresh
+          let profilePictureUrl = userData.profilePicture || state.user.pfpUrl;
+          if (profilePictureUrl) {
+            const separator = profilePictureUrl.includes('?') ? '&' : '?';
+            profilePictureUrl = `${profilePictureUrl}${separator}v=${Date.now()}`;
+          }
+          
+          const updatedUser: AuthUser = {
+            ...state.user,
+            pfpUrl: profilePictureUrl,
+            username: userData.username || state.user.username,
+            displayName: userData.username || state.user.displayName,
+            local: {
+              ...state.user.local,
+              backendUserId: backendUserId,
+              username: userData.username || state.user.local.username,
+              displayName: userData.username || state.user.local.displayName,
+            },
+          };
 
-        await saveAuth(updatedUser);
-        setState((prev) => ({
-          ...prev,
-          user: updatedUser,
-        }));
-        
-        console.log("[Auth] Local wallet user profile refreshed");
+          console.log("[Auth] Updated user pfpUrl:", updatedUser.pfpUrl);
+          await saveAuth(updatedUser);
+          setState((prev) => ({
+            ...prev,
+            user: updatedUser,
+          }));
+          
+          console.log("[Auth] Local wallet user profile refreshed");
+        } else {
+          console.log("[Auth] No backendUserId available, skipping refresh");
+          await loadSavedAuth();
+        }
       } catch (error) {
         console.error("[Auth] Error refreshing local wallet user profile:", error);
         // Fall back to loading saved auth

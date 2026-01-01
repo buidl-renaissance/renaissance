@@ -136,6 +136,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                         {authState.user?.pfpUrl && (
                           <View style={styles.avatarOverlay}>
                             <Image
+                              key={authState.user.pfpUrl}
                               source={{ uri: authState.user.pfpUrl }}
                               style={styles.avatarImage}
                             />

@@ -4,24 +4,24 @@ const API_BASE_URL = "https://people.builddetroit.xyz/api";
 
 /**
  * Construct the message that needs to be signed for account updates
- * This should match the backend's constructUpdateMessage function
+ * This matches the backend's constructUpdateMessage function
  */
 export function constructUpdateMessage(
   userId: number,
   farcasterId: string | null | undefined,
   profilePicture: string | null | undefined
 ): string {
-  const parts = [`Update account ${userId}`];
-  
-  if (farcasterId !== undefined) {
-    parts.push(`farcasterId=${farcasterId || ""}`);
-  }
-  
-  if (profilePicture !== undefined) {
-    parts.push(`profilePicture=${profilePicture ? "updated" : "removed"}`);
-  }
-  
-  return parts.join(", ");
+  const parts = [
+    `Update account for user ID: ${userId}`,
+    farcasterId !== undefined
+      ? `Farcaster ID: ${farcasterId ?? "null"}`
+      : null,
+    profilePicture !== undefined
+      ? `Profile Picture: ${profilePicture ? "updated" : "null"}`
+      : null,
+  ].filter((part) => part !== null) as string[];
+
+  return parts.join("\n");
 }
 
 /**
@@ -83,7 +83,7 @@ export async function getUserByWalletAddress(
  * Get user by ID
  */
 export async function getUserById(userId: number): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -124,29 +124,59 @@ export async function updateUserProfile(params: {
   // If updating farcasterId or profilePicture, we need a signature
   if (farcasterId !== undefined || profilePicture !== undefined) {
     const message = constructUpdateMessage(userId, farcasterId, profilePicture);
+    console.log("[updateUserProfile] Message to sign:", message);
     const signature = await signUpdateMessage(message);
+    console.log("[updateUserProfile] Signature:", signature);
     updateData.signature = signature;
   }
 
-  const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updateData),
+  const url = `${API_BASE_URL}/users/${userId}`;
+  const requestBody = JSON.stringify(updateData);
+  
+  console.log("[updateUserProfile] Request URL:", url);
+  console.log("[updateUserProfile] Request method: PUT");
+  console.log("[updateUserProfile] Request headers:", {
+    "Content-Type": "application/json",
   });
+  console.log("[updateUserProfile] Request body:", {
+    ...updateData,
+    profilePicture: profilePicture ? `${profilePicture.substring(0, 50)}... (${profilePicture.length} chars)` : profilePicture,
+  });
+  console.log("[updateUserProfile] Full request body length:", requestBody.length, "bytes");
+
+  let response: Response;
+  try {
+    console.log("[updateUserProfile] Sending fetch request...");
+    response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
+    console.log("[updateUserProfile] Fetch completed, response received");
+    console.log("[updateUserProfile] Response status:", response.status, response.statusText);
+    console.log("[updateUserProfile] Response ok:", response.ok);
+  } catch (error) {
+    console.error("[updateUserProfile] Network error:", error);
+    throw new Error(`Network error: ${error instanceof Error ? error.message : "Failed to send request"}`);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.log("[updateUserProfile] Error response text:", errorText);
     let errorMessage = "Failed to update user profile";
     try {
       const errorData = JSON.parse(errorText);
       errorMessage = errorData.error || errorMessage;
+      console.log("[updateUserProfile] Error response data:", errorData);
     } catch (e) {
       errorMessage = errorText || errorMessage;
     }
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  const responseData = await response.json();
+  console.log("[updateUserProfile] Success response:", responseData);
+  return responseData;
 }

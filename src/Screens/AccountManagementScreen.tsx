@@ -56,6 +56,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [lastProcessedUpdateImageUri, setLastProcessedUpdateImageUri] = useState<string | null>(null);
   const [connectedFarcasterId, setConnectedFarcasterId] = useState<string | null>(null);
   const [displayUserId, setDisplayUserId] = useState<number | null>(null);
+  const isProcessingUpdateImageRef = React.useRef(false);
   
   // Helper function to get backend user ID
   const getBackendUserId = async (): Promise<number | null> => {
@@ -202,7 +203,11 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   // Process update profile image and auto-save
   React.useEffect(() => {
     const processUpdateImage = async () => {
-      if (updateImage && updateImage.length > 0 && updateImage[0].uri !== lastProcessedUpdateImageUri) {
+      if (updateImage && updateImage.length > 0 && updateImage[0].uri !== lastProcessedUpdateImageUri && !isProcessingUpdateImageRef.current) {
+        // Set flags immediately to prevent re-triggering
+        isProcessingUpdateImageRef.current = true;
+        setLastProcessedUpdateImageUri(updateImage[0].uri);
+        
         setIsProcessingUpdateImage(true);
         try {
           // Resize image to 200x200 and get base64
@@ -215,25 +220,43 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
           if (manipulatedImage.base64) {
             setUpdateProfileImageBase64(manipulatedImage.base64);
             setUpdateProfileImagePreviewUri(manipulatedImage.uri);
-            setLastProcessedUpdateImageUri(updateImage[0].uri);
             
             // Auto-save the image
             const userId = await getBackendUserId();
             if (userId) {
               try {
                 setIsUpdatingProfile(true);
-                await updateUserProfile({
+                const updatedUserData = await updateUserProfile({
                   userId: userId,
                   profilePicture: manipulatedImage.base64,
                 });
+                
+                console.log("[AccountManagement] Update response:", updatedUserData);
+                console.log("[AccountManagement] New profile picture URL:", updatedUserData.profilePicture);
+                
+                // Refresh user data from backend to get the updated profile picture URL
                 await refreshUser();
+                
+                // Clear the update image state after successful update
+                setUpdateProfileImageBase64(null);
+                setUpdateProfileImagePreviewUri(null);
+                
                 Alert.alert("Success", "Profile picture updated successfully");
               } catch (error) {
                 console.error("Error auto-saving profile picture:", error);
-                // Don't show error alert, just log it
+                const errorMessage = error instanceof Error ? error.message : "Failed to update profile picture";
+                console.error("Error details:", errorMessage);
+                // Show error to user since auto-save failed
+                Alert.alert("Error", errorMessage);
+                // Reset the processed URI on error so user can retry
+                setLastProcessedUpdateImageUri(null);
               } finally {
                 setIsUpdatingProfile(false);
               }
+            } else {
+              console.error("Cannot auto-save: User ID not available");
+              Alert.alert("Error", "Unable to find your account. Please try again.");
+              setLastProcessedUpdateImageUri(null);
             }
           } else {
             throw new Error("Failed to generate base64 image");
@@ -241,8 +264,11 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
         } catch (error) {
           console.error("Update image processing error:", error);
           Alert.alert("Error", "Failed to process image");
+          // Reset the processed URI on error so user can retry
+          setLastProcessedUpdateImageUri(null);
         } finally {
           setIsProcessingUpdateImage(false);
+          isProcessingUpdateImageRef.current = false;
         }
       }
     };
@@ -302,14 +328,22 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
 
       const userData = await response.json();
       console.log("User created successfully:", userData);
+      console.log("Backend user ID:", userData.id);
 
       // After successful backend creation, sign in locally
       // Store the profilePicture URL and backend user ID returned from the backend API
+      if (!userData.id) {
+        console.error("Warning: Backend did not return user ID");
+        Alert.alert("Warning", "Account created but user ID not received");
+      }
+      
       await signInWithWallet({ 
         username, 
         pfpUrl: userData.profilePicture,
         backendUserId: userData.id
       });
+      
+      console.log("Account created and signed in with backendUserId:", userData.id);
       
       closeRenaissanceModal();
       Alert.alert("Success", "Renaissance account created successfully", [
@@ -487,7 +521,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
     setShowEditProfileModal(false);
     setUpdateProfileImageBase64(null);
     setUpdateProfileImagePreviewUri(null);
-    setLastProcessedUpdateImageUri(null);
+    // Don't clear lastProcessedUpdateImageUri here - it should persist to prevent re-triggering
   };
 
   // Render authenticated state
@@ -508,6 +542,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             <View style={styles.avatarContainer}>
               {state.user.pfpUrl ? (
                 <Image
+                  key={state.user.pfpUrl}
                   source={{ uri: state.user.pfpUrl }}
                   style={styles.avatarImage}
                 />
@@ -645,6 +680,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                           />
                         ) : state.user.pfpUrl ? (
                           <Image
+                            key={state.user.pfpUrl}
                             source={{ uri: state.user.pfpUrl }}
                             style={styles.modalProfilePicture}
                           />
