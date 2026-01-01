@@ -435,7 +435,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
               color="#8B5CF6" 
               style={styles.splashLoader}
             />
-            <Text style={styles.splashSubtext}>Loading mini app...</Text>
+            <Text style={styles.splashSubtext}>Loading...</Text>
           </View>
         </Animated.View>
       )}

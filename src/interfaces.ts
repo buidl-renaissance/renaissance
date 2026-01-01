@@ -470,6 +470,12 @@ export interface SportsGame {
   period: number | null;
   periodType: string;
   statusDetail: string;
+  displayClock?: string;
+  broadcasts?: Array<{
+    type?: string;
+    name?: string;
+    shortName?: string;
+  }>;
   link: string;
   createdAt: string;
   updatedAt: string;

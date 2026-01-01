@@ -12,6 +12,7 @@ import { getWallet } from "../utils/wallet";
 import { login as dpopLogin, register as dpopRegister } from "../dpop";
 import { initiateWarpcastAuth } from "../utils/farcasterAuth";
 import { fetchUserProfile } from "../utils/neynarAuth";
+import { getUserById } from "../api/user";
 
 // Types for authentication
 export type AuthType = "farcaster" | "local_wallet" | "local_email" | null;
@@ -31,6 +32,7 @@ export interface LocalUserData {
   displayName?: string;
   email?: string;
   walletAddress?: string;
+  backendUserId?: number; // Backend user ID from people.builddetroit.xyz
 }
 
 export interface AuthUser {
@@ -53,7 +55,7 @@ interface AuthState {
 interface AuthContextValue {
   state: AuthState;
   signInWithFarcaster: () => Promise<void>;
-  signInWithWallet: () => Promise<AuthUser>;
+  signInWithWallet: (params?: { username?: string; pfpUrl?: string; backendUserId?: number }) => Promise<AuthUser>;
   signInWithEmail: (email: string, password: string) => Promise<AuthUser>;
   registerWithEmail: (params: {
     email: string;
@@ -217,27 +219,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [handleFarcasterCallback]);
 
-  // Sign in with local wallet (anonymous)
-  const signInWithWallet = useCallback(async (): Promise<AuthUser> => {
+  // Sign in with local wallet (anonymous or Renaissance account)
+  const signInWithWallet = useCallback(async (params?: { username?: string; pfpUrl?: string; backendUserId?: number }): Promise<AuthUser> => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
       const wallet = await getWallet();
       const localFid = await getNextLocalFid();
 
-      // Generate a username from wallet address
+      // Use provided username or generate one from wallet address
       const shortAddress = `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}`;
+      const username = params?.username || `anon_${shortAddress}`;
+      const displayName = params?.username || `Anonymous User`;
 
       const user: AuthUser = {
         type: "local_wallet",
         local: {
           localId: localFid.toString(),
-          username: `anon_${shortAddress}`,
-          displayName: `Anonymous User`,
+          username: username,
+          displayName: displayName,
           walletAddress: wallet.address,
+          backendUserId: params?.backendUserId,
         },
         fid: localFid,
-        username: `anon_${shortAddress}`,
-        displayName: `Anonymous User`,
+        username: username,
+        displayName: displayName,
+        pfpUrl: params?.pfpUrl,
       };
 
       await saveAuth(user);
@@ -391,6 +397,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log("[Auth] User profile refreshed");
       } catch (error) {
         console.error("[Auth] Error refreshing user profile:", error);
+        // Fall back to loading saved auth
+        await loadSavedAuth();
+      }
+    } else if (state.user?.type === "local_wallet" && state.user.local?.backendUserId) {
+      try {
+        console.log("[Auth] Refreshing local wallet user profile from backend...");
+        const userData = await getUserById(state.user.local.backendUserId);
+        
+        const updatedUser: AuthUser = {
+          ...state.user,
+          pfpUrl: userData.profilePicture || state.user.pfpUrl,
+          username: userData.username || state.user.username,
+          displayName: userData.username || state.user.displayName,
+          local: {
+            ...state.user.local,
+            username: userData.username || state.user.local.username,
+            displayName: userData.username || state.user.local.displayName,
+          },
+        };
+
+        await saveAuth(updatedUser);
+        setState((prev) => ({
+          ...prev,
+          user: updatedUser,
+        }));
+        
+        console.log("[Auth] Local wallet user profile refreshed");
+      } catch (error) {
+        console.error("[Auth] Error refreshing local wallet user profile:", error);
         // Fall back to loading saved auth
         await loadSavedAuth();
       }

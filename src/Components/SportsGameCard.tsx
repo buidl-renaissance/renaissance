@@ -18,7 +18,10 @@ const formatTime = (date: string) => {
   return moment(date).format("h:mm a");
 };
 
-const getSportEmoji = (sport: string) => {
+const getSportEmoji = (sport: string | undefined) => {
+  if (!sport || typeof sport !== 'string') {
+    return "🏟️";
+  }
   switch (sport.toLowerCase()) {
     case "nhl":
       return "🏒";
@@ -33,7 +36,10 @@ const getSportEmoji = (sport: string) => {
   }
 };
 
-const getSportColor = (sport: string) => {
+const getSportColor = (sport: string | undefined) => {
+  if (!sport || typeof sport !== 'string') {
+    return "#666";
+  }
   switch (sport.toLowerCase()) {
     case "nhl":
       return "#C8102E"; // Red
@@ -202,7 +208,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                         fontWeight: "600",
                       }}
                     >
-                      {sportEmoji} {game.sport.toUpperCase()}
+                      {sportEmoji} {game.sport?.toUpperCase() || 'SPORT'}
                     </Text>
                   </View>
                   {isHomeGame && (
@@ -285,9 +291,9 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                     {game.venue} • {game.venueCity}, {game.venueState}
                   </Text>
                 )}
-                {game.statusDetail && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
-                    {game.statusDetail}
+                {game.broadcasts && game.broadcasts.length > 0 && (
+                  <Text style={[styles.subtitle, { fontSize: 10, color: "#666", marginTop: 2 }]}>
+                    {game.broadcasts.map(b => b.shortName || b.name).filter(Boolean).join(', ')}
                   </Text>
                 )}
               </View>
@@ -295,29 +301,63 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
           </View>
         </TouchableOpacity>
         {options.showImage && game.homeTeam.logo && (
-          <TouchableOpacity style={{ padding: 8 }} onPress={handlePress}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Image
-                source={{
-                  uri: game.awayTeam.logo,
-                }}
-                style={{
-                  height: 30,
-                  width: 30,
-                  resizeMode: "contain",
-                }}
-              />
-              <Text style={{ fontSize: 12, color: "#999" }}>@</Text>
-              <Image
-                source={{
-                  uri: game.homeTeam.logo,
-                }}
-                style={{
-                  height: 30,
-                  width: 30,
-                  resizeMode: "contain",
-                }}
-              />
+          <TouchableOpacity style={{ paddingVertical: 8, paddingHorizontal: 8, justifyContent: "center" }} onPress={handlePress}>
+            <View style={{ alignItems: "center", minWidth: 80, justifyContent: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <View style={{ alignItems: "center" }}>
+                  <Image
+                    source={{
+                      uri: game.awayTeam.logo,
+                    }}
+                    style={{
+                      height: 36,
+                      width: 36,
+                      resizeMode: "contain",
+                    }}
+                  />
+                  {(game.homeScore !== null || game.awayScore !== null) && (
+                    <Text style={[styles.subtitle, { fontSize: 13, fontWeight: "700", marginTop: 2 }]}>
+                      {game.awayScore ?? 0}
+                    </Text>
+                  )}
+                </View>
+                <Text style={{ fontSize: 11, color: "#999", marginTop: -8 }}>@</Text>
+                <View style={{ alignItems: "center" }}>
+                  <Image
+                    source={{
+                      uri: game.homeTeam.logo,
+                    }}
+                    style={{
+                      height: 36,
+                      width: 36,
+                      resizeMode: "contain",
+                    }}
+                  />
+                  {(game.homeScore !== null || game.awayScore !== null) && (
+                    <Text style={[styles.subtitle, { fontSize: 13, fontWeight: "700", marginTop: 2 }]}>
+                      {game.homeScore ?? 0}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              {(game.period !== null || game.periodType || game.displayClock) && (
+                <Text style={[styles.subtitle, { fontSize: 9, color: "#666", marginTop: 4 }]}>
+                  {(() => {
+                    let periodText = '';
+                    if (game.periodType && game.period !== null) {
+                      periodText = `${game.periodType} ${game.period}`;
+                    } else if (game.period !== null) {
+                      periodText = `Period ${game.period}`;
+                    }
+                    if (game.displayClock && periodText) {
+                      return `${periodText} • ${game.displayClock}`;
+                    } else if (game.displayClock) {
+                      return game.displayClock;
+                    }
+                    return periodText;
+                  })()}
+                </Text>
+              )}
             </View>
           </TouchableOpacity>
         )}

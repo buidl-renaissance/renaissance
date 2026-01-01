@@ -92,7 +92,7 @@ const CalendarScreen = ({ navigation }) => {
   const { events: lumaEvents } = useLumaEvents(lumaQuery);
   const { events: raEvents } = useRAEvents();
   // NYE-specific RA events use the dedicated NYE endpoint.
-  const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
+  // const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
   const { events: meetupEvents } = useMeetupEvents();
   const { games: sportsGames } = useSportsGames();
   const { events: instagramEvents } = useInstagramEvents();
@@ -883,114 +883,25 @@ const CalendarScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Plan Your NYE - Featured RA events on New Year's Eve */}
+        {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
+        {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
+        {/* 
         <View
           style={{
             paddingTop: 8,
           }}
         >
           <SectionTitle>PLAN YOUR NYE</SectionTitle>
-          {nyeLoading ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
-            >
-              {[1, 2, 3].map((index) => (
-                <View
-                  key={index}
-                  style={{
-                    marginRight: 12,
-                    width: width * 0.35,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: "100%",
-                      height: 180,
-                      borderRadius: 12,
-                      backgroundColor: "#E5E7EB",
-                    }}
-                  />
-                  <View style={{ marginTop: 8 }}>
-                    <View
-                      style={{
-                        width: "60%",
-                        height: 12,
-                        borderRadius: 4,
-                        backgroundColor: "#E5E7EB",
-                        marginTop: 4,
-                      }}
-                    />
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          ) : nyeRaEvents.length === 0 ? (
-            <Text
-              style={{
-                color: "#777",
-                fontSize: 12,
-                marginTop: 4,
-              }}
-            >
-              NYE events coming soon – check back later.
-            </Text>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
-            >
-              {nyeRaEvents.map((raEvent) => {
-                const flyerImage =
-                  raEvent.images?.find((img) => img.type === "FLYERFRONT")
-                    ?.filename || raEvent.flyerFront;
-
-                return (
-                  <TouchableOpacity
-                    key={raEvent.id}
-                    onPress={() => {
-                    openWebModal(`https://ra.co${raEvent.contentUrl}`, raEvent.title, "ra", raEvent);
-                    }}
-                    activeOpacity={0.85}
-                    style={{
-                      marginRight: 12,
-                      width: width * 0.35,
-                    }}
-                  >
-                    {flyerImage && (
-                      <Image
-                        source={{ uri: flyerImage }}
-                        style={{
-                          width: "100%",
-                          height: 180,
-                          borderRadius: 12,
-                          backgroundColor: "#111",
-                        }}
-                        resizeMode="cover"
-                      />
-                    )}
-                    <View style={{ marginTop: 8 }}>
-                      {raEvent.interestedCount !== null &&
-                        raEvent.interestedCount > 0 && (
-                          <Text
-                            style={{
-                              marginTop: 2,
-                              fontSize: 12,
-                              color: "#666",
-                            }}
-                          >
-                            {raEvent.interestedCount} interested
-                          </Text>
-                        )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          )}
+          <HorizontalRAEventList
+            events={nyeRaEvents}
+            loading={nyeLoading}
+            emptyMessage="NYE events coming soon – check back later."
+            onEventPress={(event) => {
+              openWebModal(`https://ra.co${event.contentUrl}`, event.title, "ra", event);
+            }}
+          />
         </View>
+        */}
 
 
         <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
@@ -1013,7 +924,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, nyeRaEvents, nyeLoading, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update

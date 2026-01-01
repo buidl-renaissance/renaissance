@@ -1,5 +1,5 @@
 Arguments: 
-  /Users/johngulbronson/.nvm/versions/node/v22.9.0/bin/node /usr/local/bin/yarn add expo-clipboard
+  /Users/johngulbronson/.nvm/versions/node/v22.9.0/bin/node /usr/local/bin/yarn add expo-image-manipulator
 
 PATH: 
   /opt/homebrew/opt/php@8.1/sbin:/opt/homebrew/opt/php@8.1/bin:/opt/homebrew/opt/php@8.0/sbin:/opt/homebrew/opt/php@8.0/bin:/Users/johngulbronson/.nvm/versions/node/v22.9.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/johngulbronson/.cargo/bin:/Users/johngulbronson/.local/bin:/Users/johngulbronson/.local/bin:/Users/johngulbronson/Library/Android/sdk/emulator:/Users/johngulbronson/Library/Android/sdk/platform-tools
