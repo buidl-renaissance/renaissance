@@ -261,8 +261,62 @@ export const toggleBookmarkForWebEvent = async (
   return false;
 };
 
+// Cache key for full bookmarked events
+const CACHED_BOOKMARKED_EVENTS_KEY = 'CachedBookmarkedEvents';
+const CACHE_TIMESTAMP_KEY = 'CachedBookmarkedEventsTimestamp';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached bookmarked events if they exist and are fresh
+ */
+export const getCachedBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' | 'instagram' }> | null> => {
+  try {
+    const cachedData = await AsyncStorage.getItem(CACHED_BOOKMARKED_EVENTS_KEY);
+    const timestampStr = await AsyncStorage.getItem(CACHE_TIMESTAMP_KEY);
+    
+    if (!cachedData || !timestampStr) {
+      return null;
+    }
+    
+    const timestamp = parseInt(timestampStr, 10);
+    const now = Date.now();
+    
+    // Check if cache is still valid (within 5 minutes)
+    if (now - timestamp > CACHE_DURATION) {
+      return null;
+    }
+    
+    return JSON.parse(cachedData);
+  } catch (error) {
+    console.error("Error reading cached bookmarked events:", error);
+    return null;
+  }
+};
+
+/**
+ * Cache bookmarked events
+ */
+export const cacheBookmarkedEvents = async (
+  events: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' | 'instagram' }>
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(CACHED_BOOKMARKED_EVENTS_KEY, JSON.stringify(events));
+    await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+  } catch (error) {
+    console.error("Error caching bookmarked events:", error);
+  }
+};
+
 // Get all bookmarked events (DA by ID lookup, Luma/RA/Meetup/Sports/Instagram from stored data)
-export const getBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' | 'instagram' }>> => {
+export const getBookmarkedEvents = async (useCache: boolean = true): Promise<Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' | 'instagram' }>> => {
+  // Try to get from cache first if requested
+  if (useCache) {
+    const cached = await getCachedBookmarkedEvents();
+    if (cached) {
+      return cached;
+    }
+  }
+
   const bookmarkedEvents: Array<{ event: DAEvent | LumaEvent | RAEvent | MeetupEvent | SportsGame | InstagramEvent; eventType: 'da' | 'luma' | 'ra' | 'meetup' | 'sports' | 'instagram' }> = [];
 
   // Get DA event IDs
@@ -348,6 +402,9 @@ export const getBookmarkedEvents = async (): Promise<Array<{ event: DAEvent | Lu
   } catch (error) {
     console.error("Error loading Instagram bookmarks:", error);
   }
+
+  // Cache the results
+  await cacheBookmarkedEvents(bookmarkedEvents);
 
   return bookmarkedEvents;
 };

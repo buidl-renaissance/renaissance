@@ -16,7 +16,6 @@ import { HeroBanner } from "../Components/HeroBanner";
 
 import { getProvider } from "../utils/web3";
 
-import { EventCard } from "../Components/EventCard";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
@@ -56,12 +55,7 @@ import { SectionHeader } from "../Components/SectionHeader";
 import * as Linking from "expo-linking";
 import { AudioRecorder } from "../Components/AudioRecorder";
 import { ContentView } from "../Components/ContentView";
-import { LumaEventCard } from "../Components/LumaEventCard";
-import { RAEventCard } from "../Components/RAEventCard";
-import { MeetupEventCard } from "../Components/MeetupEventCard";
-import { FlyerEventCard } from "../Components/FlyerEventCard";
-import { SportsGameCard } from "../Components/SportsGameCard";
-import { InstagramEventCard } from "../Components/InstagramEventCard";
+import { EventsSectionList } from "../Components/EventsSectionList";
 import { InstagramPostModal } from "../Components/InstagramPostModal";
 import { DAEventModal } from "../Components/DAEventModal";
 import { EventWebModal } from "../Components/EventWebModal";
@@ -1008,184 +1002,40 @@ const CalendarScreen = ({ navigation }) => {
           <Rect width="100%" height="100%" fill="url(#topGradient)" />
         </Svg>
       </View>
-      <SectionList
+      <EventsSectionList
         ref={sectionListRef}
-        sections={eventsGroup}
+        eventsGroup={eventsGroup}
         ListHeaderComponent={sectionHeader}
-        stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section: { title, subtitle } }) => (
-          <SectionHeader title={title} subtitle={subtitle} />
-        )}
-        keyExtractor={(item, index) => {
-          const eventType = (item as any).eventType;
-          if (eventType === 'luma' && (item as LumaEvent).apiId) return `luma-${(item as LumaEvent).apiId}`;
-          if (eventType === 'ra' && (item as RAEvent).id) return `ra-${(item as RAEvent).id}`;
-          if (eventType === 'meetup' && (item as MeetupEvent).eventId) return `meetup-${(item as MeetupEvent).eventId}`;
-          if (eventType === 'sports' && (item as SportsGame).id) return `sports-${(item as SportsGame).id}`;
-          if (eventType === 'instagram' && (item as InstagramEvent).id) return `instagram-${(item as InstagramEvent).id}`;
-          if ((item as DAEvent).id) return `da-${(item as DAEvent).id}`;
-          return `event-${index}`;
+        eventRendererProps={{
+          containerStyle: { paddingHorizontal: 16 },
+          onSelectDAEvent: openDAModal,
+          onSelectLumaEvent: (event: LumaEvent) => {
+            openWebModal(`https://lu.ma/${event.url}`, event.name, 'luma', event);
+          },
+          onSelectRAEvent: (event: RAEvent) => {
+            openWebModal(`https://ra.co${event.contentUrl}`, event.title, 'ra', event);
+          },
+          onSelectMeetupEvent: (event: MeetupEvent) => {
+            openWebModal(event.eventUrl, event.title, 'meetup', event);
+          },
+          onSelectSportsEvent: (game: SportsGame) => {
+            if (game.link) {
+              openWebModal(
+                game.link,
+                `${game.awayTeam.shortDisplayName} @ ${game.homeTeam.shortDisplayName}`,
+                'sports',
+                game
+              );
+            }
+          },
+          onSelectInstagramEvent: openInstagramModal,
+          showFeaturedImage: true,
         }}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         initialNumToRender={10}
         windowSize={10}
-        renderItem={({ item }) => {
-          const eventType = (item as any).eventType;
-
-          if (eventType === "flyer") {
-            return (
-              <FlyerEventCard
-                event={item}
-                onSelectEvent={() => {
-                  // Could open event details or edit screen
-                }}
-              />
-            );
-          }
-
-          if (eventType === "luma") {
-            const lumaEvent = item as LumaEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <LumaEventCard
-                  event={lumaEvent}
-                  options={{
-                    showLocation: true,
-                    showImage: true,
-                    showHosts: true,
-                  }}
-                  onSelectEvent={() => {
-                    openWebModal(`https://lu.ma/${lumaEvent.url}`, lumaEvent.name, 'luma', lumaEvent);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          if (eventType === "ra") {
-            const raEvent = item as RAEvent & { isFeatured?: boolean };
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <RAEventCard
-                  event={raEvent}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                    showArtists: true,
-                  }}
-                  isFeatured={raEvent.isFeatured}
-                  onSelectEvent={() => {
-                    openWebModal(`https://ra.co${raEvent.contentUrl}`, raEvent.title, 'ra', raEvent);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          if (eventType === "meetup") {
-            const meetupEvent = item as MeetupEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <MeetupEventCard
-                  event={meetupEvent}
-                  options={{
-                    showLocation: true,
-                    showImage: true,
-                    showGroup: true,
-                  }}
-                  onSelectEvent={() => {
-                    openWebModal(meetupEvent.eventUrl, meetupEvent.title, 'meetup', meetupEvent);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          if (eventType === "sports") {
-            const sportsGame = item as SportsGame;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <SportsGameCard
-                  game={sportsGame}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                  }}
-                  onSelectEvent={() => {
-                    if (sportsGame.link) {
-                      openWebModal(sportsGame.link, `${sportsGame.awayTeam.shortDisplayName} @ ${sportsGame.homeTeam.shortDisplayName}`, 'sports', sportsGame);
-                    }
-                  }}
-                />
-              </View>
-            );
-          }
-
-          if (eventType === "instagram") {
-            const instagramEvent = item as InstagramEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <InstagramEventCard
-                  event={instagramEvent}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                    showArtists: true,
-                  }}
-                  onSelectEvent={() => {
-                    openInstagramModal(instagramEvent);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          const daEvent = item as DAEvent;
-          const imageHeight = daEvent.image_data?.width
-            ? (daEvent.image_data?.height / daEvent.image_data?.width) *
-                Dimensions.get("window").width -
-              54
-            : 360;
-
-          return (
-            <View>
-              <View style={{ paddingHorizontal: 16 }}>
-                <EventCard
-                  event={daEvent}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                  }}
-                  onSelectEvent={() => {
-                    openDAModal(daEvent);
-                  }}
-                />
-                {daEvent.featured && daEvent.image && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      openDAModal(daEvent);
-                    }}
-                    style={{ paddingVertical: 16 }}
-                  >
-                    <Image
-                      source={{
-                        uri: daEvent.image,
-                      }}
-                      style={{
-                        height: imageHeight,
-                        width: "100%",
-                        resizeMode: "cover",
-                        backgroundColor: "#E5E7EB",
-                      }}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          );
-        }}
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
       <FloatingActionButtons

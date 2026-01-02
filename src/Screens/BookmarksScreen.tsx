@@ -1,38 +1,29 @@
 import React from "react";
-import {
-  TouchableOpacity,
-  StyleSheet,
-  View,
-  SectionList,
-  Text,
-} from "react-native";
+import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 
-import { EventCard } from "../Components/EventCard";
-import { LumaEventCard } from "../Components/LumaEventCard";
-import { RAEventCard } from "../Components/RAEventCard";
+import { EventsSectionList } from "../Components/EventsSectionList";
 import { EventWebModal } from "../Components/EventWebModal";
-import { SectionHeader } from "../Components/SectionHeader";
+import { InstagramPostModal } from "../Components/InstagramPostModal";
 
-import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
+import { DAEvent, LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
+import { SportsGame } from "../api/sports-games";
 import { getBookmarkedEvents } from "../utils/bookmarks";
-import moment from "moment";
+import { groupEventsByDate, TypedEvent } from "../utils/eventGrouping";
+import { useWebModal } from "../hooks/useWebModal";
 
 const BookmarksScreen = ({ navigation, route }) => {
   navigation.setOptions({
     headerTitle: "Bookmarked Events",
   });
 
-  const [bookmarkedEvents, setBookmarkedEvents] = React.useState<Array<{ event: DAEvent | LumaEvent | RAEvent; eventType: 'da' | 'luma' | 'ra' }>>([]);
-  const [eventsGroup, setEventsGroup] = React.useState<
-    { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; sortDate?: number; dateKey?: string }[]
-  >([]);
-
-  // State for web modal
-  const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
-  const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
-  const [webModalTitle, setWebModalTitle] = React.useState<string>("");
-  const [webModalEventType, setWebModalEventType] = React.useState<'ra' | 'luma' | 'da' | undefined>(undefined);
-  const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
+  const [bookmarkedEvents, setBookmarkedEvents] = React.useState<TypedEvent[]>([]);
+  const [eventsGroup, setEventsGroup] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
+  const [instagramModalVisible, setInstagramModalVisible] = React.useState<boolean>(false);
+  const [instagramModalEvent, setInstagramModalEvent] = React.useState<InstagramEvent | null>(null);
+  
+  const webModal = useWebModal();
 
   const handlePressDAEvent = React.useCallback((event: DAEvent) => {
     navigation.push("Event", {
@@ -41,222 +32,161 @@ const BookmarksScreen = ({ navigation, route }) => {
   }, [navigation]);
 
   const handlePressLumaEvent = React.useCallback((event: LumaEvent) => {
-    setWebModalUrl(`https://lu.ma/${event.url}`);
-    setWebModalTitle(event.name);
-    setWebModalEventType('luma');
-    setWebModalEventData(event);
-    setWebModalVisible(true);
-  }, []);
+    webModal.openWebModal(`https://lu.ma/${event.url}`, event.name, 'luma', event);
+  }, [webModal]);
 
   const handlePressRAEvent = React.useCallback((event: RAEvent) => {
-    setWebModalUrl(`https://ra.co${event.contentUrl}`);
-    setWebModalTitle(event.title);
-    setWebModalEventType('ra');
-    setWebModalEventData(event);
-    setWebModalVisible(true);
+    webModal.openWebModal(`https://ra.co${event.contentUrl}`, event.title, 'ra', event);
+  }, [webModal]);
+
+  const handlePressMeetupEvent = React.useCallback((event: MeetupEvent) => {
+    webModal.openWebModal(event.eventUrl, event.title, 'meetup', event);
+  }, [webModal]);
+
+  const handlePressSportsEvent = React.useCallback((game: SportsGame) => {
+    if (game.link) {
+      webModal.openWebModal(
+        game.link,
+        `${game.awayTeam.shortDisplayName} @ ${game.homeTeam.shortDisplayName}`,
+        'sports',
+        game
+      );
+    }
+  }, [webModal]);
+
+  const handlePressInstagramEvent = React.useCallback((event: InstagramEvent) => {
+    setInstagramModalEvent(event);
+    setInstagramModalVisible(true);
   }, []);
 
-  const handleCloseWebModal = React.useCallback(() => {
-    setWebModalVisible(false);
-    setWebModalUrl(null);
-    setWebModalTitle("");
-    setWebModalEventType(undefined);
-    setWebModalEventData(null);
+  const handleCloseInstagramModal = React.useCallback(() => {
+    setInstagramModalVisible(false);
+    setInstagramModalEvent(null);
   }, []);
 
   React.useEffect(() => {
-    const loadBookmarks = async () => {
-      const bookmarks = await getBookmarkedEvents();
-      setBookmarkedEvents(bookmarks);
+    let mounted = true;
+    
+    const loadBookmarks = async (useCache: boolean = true, showRefreshing: boolean = false) => {
+      try {
+        if (showRefreshing) {
+          if (mounted) setIsRefreshing(true);
+        } else {
+          // Always show loading on initial load
+          if (mounted) setIsLoading(true);
+        }
+
+        // Try to load from cache first for instant display
+        const bookmarks = await getBookmarkedEvents(useCache);
+        
+        if (mounted) {
+          setBookmarkedEvents(bookmarks);
+          // Don't set loading to false here - let it be set after grouping
+        }
+
+        // If we used cache, refresh in background without showing loading
+        if (useCache && !showRefreshing) {
+          // Load fresh data in background
+          getBookmarkedEvents(false).then((freshBookmarks) => {
+            if (mounted) {
+              setBookmarkedEvents(freshBookmarks);
+            }
+          }).catch((error) => {
+            console.error("Error refreshing bookmarks:", error);
+          });
+        }
+      } catch (error) {
+        console.error("Error loading bookmarks:", error);
+        if (mounted) setIsLoading(false);
+      } finally {
+        if (mounted) setIsRefreshing(false);
+      }
     };
     
-    loadBookmarks();
+    // Initial load with cache
+    loadBookmarks(true, false);
     
-    // Refresh when screen comes into focus
+    // Refresh when screen comes into focus (use cache for instant display)
     const unsubscribe = navigation.addListener('focus', () => {
-      loadBookmarks();
+      if (mounted) {
+        loadBookmarks(true, false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, [navigation]);
 
   // Group bookmarked events by date
   React.useEffect(() => {
-    const groups = {};
-    
-    bookmarkedEvents.forEach((item) => {
-      const { event, eventType } = item;
-      let start, end;
-      
-      // Get start and end dates based on event type
-      if (eventType === 'da') {
-        const daEvent = event as DAEvent;
-        start = moment(daEvent.start_date);
-        end = moment(daEvent.end_date);
-      } else if (eventType === 'luma') {
-        const lumaEvent = event as LumaEvent;
-        start = moment(lumaEvent.startAt);
-        end = moment(lumaEvent.endAt);
-      } else if (eventType === 'ra') {
-        const raEvent = event as RAEvent;
-        start = moment(raEvent.startTime);
-        end = moment(raEvent.endTime);
-      } else {
-        return; // Skip unknown event types
-      }
-      
-      // Only include events that haven't ended
-      if (end.isAfter()) {
-        const dateKey = start.format("YYYY-MM-DD");
-        const date = start.format("MMMM Do");
-        const subtitle = start.format("dddd");
-        
-        if (!groups[dateKey]) {
-          groups[dateKey] = {
-            title: date,
-            subtitle: subtitle,
-            data: [],
-            sortDate: start.valueOf(),
-            dateKey: dateKey,
-          };
-        }
-        
-        // Add event with eventType for rendering
-        groups[dateKey].data.push({ ...event, eventType });
-      }
+    const grouped = groupEventsByDate(bookmarkedEvents, {
+      filterEnded: true, // Only include events that haven't ended
     });
-
-    // Sort events within each group by start time
-    Object.values(groups).forEach((group: any) => {
-      group.data.sort((a, b) => {
-        let aStart, bStart;
-        
-        // Get start time for event a
-        if (a.eventType === "luma") {
-          aStart = moment(a.startAt);
-        } else if (a.eventType === "ra") {
-          aStart = moment(a.startTime);
-        } else {
-          aStart = moment(a.start_date);
-        }
-        
-        // Get start time for event b
-        if (b.eventType === "luma") {
-          bStart = moment(b.startAt);
-        } else if (b.eventType === "ra") {
-          bStart = moment(b.startTime);
-        } else {
-          bStart = moment(b.start_date);
-        }
-        
-        // Validate both dates are valid
-        if (!aStart.isValid()) {
-          return 1;
-        }
-        if (!bStart.isValid()) {
-          return -1;
-        }
-        
-        return aStart.diff(bStart);
-      });
-    });
-
-    // Sort groups by date chronologically
-    const groupsArray = Object.values(groups) as any;
-    groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
+    setEventsGroup(grouped);
     
-    setEventsGroup(groupsArray);
-  }, [bookmarkedEvents]);
+    // Once we've grouped events, stop loading (even if grouped is empty - that means no events)
+    if (isLoading) {
+      setIsLoading(false);
+    }
+  }, [bookmarkedEvents, isLoading]);
+
+  // Show loading indicator on initial load (when we have no events yet)
+  if (isLoading && bookmarkedEvents.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7c3aed" />
+          <Text style={styles.loadingText}>Loading bookmarks...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <SectionList
-        sections={eventsGroup}
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section: { title, subtitle } }) => (
-          <SectionHeader title={title} subtitle={subtitle} />
-        )}
-        renderItem={({ item }) => {
-          const eventType = (item as any).eventType;
-          
-          if (eventType === 'da') {
-            const daEvent = item as DAEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <EventCard
-                  event={daEvent}
-                  options={{
-                    showDate: true,
-                    showBookmark: true,
-                    showVenue: true,
-                    showImage: true,
-                  }}
-                  onSelectEvent={() => handlePressDAEvent(daEvent)}
-                />
-              </View>
-            );
-          } else if (eventType === 'luma') {
-            const lumaEvent = item as LumaEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <LumaEventCard
-                  event={lumaEvent}
-                  options={{
-                    showLocation: true,
-                    showImage: true,
-                    showHosts: true,
-                  }}
-                  onSelectEvent={() => handlePressLumaEvent(lumaEvent)}
-                />
-              </View>
-            );
-          } else if (eventType === 'ra') {
-            const raEvent = item as RAEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <RAEventCard
-                  event={raEvent}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                    showArtists: true,
-                  }}
-                  onSelectEvent={() => handlePressRAEvent(raEvent)}
-                />
-              </View>
-            );
-          }
-          
-          return null;
+      {isRefreshing && (
+        <View style={styles.refreshingIndicator}>
+          <ActivityIndicator size="small" color="#7c3aed" />
+          <Text style={styles.refreshingText}>Refreshing...</Text>
+        </View>
+      )}
+      <EventsSectionList
+        eventsGroup={eventsGroup}
+        eventRendererProps={{
+          containerStyle: { paddingHorizontal: 16 },
+          onSelectDAEvent: handlePressDAEvent,
+          onSelectLumaEvent: handlePressLumaEvent,
+          onSelectRAEvent: handlePressRAEvent,
+          onSelectMeetupEvent: handlePressMeetupEvent,
+          onSelectSportsEvent: handlePressSportsEvent,
+          onSelectInstagramEvent: handlePressInstagramEvent,
+          showFeaturedImage: false, // Match SearchScreen
+          eventCardOptions: {
+            showVenue: true,
+            showImage: true,
+            showBookmark: false, // Don't show bookmark button in bookmarks screen
+          },
         }}
-        keyExtractor={(item, index) => {
-          const eventType = (item as any).eventType;
-          if (eventType === 'da') {
-            return `da-${(item as DAEvent).id}`;
-          } else if (eventType === 'luma') {
-            return `luma-${(item as LumaEvent).apiId}`;
-          } else if (eventType === 'ra') {
-            return `ra-${(item as RAEvent).id}`;
-          }
-          return `event-${index}`;
-        }}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyTextContainer}>
-              <Text style={styles.emptyText}>No bookmarked events</Text>
-            </View>
-          </View>
-        }
+        emptyText="No bookmarked events"
+        contentContainerStyle={{ paddingBottom: 16 }}
       />
       <EventWebModal
-        isVisible={webModalVisible}
-        url={webModalUrl}
-        title={webModalTitle}
-        onClose={handleCloseWebModal}
-        eventType={webModalEventType}
-        eventData={webModalEventData}
+        isVisible={webModal.webModalVisible}
+        url={webModal.webModalUrl}
+        title={webModal.webModalTitle}
+        onClose={webModal.closeWebModal}
+        eventType={webModal.webModalEventType}
+        eventData={webModal.webModalEventData}
+      />
+      <InstagramPostModal
+        isVisible={instagramModalVisible}
+        event={instagramModalEvent}
+        onClose={() => {
+          setInstagramModalVisible(false);
+          setInstagramModalEvent(null);
+        }}
       />
     </View>
   );
@@ -267,25 +197,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
   },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingBottom: 16,
-  },
-  emptyContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 100,
   },
-  emptyTextContainer: {
-    paddingHorizontal: 32,
-  },
-  emptyText: {
+  loadingText: {
+    marginTop: 16,
     fontSize: 16,
-    color: "#999",
-    textAlign: "center",
+    color: "#666",
+  },
+  refreshingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    backgroundColor: "#f5f5f5",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  refreshingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#666",
   },
 });
 

@@ -1,20 +1,14 @@
 import React from "react";
 import {
   View,
-  Text,
   StyleSheet,
   SectionList,
-  Dimensions,
 } from "react-native";
 import moment from "moment";
-import { SectionHeader } from "../Components/SectionHeader";
-import { EventCard } from "../Components/EventCard";
-import { LumaEventCard } from "../Components/LumaEventCard";
-import { RAEventCard } from "../Components/RAEventCard";
+import { EventsSectionList } from "../Components/EventsSectionList";
 import { EventWebModal } from "../Components/EventWebModal";
+import { useWebModal } from "../hooks/useWebModal";
 import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
-
-const { width } = Dimensions.get("window");
 
 interface CalendarViewScreenProps {
   route: {
@@ -42,13 +36,7 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
 
   const eventsGroup = route.params?.eventsGroup || [];
 
-  const [webModalVisible, setWebModalVisible] = React.useState<boolean>(false);
-  const [webModalUrl, setWebModalUrl] = React.useState<string | null>(null);
-  const [webModalTitle, setWebModalTitle] = React.useState<string>("");
-  const [webModalEventType, setWebModalEventType] = React.useState<
-    "ra" | "luma" | "da" | undefined
-  >(undefined);
-  const [webModalEventData, setWebModalEventData] = React.useState<any>(null);
+  const webModal = useWebModal();
 
   const sectionListRef = React.useRef<SectionList>(null);
 
@@ -86,15 +74,7 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
     }
   }, [selectedDate, eventsGroup]);
 
-  const handleCloseWebModal = React.useCallback(() => {
-    setWebModalVisible(false);
-    setWebModalUrl(null);
-    setWebModalTitle("");
-    setWebModalEventType(undefined);
-    setWebModalEventData(null);
-  }, []);
-
-  const handlePressEvent = React.useCallback(
+  const handlePressDAEvent = React.useCallback(
     (event: DAEvent) => {
       navigation.push("Event", {
         event,
@@ -103,94 +83,36 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
     [navigation]
   );
 
+  const handlePressLumaEvent = React.useCallback((event: LumaEvent) => {
+    webModal.openWebModal(`https://lu.ma/${event.url}`, event.name, 'luma', event);
+  }, [webModal]);
+
+  const handlePressRAEvent = React.useCallback((event: RAEvent) => {
+    webModal.openWebModal(`https://ra.co${event.contentUrl}`, event.title, 'ra', event);
+  }, [webModal]);
+
   return (
     <View style={styles.container}>
-      <SectionList
+      <EventsSectionList
         ref={sectionListRef}
-        sections={eventsGroup}
-        stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section: { title, subtitle } }) => (
-          <SectionHeader title={title} subtitle={subtitle} />
-        )}
-        renderItem={({ item }) => {
-          const eventType = (item as any).eventType;
-
-          if (eventType === "luma") {
-            const lumaEvent = item as LumaEvent;
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <LumaEventCard
-                  event={lumaEvent}
-                  options={{
-                    showLocation: true,
-                    showImage: true,
-                    showHosts: true,
-                  }}
-                  onSelectEvent={() => {
-                    setWebModalUrl(`https://lu.ma/${lumaEvent.url}`);
-                    setWebModalTitle(lumaEvent.name);
-                    setWebModalEventType("luma");
-                    setWebModalEventData(lumaEvent);
-                    setWebModalVisible(true);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          if (eventType === "ra") {
-            const raEvent = item as RAEvent & { isFeatured?: boolean };
-            return (
-              <View style={{ paddingHorizontal: 16 }}>
-                <RAEventCard
-                  event={raEvent}
-                  options={{
-                    showVenue: true,
-                    showImage: true,
-                    showArtists: true,
-                  }}
-                  isFeatured={raEvent.isFeatured}
-                  onSelectEvent={() => {
-                    setWebModalUrl(`https://ra.co${raEvent.contentUrl}`);
-                    setWebModalTitle(raEvent.title);
-                    setWebModalEventType("ra");
-                    setWebModalEventData(raEvent);
-                    setWebModalVisible(true);
-                  }}
-                />
-              </View>
-            );
-          }
-
-          const daEvent = item as DAEvent;
-          return (
-            <View style={{ paddingHorizontal: 16 }}>
-              <EventCard
-                event={daEvent}
-                options={{
-                  showVenue: true,
-                  showImage: true,
-                }}
-                onSelectEvent={() => handlePressEvent(daEvent)}
-              />
-            </View>
-          );
+        eventsGroup={eventsGroup}
+        eventRendererProps={{
+          containerStyle: { paddingHorizontal: 16 },
+          onSelectDAEvent: handlePressDAEvent,
+          onSelectLumaEvent: handlePressLumaEvent,
+          onSelectRAEvent: handlePressRAEvent,
+          showFeaturedImage: false,
         }}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No events found for {selectedDate.format("MMMM Do, YYYY")}
-            </Text>
-          </View>
-        }
+        emptyText={`No events found for ${selectedDate.format("MMMM Do, YYYY")}`}
+        listStyle={{ flex: 1 }}
       />
       <EventWebModal
-        isVisible={webModalVisible}
-        url={webModalUrl}
-        title={webModalTitle}
-        onClose={handleCloseWebModal}
-        eventType={webModalEventType}
-        eventData={webModalEventData}
+        isVisible={webModal.webModalVisible}
+        url={webModal.webModalUrl}
+        title={webModal.webModalTitle}
+        onClose={webModal.closeWebModal}
+        eventType={webModal.webModalEventType}
+        eventData={webModal.webModalEventData}
       />
     </View>
   );
@@ -200,17 +122,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
   },
 });
 
