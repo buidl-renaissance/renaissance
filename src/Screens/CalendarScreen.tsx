@@ -24,7 +24,7 @@ import { FloatingButton } from "../Components/FloatingButton";
 import { FloatingProfileButton } from "../Components/FloatingProfileButton";
 import { FloatingActionButtons } from "../Components/FloatingActionButtons";
 import { SectionTitle } from "../Components/SectionTitle";
-import { MiniAppButton } from "../Components/MiniAppButton";
+import { MiniAppsGrid, MiniAppConfig } from "../Components/MiniAppsGrid";
 import { EventForecast } from "../Components/EventForecast";
 import { getBookmarkStatusForWebEvent, getBookmarks } from "../utils/bookmarks";
 import { getGoingStatusForWebEvent, getGoingEvents } from "../utils/rsvp";
@@ -747,6 +747,81 @@ const CalendarScreen = ({ navigation }) => {
     [eventsGroup]
   );
 
+  // Memoize mini apps configuration
+  const miniApps: MiniAppConfig[] = React.useMemo(() => [
+    {
+      emoji: "🎨",
+      label: "Art",
+      backgroundColor: "#EC4899",
+      onPress: handleOpenArt,
+    },
+    {
+      emoji: "🅿️",
+      label: "Parking",
+      backgroundColor: "#10B981",
+      onPress: handleOpenParking,
+    },
+    {
+      emoji: "🤝",
+      label: "Co.Lab",
+      backgroundColor: "#8B5CF6",
+      onPress: handleOpenCoLab,
+    },
+    {
+      emoji: "🏆",
+      label: "Quests",
+      backgroundColor: "#3B82F6",
+      onPress: handleOpenCollectorQuest,
+    },
+    {
+      emoji: "🍽️",
+      label: "Restaurants",
+      backgroundColor: "#F59E0B",
+      onPress: handleOpenRestaurants,
+    },
+    {
+      emoji: "💬",
+      label: "Gloabi",
+      backgroundColor: "#6366F1",
+      onPress: handleOpenGloabi,
+    },
+    {
+      emoji: "🏝️",
+      label: "Mystic Island",
+      backgroundColor: "#14B8A6",
+      onPress: handleOpenMysticIsland,
+    },
+    {
+      emoji: "🧗",
+      label: "Dyno Detroit",
+      backgroundColor: "#DC2626",
+      onPress: handleOpenDynoDetroit,
+    },
+    {
+      emoji: "🧘",
+      label: "Hot Bones",
+      backgroundColor: "#F97316",
+      onPress: handleOpenHotBones,
+    },
+    {
+      emoji: "🎮",
+      label: "Beacon HQ",
+      backgroundColor: "#059669",
+      onPress: handleOpenBeaconHQ,
+    },
+  ], [
+    handleOpenArt,
+    handleOpenParking,
+    handleOpenCoLab,
+    handleOpenCollectorQuest,
+    handleOpenRestaurants,
+    handleOpenGloabi,
+    handleOpenMysticIsland,
+    handleOpenDynoDetroit,
+    handleOpenHotBones,
+    handleOpenBeaconHQ,
+  ]);
+
   // Memoize section header to avoid recreation on every render
   const sectionHeader = React.useMemo(() => {
     return (
@@ -801,82 +876,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
 
         {/* Mini Apps Section */}
-        <View style={{ 
-          flexDirection: "row", 
-          paddingHorizontal: 12, 
-          paddingVertical: 12,
-          justifyContent: "space-between",
-        }}>
-          <MiniAppButton
-            emoji="🎨"
-            label="Art"
-            backgroundColor="#EC4899"
-            onPress={handleOpenArt}
-          />
-          <MiniAppButton
-            emoji="🅿️"
-            label="Parking"
-            backgroundColor="#10B981"
-            onPress={handleOpenParking}
-          />
-          <MiniAppButton
-            emoji="🤝"
-            label="Co.Lab"
-            backgroundColor="#8B5CF6"
-            onPress={handleOpenCoLab}
-          />
-          <MiniAppButton
-            emoji="🏆"
-            label="Quests"
-            backgroundColor="#3B82F6"
-            onPress={handleOpenCollectorQuest}
-          />
-          <MiniAppButton
-            emoji="🍽️"
-            label="Restaurants"
-            backgroundColor="#F59E0B"
-            onPress={handleOpenRestaurants}
-          />
-        </View>
-
-        {/* Second Row of Mini Apps */}
-        <View style={{ 
-          flexDirection: "row", 
-          paddingHorizontal: 12, 
-          paddingVertical: 6,
-          justifyContent: "space-between",
-        }}>
-          <MiniAppButton
-            emoji="💬"
-            label="Gloabi"
-            backgroundColor="#6366F1"
-            onPress={handleOpenGloabi}
-          />
-          <MiniAppButton
-            emoji="🏝️"
-            label="Mystic Island"
-            backgroundColor="#14B8A6"
-            onPress={handleOpenMysticIsland}
-          />
-          <MiniAppButton
-            emoji="🧗"
-            label="Dyno Detroit"
-            backgroundColor="#DC2626"
-            onPress={handleOpenDynoDetroit}
-          />
-          <MiniAppButton
-            emoji="🧘"
-            label="Hot Bones"
-            backgroundColor="#F97316"
-            onPress={handleOpenHotBones}
-          />
-          <MiniAppButton
-            emoji="🎮"
-            label="Beacon HQ"
-            backgroundColor="#059669"
-            onPress={handleOpenBeaconHQ}
-          />
-        </View>
+        <MiniAppsGrid apps={miniApps} />
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
@@ -919,7 +919,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update

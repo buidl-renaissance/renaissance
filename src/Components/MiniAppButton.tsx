@@ -1,13 +1,14 @@
 import React from "react";
-import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet, Image, ImageSourcePropType } from "react-native";
 import { theme } from "../colors";
 
 interface MiniAppButtonProps {
-  emoji: string;
+  emoji?: string;
   label: string;
   backgroundColor: string;
   onPress: () => void;
   marginLeft?: number;
+  image?: ImageSourcePropType;
 }
 
 export const MiniAppButton: React.FC<MiniAppButtonProps> = ({
@@ -16,6 +17,7 @@ export const MiniAppButton: React.FC<MiniAppButtonProps> = ({
   backgroundColor,
   onPress,
   marginLeft = 0,
+  image,
 }) => {
   return (
     <TouchableOpacity
@@ -26,7 +28,15 @@ export const MiniAppButton: React.FC<MiniAppButtonProps> = ({
       ]}
     >
       <View style={[styles.iconContainer, { backgroundColor }]}>
-        <Text style={styles.emoji}>{emoji}</Text>
+        {image ? (
+          <Image 
+            source={image}
+            style={styles.iconImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={styles.emoji}>{emoji}</Text>
+        )}
       </View>
       <View style={styles.labelContainer}>
         <Text style={styles.label} numberOfLines={2}>
@@ -53,6 +63,11 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 30,
+  },
+  iconImage: {
+    width: 66,
+    height: 66,
+    borderRadius: 14,
   },
   labelContainer: {
     width: 66,

@@ -6,12 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  ImageBackground,
 } from "react-native";
 import { SectionTitle } from "../Components/SectionTitle";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { useArtworks } from "../hooks/useArtwork";
 import { DAArtwork } from "../interfaces";
 import { theme } from "../colors";
+import { MiniAppsGrid, MiniAppConfig } from "../Components/MiniAppsGrid";
 
 interface ArtScreenProps {
   navigation: any;
@@ -37,6 +39,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
       url: "https://www.artdetroitnow.com/",
       title: "Art Detroit Now",
       emoji: "📅",
+      image: require("../../assets/art-detroit-now.png"),
     });
   }, [navigation]);
 
@@ -45,6 +48,32 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
       url: "https://www.artclvb.xyz/",
       title: "ArtClvb",
       emoji: "🎨",
+      image: require("../../assets/artclvb.jpg"),
+    });
+  }, [navigation]);
+
+  const handleBeTheLight = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://bethelight222.com/",
+      title: "Be The Light",
+      emoji: "✨",
+      image: require("../../assets/be-the-light.webp"),
+    });
+  }, [navigation]);
+
+  const handleHeidelbergProject = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://www.heidelberg.org/",
+      title: "The Heidelberg Project",
+      emoji: "🏛️",
+    });
+  }, [navigation]);
+
+  const handleLincolnStreetArtPark = React.useCallback(() => {
+    navigation.push("MiniApp", {
+      url: "https://www.makeartworkdetroit.com/",
+      title: "Lincoln Street Art Park",
+      emoji: "🏞️",
     });
   }, [navigation]);
 
@@ -55,42 +84,67 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     });
   }, [navigation]);
 
+  // Memoize mini apps configuration
+  const miniApps: MiniAppConfig[] = React.useMemo(() => [
+    {
+      label: "Art Detroit Now",
+      backgroundColor: "#EC4899",
+      onPress: handleArtDetroitNowApp,
+      image: require("../../assets/art-detroit-now.png"),
+    },
+    {
+      label: "ArtClvb",
+      backgroundColor: "#10B981",
+      onPress: handleArtClvb,
+      image: require("../../assets/artclvb.jpg"),
+    },
+    {
+      label: "Be The Light",
+      backgroundColor: "#14B8A6",
+      onPress: handleBeTheLight,
+      image: require("../../assets/be-the-light.webp"),
+    },
+    {
+      label: "Heidelberg",
+      backgroundColor: "#10B981",
+      onPress: handleHeidelbergProject,
+      image: require("../../assets/heidelberg.png"),
+    },
+    {
+      label: "Art Park",
+      backgroundColor: "#14B8A6",
+      onPress: handleLincolnStreetArtPark,
+      image: require("../../assets/make-art-work.png"),
+    },
+  ], [
+    handleArtDetroitNowApp,
+    handleArtClvb,
+    handleBeTheLight,
+    handleHeidelbergProject,
+    handleLincolnStreetArtPark,
+  ]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.headerIcon}>🎨</Text>
-          <Text style={styles.headerTitle}>Detroit Art</Text>
-          <Text style={styles.headerSubtitle}>
-            Discover Detroit's vibrant art scene
-          </Text>
-        </View>
+        <ImageBackground
+          source={require("../../assets/detroit-art.jpeg")}
+          style={styles.header}
+          imageStyle={styles.headerImage}
+        >
+          <View style={styles.headerOverlay}>
+            <Text style={styles.headerTitle}>Detroit Arts</Text>
+            <Text style={styles.headerSubtitle}>
+              Explore galleries, murals, and creative spaces across the city
+            </Text>
+          </View>
+        </ImageBackground>
 
         {artworks && artworks.length > 0 ? (
           <>
             {/* Mini Apps Section */}
             <View style={styles.miniAppsSection}>
-              <View style={styles.miniAppsContainer}>
-                <TouchableOpacity 
-                  onPress={handleArtDetroitNowApp}
-                  style={styles.miniAppItem}
-                >
-                  <View style={[styles.miniAppIconContainer, { backgroundColor: "#EC4899" }]}>
-                    <Text style={styles.miniAppIconEmoji}>📅</Text>
-                  </View>
-                  <Text style={styles.miniAppLabel}>Art Detroit Now</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  onPress={handleArtClvb}
-                  style={styles.miniAppItem}
-                >
-                  <View style={[styles.miniAppIconContainer, { backgroundColor: "#8B5CF6" }]}>
-                    <Text style={styles.miniAppIconEmoji}>🎨</Text>
-                  </View>
-                  <Text style={styles.miniAppLabel}>ArtClvb</Text>
-                </TouchableOpacity>
-              </View>
+              <MiniAppsGrid apps={miniApps} />
             </View>
 
             <View style={styles.section}>
@@ -127,20 +181,6 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
               {/* Local Art Guides & Events */}
               <View style={styles.resourceCategory}>
                 <Text style={styles.categoryTitle}>🎨 Local Art Guides & Events</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.artdetroitnow.com/", "Art Detroit Now")}
-                >
-                  <Text style={styles.resourceName}>Art Detroit Now</Text>
-                  <Text style={styles.resourceDescription}>Guide to contemporary art events, gallery openings, exhibitions and happenings in Detroit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://detroitartreview.com/", "Detroit Art Review")}
-                >
-                  <Text style={styles.resourceName}>Detroit Art Review</Text>
-                  <Text style={styles.resourceDescription}>Critical reviews of Detroit art exhibitions and gallery shows</Text>
-                </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.resourceItem}
                   onPress={() => handleResourcePress("https://thedetroiter.com/", "TheDetroiter.com")}
@@ -183,7 +223,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://runnerdetroit.com/art", "Runner Magazine - ART Section")}
+                  onPress={() => handleResourcePress("https://www.runnerdetroit.run/runnerart.html", "Runner Magazine - ART Section")}
                 >
                   <Text style={styles.resourceName}>Runner Magazine – ART Section</Text>
                   <Text style={styles.resourceDescription}>Detroit grassroots arts coverage with studio visits, reviews and features</Text>
@@ -230,36 +270,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
 
-              {/* Other Useful Resources */}
-              <View style={styles.resourceCategory}>
-                <Text style={styles.categoryTitle}>📣 Other Useful Art & Culture Resources</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.theartnewspaper.com/tag/detroit", "The Art Newspaper - Detroit Tag")}
-                >
-                  <Text style={styles.resourceName}>The Art Newspaper – Detroit Tag</Text>
-                  <Text style={styles.resourceDescription}>Art news aggregator with international and local Detroit art coverage</Text>
-                </TouchableOpacity>
-              </View>
 
-              {/* Iconic Public Art Sites */}
-              <View style={styles.resourceCategory}>
-                <Text style={styles.categoryTitle}>📌 Iconic Public Art Sites</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.heidelberg.org/", "The Heidelberg Project")}
-                >
-                  <Text style={styles.resourceName}>The Heidelberg Project</Text>
-                  <Text style={styles.resourceDescription}>Outdoor community art installation and cultural org</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.makeartworkdetroit.org/", "Lincoln Street Art Park / Make Art Work Detroit")}
-                >
-                  <Text style={styles.resourceName}>Lincoln Street Art Park / Make Art Work Detroit</Text>
-                  <Text style={styles.resourceDescription}>Outdoor art park with installations and public engagement</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </>
         ) : (
@@ -285,13 +296,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    width: "100%",
+    height: 250,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerImage: {
+    resizeMode: "cover",
+    width: "100%",
+    height: "100%",
+  },
+  headerOverlay: {
     alignItems: "center",
     paddingVertical: 32,
     paddingHorizontal: 16,
-    backgroundColor: "#EC4899",
-  },
-  headerIcon: {
-    fontSize: 48,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
   },
   headerTitle: {
     fontSize: 28,
@@ -348,34 +370,6 @@ const styles = StyleSheet.create({
   miniAppsSection: {
     backgroundColor: theme.background,
     paddingVertical: 16,
-  },
-  miniAppsContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    justifyContent: "flex-start",
-  },
-  miniAppItem: {
-    alignItems: "center",
-    width: 66,
-    marginRight: 12,
-  },
-  miniAppIconContainer: {
-    borderRadius: 14,
-    width: 66,
-    height: 66,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 6,
-  },
-  miniAppIconEmoji: {
-    fontSize: 30,
-  },
-  miniAppLabel: {
-    fontSize: 9,
-    fontWeight: "600",
-    color: theme.text,
-    textAlign: "center",
-    opacity: 0.9,
   },
   resourcesSection: {
     backgroundColor: theme.background,

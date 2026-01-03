@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   InteractionManager,
   Animated,
+  Image,
 } from "react-native";
 import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
@@ -24,6 +25,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   const frameUrl = route.params?.url || state.currentFrameUrl;
   const title = route.params?.title || "Mini App";
   const emoji = route.params?.emoji || "🧩";
+  const image = route.params?.image;
   
   const [canGoBack, setCanGoBack] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -429,7 +431,15 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
           pointerEvents={isReady ? "none" : "auto"}
         >
           <View style={styles.splashContent}>
-            <Text style={styles.splashEmoji}>{emoji}</Text>
+            {image ? (
+              <Image 
+                source={image} 
+                style={styles.splashImage}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text style={styles.splashEmoji}>{emoji}</Text>
+            )}
             <Text style={styles.splashTitle}>{title}</Text>
             <ActivityIndicator 
               size="large" 
@@ -636,6 +646,11 @@ const styles = StyleSheet.create({
   },
   splashEmoji: {
     fontSize: 64,
+    marginBottom: 8,
+  },
+  splashImage: {
+    width: 120,
+    height: 120,
     marginBottom: 8,
   },
   splashTitle: {
