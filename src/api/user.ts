@@ -35,14 +35,13 @@ export async function signUpdateMessage(message: string): Promise<string> {
 
 /**
  * Get user by wallet address
- * Note: This endpoint may not exist - if it doesn't, users will need to have backendUserId stored
  */
 export async function getUserByWalletAddress(
   walletAddress: string
 ): Promise<any> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/users?publicAddress=${encodeURIComponent(walletAddress)}`,
+      `${API_BASE_URL}/users/address/${encodeURIComponent(walletAddress)}`,
       {
         method: "GET",
         headers: {
@@ -52,22 +51,7 @@ export async function getUserByWalletAddress(
     );
 
     if (!response.ok) {
-      // Try alternative endpoint format
-      const altResponse = await fetch(
-        `${API_BASE_URL}/user/by-address/${encodeURIComponent(walletAddress)}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      
-      if (!altResponse.ok) {
-        throw new Error("User not found");
-      }
-      
-      return altResponse.json();
+      throw new Error("User not found");
     }
 
     const data = await response.json();

@@ -58,6 +58,10 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [displayUserId, setDisplayUserId] = useState<number | null>(null);
   const isProcessingUpdateImageRef = React.useRef(false);
   
+  // Existing account state
+  const [existingAccount, setExistingAccount] = useState<any | null>(null);
+  const [isCheckingAccount, setIsCheckingAccount] = useState(false);
+  
   // Helper function to get backend user ID
   const getBackendUserId = async (): Promise<number | null> => {
     const currentUser = state.user;
@@ -100,6 +104,64 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
       title: state.isAuthenticated ? "Account" : "Sign In",
     });
   }, [navigation, state.isAuthenticated]);
+
+  // Check for existing account on load (when not authenticated)
+  React.useEffect(() => {
+    const checkExistingAccount = async () => {
+      // Only check if user is not authenticated
+      if (state.isAuthenticated) {
+        setExistingAccount(null);
+        return;
+      }
+
+      try {
+        setIsCheckingAccount(true);
+        const wallet = await getWallet();
+        const publicAddress = wallet.address;
+        console.log("[AccountManagement] Checking for existing account with address:", publicAddress);
+
+        const existingUserData = await getUserByWalletAddress(publicAddress);
+        const existingUser = Array.isArray(existingUserData) ? existingUserData[0] : existingUserData;
+        
+        if (existingUser && existingUser.id) {
+          console.log("[AccountManagement] Existing account found:", existingUser.id);
+          setExistingAccount(existingUser);
+        } else {
+          console.log("[AccountManagement] No existing account found");
+          setExistingAccount(null);
+        }
+      } catch (error) {
+        // User not found or error - this is expected for new users, so don't show error
+        console.log("[AccountManagement] No existing account found or error:", error);
+        setExistingAccount(null);
+      } finally {
+        setIsCheckingAccount(false);
+      }
+    };
+
+    checkExistingAccount();
+  }, [state.isAuthenticated]);
+  
+  // Handler to connect to existing account
+  const handleConnectExistingAccount = async () => {
+    if (!existingAccount) return;
+    
+    try {
+      setIsLoading(true);
+      await signInWithWallet({ 
+        username: existingAccount.username, 
+        pfpUrl: existingAccount.profilePicture,
+        backendUserId: existingAccount.id
+      });
+      console.log("[AccountManagement] Connected to existing account");
+      setExistingAccount(null);
+    } catch (error) {
+      console.error("[AccountManagement] Error connecting to existing account:", error);
+      Alert.alert("Error", "Failed to connect to your account");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Load user ID for display
   React.useEffect(() => {
@@ -294,7 +356,37 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
       // Get wallet address
       const wallet = await getWallet();
       const publicAddress = wallet.address;
-      console.log("Creating account with:", { publicAddress, username, profilePictureLength: profileImageBase64?.length });
+      console.log("Checking for existing account with address:", publicAddress);
+
+      // Check if an account already exists with this wallet address
+      try {
+        const existingUserData = await getUserByWalletAddress(publicAddress);
+        const existingUser = Array.isArray(existingUserData) ? existingUserData[0] : existingUserData;
+        
+        if (existingUser && existingUser.id) {
+          console.log("Existing account found:", existingUser.id);
+          // Account exists, sign in with existing account
+          await signInWithWallet({ 
+            username: existingUser.username, 
+            pfpUrl: existingUser.profilePicture,
+            backendUserId: existingUser.id
+          });
+          
+          console.log("Connected to existing account with backendUserId:", existingUser.id);
+          
+          closeRenaissanceModal();
+          Alert.alert("Success", "Connected to your Renaissance account", [
+            { text: "OK", onPress: () => navigation.goBack() },
+          ]);
+          return;
+        }
+      } catch (error) {
+        // User not found, proceed with account creation
+        console.log("No existing account found, proceeding with account creation");
+      }
+
+      // No existing account found, create new one
+      console.log("Creating new account with:", { publicAddress, username, profilePictureLength: profileImageBase64?.length });
 
       // Create user account on backend
       const response = await fetch("https://people.builddetroit.xyz/api/users", {
@@ -535,7 +627,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 style={styles.editProfileButtonTopRight}
                 onPress={() => setShowEditProfileModal(true)}
               >
-                <Ionicons name="create-outline" size={18} color="#6B7280" />
+                <Ionicons name="pencil" size={18} color="#6B7280" />
               </TouchableOpacity>
             )}
             
@@ -576,6 +668,12 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
               <Text style={styles.displayName}>Anonymous</Text>
             )}
 
+            {state.user.local?.walletAddress && (
+              <Text style={styles.walletAddress}>
+                {`${state.user.local.walletAddress.slice(0, 10)}...${state.user.local.walletAddress.slice(-8)}`}
+              </Text>
+            )}
+
             <View style={styles.accountTypeBadge}>
               <Ionicons
                 name={getAccountIcon(state.user) as any}
@@ -590,42 +688,39 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             {state.user.type === "farcaster" && (
               <Text style={styles.fidText}>FID: {state.user.fid}</Text>
             )}
-          </View>
 
-          <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Account Info</Text>
+            {/* Account Info */}
+            {(state.user.local?.email || state.user.farcaster?.custodyAddress) && (
+              <>
+                <View style={styles.accountInfoDivider} />
+                <View style={styles.accountInfoContainer}>
+                  <Text style={styles.sectionTitle}>Account Info</Text>
 
-            <View style={[styles.infoRow, styles.infoRowFirst]}>
-              <Text style={styles.infoLabel}>Type</Text>
-              <Text style={styles.infoValue}>{getAccountTypeLabel(state.user)}</Text>
-            </View>
+                  {state.user.local?.email && (
+                    <View style={[
+                      styles.infoRow,
+                      !state.user.farcaster?.custodyAddress && styles.infoRowLast,
+                      styles.infoRowFirst
+                    ]}>
+                      <Text style={styles.infoLabel}>Email</Text>
+                      <Text style={styles.infoValue}>{state.user.local.email}</Text>
+                    </View>
+                  )}
 
-            {state.user.local?.email && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{state.user.local.email}</Text>
-              </View>
-            )}
-
-            {state.user.local?.walletAddress && (
-              <View style={[
-                styles.infoRow,
-                !state.user.farcaster?.custodyAddress && styles.infoRowLast
-              ]}>
-                <Text style={styles.infoLabel}>Wallet</Text>
-                <Text style={styles.infoValue} numberOfLines={1}>
-                  {`${state.user.local.walletAddress.slice(0, 10)}...${state.user.local.walletAddress.slice(-8)}`}
-                </Text>
-              </View>
-            )}
-
-            {state.user.farcaster?.custodyAddress && (
-              <View style={[styles.infoRow, styles.infoRowLast]}>
-                <Text style={styles.infoLabel}>Custody</Text>
-                <Text style={styles.infoValue} numberOfLines={1}>
-                  {`${state.user.farcaster.custodyAddress.slice(0, 10)}...${state.user.farcaster.custodyAddress.slice(-8)}`}
-                </Text>
-              </View>
+                  {state.user.farcaster?.custodyAddress && (
+                    <View style={[
+                      styles.infoRow,
+                      styles.infoRowLast,
+                      !state.user.local?.email && styles.infoRowFirst
+                    ]}>
+                      <Text style={styles.infoLabel}>Custody</Text>
+                      <Text style={styles.infoValue} numberOfLines={1}>
+                        {`${state.user.farcaster.custodyAddress.slice(0, 10)}...${state.user.farcaster.custodyAddress.slice(-8)}`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </>
             )}
           </View>
 
@@ -761,6 +856,63 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             Sign in to use mini apps and access your account
           </Text>
         </View>
+
+        {/* Existing Account Found */}
+        {existingAccount && (
+          <View style={styles.existingAccountContainer}>
+            <View style={styles.existingAccountHeader}>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <Text style={styles.existingAccountTitle}>Account Found</Text>
+            </View>
+            <View style={styles.existingAccountContent}>
+              {existingAccount.profilePicture ? (
+                <Image
+                  source={{ uri: existingAccount.profilePicture }}
+                  style={styles.existingAccountAvatar}
+                />
+              ) : (
+                <View style={styles.existingAccountAvatarPlaceholder}>
+                  <Ionicons name="person" size={32} color="#6366F1" />
+                </View>
+              )}
+              <View style={styles.existingAccountInfo}>
+                <Text style={styles.existingAccountUsername}>
+                  @{existingAccount.username}
+                </Text>
+                {existingAccount.id && (
+                  <Text style={styles.existingAccountId}>
+                    #{existingAccount.id}
+                  </Text>
+                )}
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.existingAccountButton, isLoading && styles.buttonDisabled]}
+              onPress={handleConnectExistingAccount}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="log-in-outline" size={20} color="#fff" />
+                  <Text style={styles.existingAccountButtonText}>
+                    Connect to Account
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {isCheckingAccount && (
+          <View style={styles.checkingAccountContainer}>
+            <ActivityIndicator size="small" color="#6366F1" />
+            <Text style={styles.checkingAccountText}>
+              Checking for existing account...
+            </Text>
+          </View>
+        )}
 
         <View style={styles.optionsContainer}>
           {/* Create Renaissance Account - Primary */}
@@ -1025,6 +1177,94 @@ const styles = StyleSheet.create({
     color: theme.textSecondary,
     fontSize: 14,
   },
+  existingAccountContainer: {
+    backgroundColor: theme.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "#10B981",
+    shadowColor: "#10B981",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  existingAccountHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 8,
+  },
+  existingAccountTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: theme.text,
+  },
+  existingAccountContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 12,
+  },
+  existingAccountAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 2,
+    borderColor: "#10B981",
+  },
+  existingAccountAvatarPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#EEF2FF",
+    borderWidth: 2,
+    borderColor: "#10B981",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  existingAccountInfo: {
+    flex: 1,
+  },
+  existingAccountUsername: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: theme.text,
+    marginBottom: 4,
+  },
+  existingAccountId: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    fontWeight: "500",
+  },
+  existingAccountButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#10B981",
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  existingAccountButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  checkingAccountContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    marginBottom: 20,
+    gap: 12,
+  },
+  checkingAccountText: {
+    fontSize: 14,
+    color: theme.textSecondary,
+  },
   infoBox: {
     flexDirection: "row",
     backgroundColor: theme.surface,
@@ -1088,8 +1328,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEF2FF",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 4,
-    borderColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.6)",
     shadowColor: "#6366F1",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1101,8 +1341,8 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 55,
     backgroundColor: "#EEF2FF",
-    borderWidth: 4,
-    borderColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.6)",
     shadowColor: "#6366F1",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1140,6 +1380,13 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     letterSpacing: -0.5,
   },
+  walletAddress: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    fontWeight: "500",
+    marginTop: 6,
+    fontFamily: "monospace",
+  },
   accountTypeBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1163,18 +1410,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontWeight: "500",
   },
-  infoSection: {
-    backgroundColor: theme.surface,
-    borderRadius: 20,
-    padding: 20,
+  accountInfoDivider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: theme.border,
+    marginTop: 24,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: "#F3F4F6",
+  },
+  accountInfoContainer: {
+    width: "100%",
+    alignSelf: "stretch",
   },
   sectionTitle: {
     fontSize: 18,
@@ -1182,13 +1427,15 @@ const styles = StyleSheet.create({
     color: theme.text,
     marginBottom: 16,
     letterSpacing: -0.3,
+    alignSelf: "flex-start",
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: theme.border,
+    width: "100%",
   },
   infoRowFirst: {
     paddingTop: 4,
@@ -1217,8 +1464,8 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 16,
     marginTop: 12,
-    borderWidth: 1.5,
-    borderColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
     shadowColor: "#EF4444",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1473,8 +1720,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#6366F1",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
-    borderColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.7)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
