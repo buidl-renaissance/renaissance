@@ -1,9 +1,10 @@
 import React from 'react';
 import { Image, Text } from 'react-native';
+import { theme } from '../colors';
 
 export const HeaderTitleImage = () => {
   return (
-    <Text>Renaissance City</Text>
+    <Text style={{ color: theme.text }}>Renaissance City</Text>
   );
   // return (
   //   <Image

@@ -25,7 +25,7 @@ export const BucketListCard: React.FC<BucketListCardProps> = ({
     >
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <Ionicons name="list" size={24} color="#3449ff" />
+          <Ionicons name="list" size={24} color={theme.primary} />
         </View>
         <View style={styles.content}>
           <Text style={styles.name}>{bucketList.name}</Text>
@@ -36,7 +36,7 @@ export const BucketListCard: React.FC<BucketListCardProps> = ({
         </View>
         {bucketList.isShared && (
           <View style={styles.sharedBadge}>
-            <Ionicons name="people" size={14} color="#4CAF50" />
+            <Ionicons name="people" size={14} color={theme.success} />
             <Text style={styles.sharedText}>
               {bucketList.collaborators.length + 1}
             </Text>
@@ -115,12 +115,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
     marginBottom: 4,
   },
   count: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
   },
   sharedBadge: {
     flexDirection: "row",
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   collaboratorsText: {
     fontSize: 12,
-    color: "#666",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   actions: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginLeft: 4,
   },
 });

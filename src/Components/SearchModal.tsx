@@ -323,11 +323,21 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     backgroundColor: theme.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: theme.border,
   },
   searchbar: {
-    backgroundColor: "transparent",
+    backgroundColor: theme.inputBackground,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.borderLight,
   },
   listContent: {
     paddingBottom: 16,

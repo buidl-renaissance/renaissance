@@ -323,10 +323,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 60,
     paddingHorizontal: 32,
-    backgroundColor: theme.surface,
+    backgroundColor: theme.surfaceElevated,
     marginTop: 16,
     marginHorizontal: 16,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
   },
   emptyIcon: {
     fontSize: 64,
@@ -373,6 +375,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.text,
     textAlign: "center",
+    opacity: 0.9,
   },
   resourcesSection: {
     backgroundColor: theme.background,
@@ -390,7 +393,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   resourceItem: {
-    backgroundColor: theme.surface,
+    backgroundColor: theme.surfaceElevated,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,

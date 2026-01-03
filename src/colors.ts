@@ -148,4 +148,4 @@ export const lightTheme = {
 };
 
 // Using dark theme as default
-export const theme = lightTheme;
+export const theme = darkTheme;

@@ -1,40 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { RestaurantRanking, RestaurantCategory } from "../interfaces";
+import { RestaurantRanking } from "../interfaces";
 import { MOCK_RESTAURANTS } from "../mocks/restaurants";
 import { theme } from "../colors";
+import { CategoryChip } from "./CategoryChip";
 
 interface RestaurantRankingCardProps {
   ranking: RestaurantRanking;
   previousRank?: number;
 }
-
-// Emoji mapping for restaurant categories
-const getCategoryEmoji = (category: RestaurantCategory | string): string => {
-  const emojiMap: Record<string, string> = {
-    restaurants: "🍽️",
-    pizza: "🍕",
-    burgers: "🍔",
-    tacos: "🌮",
-    drinks: "🥤",
-    sushi: "🍣",
-    italian: "🍝",
-    asian: "🥢",
-    mexican: "🌶️",
-    american: "🍗",
-    dessert: "🍰",
-    seafood: "🦞",
-    bbq: "🍖",
-    vegetarian: "🥗",
-    thai: "🍜",
-    breakfast: "🥞",
-    mediterranean: "🥙",
-    indian: "🍛",
-    chinese: "🥡",
-  };
-  return emojiMap[category] || "";
-};
 
 export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
   ranking,
@@ -64,30 +39,23 @@ export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
         </View>
         {otherCategories.length > 0 && (
           <View style={styles.categoriesContainer}>
-            {otherCategories.map((category, index) => {
-              const emoji = getCategoryEmoji(category);
-              return (
-                <View key={index} style={styles.categoryTag}>
-                  <Text style={styles.categoryTagText}>
-                    {emoji ? `${emoji} ` : ""}{category.charAt(0).toUpperCase() + category.slice(1)}
-                  </Text>
-                </View>
-              );
-            })}
+            {otherCategories.map((category, index) => (
+              <CategoryChip key={index} category={category} />
+            ))}
           </View>
         )}
       </View>
       {rankChange !== 0 && (
         <View style={styles.rankChange}>
           {rankChange > 0 ? (
-            <Ionicons name="arrow-up" size={16} color="#4CAF50" />
+            <Ionicons name="arrow-up" size={16} color={theme.success} />
           ) : (
-            <Ionicons name="arrow-down" size={16} color="#F44336" />
+            <Ionicons name="arrow-down" size={16} color={theme.error} />
           )}
           <Text
             style={[
               styles.rankChangeText,
-              { color: rankChange > 0 ? "#4CAF50" : "#F44336" },
+              { color: rankChange > 0 ? theme.success : theme.error },
             ]}
           >
             {Math.abs(rankChange)}
@@ -114,7 +82,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   rankBadge: {
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     borderRadius: 20,
     width: 40,
     height: 40,
@@ -125,7 +93,7 @@ const styles = StyleSheet.create({
   rankBadgeText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
+    color: theme.textOnPrimary,
   },
   rankChange: {
     flexDirection: "row",
@@ -158,7 +126,7 @@ const styles = StyleSheet.create({
   },
   points: {
     fontSize: 12,
-    color: "#3449ff",
+    color: theme.primary,
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -166,19 +134,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 4,
-  },
-  categoryTag: {
-    backgroundColor: "#f0f0f0",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  categoryTagText: {
-    fontSize: 10,
-    color: theme.textSecondary,
-    fontWeight: "500",
   },
 });
 

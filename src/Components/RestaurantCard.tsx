@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Restaurant, RestaurantCategory } from "../interfaces";
+import { Restaurant } from "../interfaces";
 import { theme } from "../colors";
+import { CategoryChip } from "./CategoryChip";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -11,32 +12,6 @@ interface RestaurantCardProps {
   showRanking?: boolean;
   rank?: number;
 }
-
-// Emoji mapping for restaurant categories
-const getCategoryEmoji = (category: RestaurantCategory | string): string => {
-  const emojiMap: Record<string, string> = {
-    restaurants: "🍽️",
-    pizza: "🍕",
-    burgers: "🍔",
-    tacos: "🌮",
-    drinks: "🥤",
-    sushi: "🍣",
-    italian: "🍝",
-    asian: "🥢",
-    mexican: "🌶️",
-    american: "🍗",
-    dessert: "🍰",
-    seafood: "🦞",
-    bbq: "🍖",
-    vegetarian: "🥗",
-    thai: "🍜",
-    breakfast: "🥞",
-    mediterranean: "🥙",
-    indian: "🍛",
-    chinese: "🥡",
-  };
-  return emojiMap[category] || "";
-};
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
@@ -67,16 +42,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
         <Text style={styles.name}>{restaurant.name}</Text>
         <Text style={styles.neighborhood}>{restaurant.neighborhood}</Text>
         <View style={styles.categoriesContainer}>
-          {restaurant.categories.slice(0, 3).map((category, index) => {
-            const emoji = getCategoryEmoji(category);
-            return (
-              <View key={index} style={styles.categoryTag}>
-                <Text style={styles.categoryText}>
-                  {emoji ? `${emoji} ` : ""}{category.charAt(0).toUpperCase() + category.slice(1)}
-                </Text>
-              </View>
-            );
-          })}
+          {restaurant.categories.slice(0, 3).map((category, index) => (
+            <CategoryChip key={index} category={category} />
+          ))}
         </View>
         <View style={styles.footer}>
           {restaurant.rating && (
@@ -96,7 +64,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
                 onAddToBucketList();
               }}
             >
-              <Ionicons name="add-circle-outline" size={20} color="#3449ff" />
+              <Ionicons name="add-circle-outline" size={20} color={theme.primary} />
             </TouchableOpacity>
           )}
         </View>
@@ -122,7 +90,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     left: 8,
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     borderRadius: 20,
     width: 36,
     height: 36,
@@ -131,7 +99,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   rankText: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontWeight: "bold",
     fontSize: 14,
   },
@@ -166,20 +134,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginBottom: 8,
   },
-  categoryTag: {
-    backgroundColor: "#e5e5e5",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  categoryText: {
-    fontSize: 11,
-    color: theme.textSecondary,
-    fontWeight: "500",
-    textTransform: "capitalize",
-  },
   footer: {
     flexDirection: "row",
     alignItems: "center",
@@ -197,7 +151,7 @@ const styles = StyleSheet.create({
   },
   points: {
     fontSize: 12,
-    color: "#3449ff",
+    color: theme.primary,
     fontWeight: "600",
   },
   addButton: {

@@ -48,11 +48,12 @@ const ActivityScreen = ({ navigation, route }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flexDirection: "column", display: "flex" }}>
-          <View style={{ backgroundColor: theme.surface }}>
+          <View style={styles.searchContainer}>
             <Searchbar
               placeholder="Search"
               onChangeText={onChangeSearch}
-              style={{ backgroundColor: "transparent" }}
+              style={styles.searchbar}
+              inputStyle={styles.searchInput}
               value={searchQuery}
             />
           </View>
@@ -89,6 +90,26 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     borderColor: theme.border,
     borderTopWidth: 1,
+  },
+  searchContainer: {
+    backgroundColor: theme.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  searchbar: {
+    backgroundColor: theme.inputBackground,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.borderLight,
+  },
+  searchInput: {
+    fontSize: 16,
+    color: theme.text,
   },
   buttonContainer: {
     paddingHorizontal: 16,

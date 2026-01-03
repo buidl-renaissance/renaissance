@@ -2,6 +2,7 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import FilterBubble from "./FilterBubble";
 import { RestaurantCategory } from "../interfaces";
+import { theme } from "../colors";
 
 interface CategoryFilterProps {
   selectedCategory: RestaurantCategory | "all";
@@ -31,7 +32,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       style={{
         paddingHorizontal: 16,
         paddingTop: 8,
-        borderBottomColor: "#eee",
+        borderBottomColor: theme.border,
         borderBottomWidth: 1,
       }}
       horizontal={true}

@@ -161,6 +161,8 @@ const SearchScreen = ({ navigation, route }) => {
               placeholder="Search"
               onChangeText={onChangeSearch}
               style={{ backgroundColor: "transparent" }}
+              inputStyle={{ color: theme.text }}
+              placeholderTextColor={theme.textTertiary}
               value={searchQuery}
             />
           </View>

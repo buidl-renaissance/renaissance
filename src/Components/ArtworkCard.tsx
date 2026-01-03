@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Image, Text, View } from 'react-native';
+import { theme } from '../colors';
 
 
 interface ArtworkCardProps {
@@ -40,10 +41,15 @@ export const ArtworkCard: React.FC<ArtworkCardProps>= ({
 
 const styles = StyleSheet.create({
     title: {
-        fontSize: 16, 
+        fontSize: 16,
+        fontWeight: "600",
+        color: theme.text,
+        marginBottom: 4,
     },
     subtitle: {
         fontSize: 10,
+        color: theme.textSecondary,
+        lineHeight: 14,
     },
 });
 

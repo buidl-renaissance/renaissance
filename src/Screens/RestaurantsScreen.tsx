@@ -22,6 +22,7 @@ import {
   BucketList,
   FoodPost,
 } from "../interfaces";
+import { getCategoryEmoji } from "../Components/CategoryChip";
 import {
   MOCK_RESTAURANTS,
   MOCK_BUCKET_LISTS,
@@ -66,9 +67,9 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
     navigation.setOptions({
       title: "Restaurants",
       headerStyle: {
-        backgroundColor: "#d2e4dd",
+        backgroundColor: theme.background,
       },
-      headerTintColor: "#000",
+      headerTintColor: theme.text,
     });
   }, [navigation]);
 
@@ -149,31 +150,6 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
     );
   }, [selectedCategory]);
 
-  // Emoji mapping for restaurant categories
-  const getCategoryEmoji = (category: RestaurantCategory | string): string => {
-    const emojiMap: Record<string, string> = {
-      restaurants: "🍽️",
-      pizza: "🍕",
-      burgers: "🍔",
-      tacos: "🌮",
-      drinks: "🥤",
-      sushi: "🍣",
-      italian: "🍝",
-      asian: "🥢",
-      mexican: "🌶️",
-      american: "🍗",
-      dessert: "🍰",
-      seafood: "🦞",
-      bbq: "🍖",
-      vegetarian: "🥗",
-      thai: "🍜",
-      breakfast: "🥞",
-      mediterranean: "🥙",
-      indian: "🍛",
-      chinese: "🥡",
-    };
-    return emojiMap[category] || "";
-  };
 
   const renderRankingsTab = () => {
     const rankings = getRankingsByCategory(selectedRankingCategory);
@@ -279,7 +255,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
               setIsModalVisible(true);
             }}
           >
-            <Ionicons name="add-circle" size={24} color="#3449ff" />
+            <Ionicons name="add-circle" size={24} color={theme.primary} />
             <Text style={styles.addButtonText}>New List</Text>
           </TouchableOpacity>
         </View>
@@ -359,7 +335,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
           <Ionicons
             name="trophy"
             size={20}
-            color={activeTab === "rankings" ? "#3449ff" : "#999"}
+            color={activeTab === "rankings" ? theme.primary : theme.textTertiary}
           />
           <Text
             style={[
@@ -377,7 +353,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
           <Ionicons
             name="grid"
             size={20}
-            color={activeTab === "categories" ? "#3449ff" : "#999"}
+            color={activeTab === "categories" ? theme.primary : theme.textTertiary}
           />
           <Text
             style={[
@@ -398,7 +374,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
           <Ionicons
             name="list"
             size={20}
-            color={activeTab === "bucketLists" ? "#3449ff" : "#999"}
+            color={activeTab === "bucketLists" ? theme.primary : theme.textTertiary}
           />
           <Text
             style={[
@@ -416,7 +392,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
           <Ionicons
             name="restaurant"
             size={20}
-            color={activeTab === "feed" ? "#3449ff" : "#999"}
+            color={activeTab === "feed" ? theme.primary : theme.textTertiary}
           />
           <Text
             style={[
@@ -469,15 +445,15 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: "#3449ff",
+    borderBottomColor: theme.primary,
   },
   tabText: {
     fontSize: 12,
-    color: "#999",
+    color: theme.textTertiary,
     fontWeight: "500",
   },
   activeTabText: {
-    color: "#3449ff",
+    color: theme.primary,
     fontWeight: "600",
   },
   content: {
@@ -510,7 +486,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 14,
-    color: "#3449ff",
+    color: theme.primary,
     fontWeight: "600",
   },
   emptyState: {
@@ -519,32 +495,32 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#999",
+    color: theme.textSecondary,
     textAlign: "center",
   },
   categoryChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: theme.inputBackground,
     marginRight: 6,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: "transparent",
+    borderColor: theme.border,
     alignItems: "center",
     justifyContent: "center",
   },
   categoryChipActive: {
-    backgroundColor: "#3449ff",
-    borderColor: "#3449ff",
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   categoryChipText: {
     fontSize: 11,
-    color: "#666",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   categoryChipTextActive: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontWeight: "600",
   },
 });
