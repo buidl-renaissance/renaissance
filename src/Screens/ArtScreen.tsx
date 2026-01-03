@@ -7,20 +7,22 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import { SectionTitle } from "../Components/SectionTitle";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { useArtworks } from "../hooks/useArtwork";
 import { DAArtwork } from "../interfaces";
 import { theme } from "../colors";
-import { MiniAppsGrid, MiniAppConfig } from "../Components/MiniAppsGrid";
+import { MiniAppsGrid } from "../Components/MiniAppsGrid";
+import { MiniApp } from "../interfaces";
 
 interface ArtScreenProps {
   navigation: any;
 }
 
 const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
-  const [artworks] = useArtworks();
+  const [artworks, loading] = useArtworks();
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -34,46 +36,12 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const handleArtDetroitNowApp = React.useCallback(() => {
+  const handleMiniAppPress = React.useCallback((app: MiniApp) => {
     navigation.push("MiniApp", {
-      url: "https://www.artdetroitnow.com/",
-      title: "Art Detroit Now",
-      emoji: "📅",
-      image: require("../../assets/art-detroit-now.png"),
-    });
-  }, [navigation]);
-
-  const handleArtClvb = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://www.artclvb.xyz/",
-      title: "ArtClvb",
-      emoji: "🎨",
-      image: require("../../assets/artclvb.jpg"),
-    });
-  }, [navigation]);
-
-  const handleBeTheLight = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://bethelight222.com/",
-      title: "Be The Light",
-      emoji: "✨",
-      image: require("../../assets/be-the-light.webp"),
-    });
-  }, [navigation]);
-
-  const handleHeidelbergProject = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://www.heidelberg.org/",
-      title: "The Heidelberg Project",
-      emoji: "🏛️",
-    });
-  }, [navigation]);
-
-  const handleLincolnStreetArtPark = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://www.makeartworkdetroit.com/",
-      title: "Lincoln Street Art Park",
-      emoji: "🏞️",
+      url: app.url,
+      title: app.title,
+      emoji: app.emoji,
+      image: app.image,
     });
   }, [navigation]);
 
@@ -85,44 +53,43 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
   }, [navigation]);
 
   // Memoize mini apps configuration
-  const miniApps: MiniAppConfig[] = React.useMemo(() => [
+  const miniApps: MiniApp[] = React.useMemo(() => [
     {
-      label: "Art Detroit Now",
+      name: "art-detroit-now",
+      title: "Art Detroit Now",
+      url: "https://www.artdetroitnow.com/",
       backgroundColor: "#EC4899",
-      onPress: handleArtDetroitNowApp,
       image: require("../../assets/art-detroit-now.png"),
     },
     {
-      label: "ArtClvb",
+      name: "artclvb",
+      title: "ArtClvb",
+      url: "https://www.artclvb.xyz/",
       backgroundColor: "#10B981",
-      onPress: handleArtClvb,
       image: require("../../assets/artclvb.jpg"),
     },
     {
-      label: "Be The Light",
+      name: "be-the-light",
+      title: "Be The Light",
+      url: "https://bethelight222.com/",
       backgroundColor: "#14B8A6",
-      onPress: handleBeTheLight,
       image: require("../../assets/be-the-light.webp"),
     },
     {
-      label: "Heidelberg",
+      name: "heidelberg",
+      title: "Heidelberg",
+      url: "https://www.heidelberg.org/",
       backgroundColor: "#10B981",
-      onPress: handleHeidelbergProject,
       image: require("../../assets/heidelberg.png"),
     },
     {
-      label: "Art Park",
+      name: "art-park",
+      title: "Art Park",
+      url: "https://www.makeartworkdetroit.com/",
       backgroundColor: "#14B8A6",
-      onPress: handleLincolnStreetArtPark,
       image: require("../../assets/make-art-work.png"),
     },
-  ], [
-    handleArtDetroitNowApp,
-    handleArtClvb,
-    handleBeTheLight,
-    handleHeidelbergProject,
-    handleLincolnStreetArtPark,
-  ]);
+  ], []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -140,11 +107,16 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
           </View>
         </ImageBackground>
 
-        {artworks && artworks.length > 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={styles.loadingText}>Loading artwork...</Text>
+          </View>
+        ) : artworks && artworks.length > 0 ? (
           <>
             {/* Mini Apps Section */}
             <View style={styles.miniAppsSection}>
-              <MiniAppsGrid apps={miniApps} />
+              <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
             </View>
 
             <View style={styles.section}>
@@ -177,39 +149,6 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
             {/* Art Resources Section */}
             <View style={styles.resourcesSection}>
               <SectionTitle>ART RESOURCES</SectionTitle>
-              
-              {/* Local Art Guides & Events */}
-              <View style={styles.resourceCategory}>
-                <Text style={styles.categoryTitle}>🎨 Local Art Guides & Events</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://thedetroiter.com/", "TheDetroiter.com")}
-                >
-                  <Text style={styles.resourceName}>TheDetroiter.com</Text>
-                  <Text style={styles.resourceDescription}>Long-running Detroit cultural site with arts & culture articles, interviews, event listings, and critiques</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://spreadart.org/", "Spread Art")}
-                >
-                  <Text style={styles.resourceName}>Spread Art</Text>
-                  <Text style={styles.resourceDescription}>Community creative space and incubator supporting local artistic collaborations and cultural programming</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.hourdetroit.com/arts/", "Hour Detroit - Art Section")}
-                >
-                  <Text style={styles.resourceName}>Hour Detroit – Art Section</Text>
-                  <Text style={styles.resourceDescription}>Local magazine coverage highlighting Detroit art events, features, and artist stories</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.metrotimes.com/arts-culture", "Metro Times - Arts & Culture")}
-                >
-                  <Text style={styles.resourceName}>Metro Times – Arts & Culture</Text>
-                  <Text style={styles.resourceDescription}>Weekly news and reviews on art, gallery shows, performances, and local culture</Text>
-                </TouchableOpacity>
-              </View>
 
               {/* Publications & Blogs */}
               <View style={styles.resourceCategory}>
@@ -366,6 +305,17 @@ const styles = StyleSheet.create({
     color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: theme.textSecondary,
   },
   miniAppsSection: {
     backgroundColor: theme.background,

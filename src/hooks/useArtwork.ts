@@ -5,21 +5,35 @@ import { EventRegister } from "react-native-event-listeners";
 
 export const useArtworks = () => {
   const [artworks, setArtworks] = React.useState<DAArtwork[] | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const hasFetchedRef = React.useRef(false);
 
-  React.useEffect(() => {
-    if (!artworks) updateArtworks();
-  }, [artworks]);
-
-  const updateArtworks = React.useCallback(() => {
-    (async () => {
+  const updateArtworks = React.useCallback(async () => {
+    try {
+      setLoading(true);
       console.log(`UPDATE ARTWORKS!!`);
       const req = await fetch(`https://api.detroiter.network/api/artwork`);
       const result = await req.json();
       setArtworks(result.data);
-    })();
+    } catch (error) {
+      console.error("Error fetching artworks:", error);
+      setArtworks([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return [ artworks ];
+  React.useEffect(() => {
+    // Only fetch once on mount
+    if (hasFetchedRef.current) {
+      return;
+    }
+    
+    hasFetchedRef.current = true;
+    updateArtworks();
+  }, [updateArtworks]);
+
+  return [ artworks, loading ];
 };
 
 export const useArtwork = (artworkId: number) => {

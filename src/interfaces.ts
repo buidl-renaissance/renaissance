@@ -504,3 +504,12 @@ export interface InstagramEvent {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface MiniApp {
+  name: string;
+  title: string;
+  url: string;
+  emoji?: string;
+  image?: any;
+  backgroundColor: string;
+}

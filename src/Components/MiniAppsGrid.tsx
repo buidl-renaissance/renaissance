@@ -1,28 +1,23 @@
 import React from "react";
-import { View, StyleSheet, ImageSourcePropType } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { MiniAppButton } from "./MiniAppButton";
-
-export interface MiniAppConfig {
-  emoji?: string;
-  label: string;
-  backgroundColor: string;
-  onPress: () => void;
-  image?: ImageSourcePropType;
-}
+import { MiniApp } from "../interfaces";
 
 interface MiniAppsGridProps {
-  apps: MiniAppConfig[];
+  apps: MiniApp[];
+  onPress: (app: MiniApp) => void;
   itemsPerRow?: number;
   rowPaddingVertical?: number;
 }
 
 export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
   apps,
+  onPress,
   itemsPerRow = 5,
   rowPaddingVertical = 12,
 }) => {
   // Split apps into rows
-  const rows: MiniAppConfig[][] = [];
+  const rows: MiniApp[][] = [];
   for (let i = 0; i < apps.length; i += itemsPerRow) {
     rows.push(apps.slice(i, i + itemsPerRow));
   }
@@ -41,11 +36,11 @@ export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
         >
           {row.map((app, appIndex) => (
             <MiniAppButton
-              key={`${rowIndex}-${appIndex}-${app.label}`}
+              key={`${rowIndex}-${appIndex}-${app.name}`}
               emoji={app.emoji}
-              label={app.label}
+              label={app.title}
               backgroundColor={app.backgroundColor}
-              onPress={app.onPress}
+              onPress={() => onPress(app)}
               image={app.image}
             />
           ))}

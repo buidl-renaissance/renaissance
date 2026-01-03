@@ -24,7 +24,8 @@ import { FloatingButton } from "../Components/FloatingButton";
 import { FloatingProfileButton } from "../Components/FloatingProfileButton";
 import { FloatingActionButtons } from "../Components/FloatingActionButtons";
 import { SectionTitle } from "../Components/SectionTitle";
-import { MiniAppsGrid, MiniAppConfig } from "../Components/MiniAppsGrid";
+import { MiniAppsGrid } from "../Components/MiniAppsGrid";
+import { MiniApp } from "../interfaces";
 import { EventForecast } from "../Components/EventForecast";
 import { getBookmarkStatusForWebEvent, getBookmarks } from "../utils/bookmarks";
 import { getGoingStatusForWebEvent, getGoingEvents } from "../utils/rsvp";
@@ -272,76 +273,20 @@ const CalendarScreen = ({ navigation }) => {
     setCreateFlyerModalVisible(true);
   }, []);
 
-  const handleOpenArt = React.useCallback(() => {
-    navigation.push("Art");
-  }, []);
-
-  const handleOpenParking = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://buymyspot.com/detroit",
-      title: "Parking",
-      emoji: "🅿️",
-    });
-  }, [navigation]);
-
-  const handleOpenCoLab = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://co.lab.builddetroit.xyz/",
-      title: "Co.Lab",
-      emoji: "🤝",
-    });
-  }, [navigation]);
-
-  const handleOpenCollectorQuest = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://collectorquest.ai",
-      title: "Quests",
-      emoji: "🏆",
-    });
-  }, [navigation]);
-
-  const handleOpenRestaurants = React.useCallback(() => {
-    navigation.push("Restaurants");
-  }, []);
-
-  const handleOpenGloabi = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://gloabi-chat.vercel.app/",
-      title: "Gloabi",
-      emoji: "💬",
-    });
-  }, [navigation]);
-
-  const handleOpenMysticIsland = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://mystic-island.yourland.network/",
-      title: "Mystic Island",
-      emoji: "🏝️",
-    });
-  }, [navigation]);
-
-  const handleOpenDynoDetroit = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://dynodetroit.com",
-      title: "Dyno Detroit",
-      emoji: "🧗",
-    });
-  }, [navigation]);
-
-  const handleOpenHotBones = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://hotbones.com",
-      title: "Hot Bones",
-      emoji: "🧘",
-    });
-  }, [navigation]);
-
-  const handleOpenBeaconHQ = React.useCallback(() => {
-    navigation.push("MiniApp", {
-      url: "https://www.thebeaconhq.com/",
-      title: "The Beacon HQ",
-      emoji: "🎮",
-    });
+  const handleMiniAppPress = React.useCallback((app: MiniApp) => {
+    // Check if this is a native screen (starts with native://)
+    if (app.url.startsWith("native://")) {
+      const screenName = app.url.replace("native://", "");
+      navigation.push(screenName);
+    } else {
+      // Navigate to MiniApp screen with the app data
+      navigation.push("MiniApp", {
+        url: app.url,
+        title: app.title,
+        emoji: app.emoji,
+        image: app.image,
+      });
+    }
   }, [navigation]);
 
   React.useEffect(() => {
@@ -748,79 +693,78 @@ const CalendarScreen = ({ navigation }) => {
   );
 
   // Memoize mini apps configuration
-  const miniApps: MiniAppConfig[] = React.useMemo(() => [
+  const miniApps: MiniApp[] = React.useMemo(() => [
     {
+      name: "art",
+      title: "Art",
+      url: "native://Art",
       emoji: "🎨",
-      label: "Art",
       backgroundColor: "#EC4899",
-      onPress: handleOpenArt,
     },
     {
+      name: "parking",
+      title: "Parking",
+      url: "https://buymyspot.com/detroit",
       emoji: "🅿️",
-      label: "Parking",
       backgroundColor: "#10B981",
-      onPress: handleOpenParking,
     },
     {
+      name: "colab",
+      title: "Co.Lab",
+      url: "https://co.lab.builddetroit.xyz/",
       emoji: "🤝",
-      label: "Co.Lab",
       backgroundColor: "#8B5CF6",
-      onPress: handleOpenCoLab,
     },
     {
+      name: "quests",
+      title: "Quests",
+      url: "https://collectorquest.ai",
       emoji: "🏆",
-      label: "Quests",
       backgroundColor: "#3B82F6",
-      onPress: handleOpenCollectorQuest,
     },
     {
+      name: "restaurants",
+      title: "Restaurants",
+      url: "native://Restaurants",
       emoji: "🍽️",
-      label: "Restaurants",
       backgroundColor: "#F59E0B",
-      onPress: handleOpenRestaurants,
     },
     {
+      name: "gloabi",
+      title: "Gloabi",
+      url: "https://gloabi-chat.vercel.app/",
       emoji: "💬",
-      label: "Gloabi",
       backgroundColor: "#6366F1",
-      onPress: handleOpenGloabi,
     },
     {
+      name: "mystic-island",
+      title: "Mystic Island",
+      url: "https://mystic-island.yourland.network/",
       emoji: "🏝️",
-      label: "Mystic Island",
       backgroundColor: "#14B8A6",
-      onPress: handleOpenMysticIsland,
     },
     {
+      name: "dyno-detroit",
+      title: "Dyno Detroit",
+      url: "https://dynodetroit.com",
       emoji: "🧗",
-      label: "Dyno Detroit",
       backgroundColor: "#DC2626",
-      onPress: handleOpenDynoDetroit,
     },
     {
+      name: "hot-bones",
+      title: "Hot Bones",
+      url: "https://hotbones.com",
       emoji: "🧘",
-      label: "Hot Bones",
       backgroundColor: "#F97316",
-      onPress: handleOpenHotBones,
     },
     {
+      name: "beacon-hq",
+      title: "Beacon HQ",
+      url: "https://www.thebeaconhq.com/",
       emoji: "🎮",
-      label: "Beacon HQ",
       backgroundColor: "#059669",
-      onPress: handleOpenBeaconHQ,
     },
-  ], [
-    handleOpenArt,
-    handleOpenParking,
-    handleOpenCoLab,
-    handleOpenCollectorQuest,
-    handleOpenRestaurants,
-    handleOpenGloabi,
-    handleOpenMysticIsland,
-    handleOpenDynoDetroit,
-    handleOpenHotBones,
-    handleOpenBeaconHQ,
-  ]);
+  ], []);
 
   // Memoize section header to avoid recreation on every render
   const sectionHeader = React.useMemo(() => {
@@ -876,7 +820,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
 
         {/* Mini Apps Section */}
-        <MiniAppsGrid apps={miniApps} />
+        <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
