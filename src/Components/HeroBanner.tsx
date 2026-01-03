@@ -7,7 +7,7 @@ export const HeroBanner = ({ children }) => {
   return (
     <View>
       <ImageBackground
-        source={require("../../assets/renaissance-top-right.png")}
+        source={require("../../assets/renaissance-right.png")}
         resizeMode="cover"
       >
         <Animated.View

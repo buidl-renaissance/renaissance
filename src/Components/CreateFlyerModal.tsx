@@ -1,5 +1,7 @@
 import React, { useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Image, Dimensions, PanResponder, Animated, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, SafeAreaView, StatusBar } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Image, Dimensions, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, SafeAreaView, StatusBar } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS } from "react-native-reanimated";
 import Modal from "react-native-modal";
 import Icon, { IconTypes } from "./Icon";
 import { TextInputGroup } from "./TextInputGroup";
@@ -58,72 +60,74 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] = React.useState(false);
   const [isEndDatePickerVisible, setIsEndDatePickerVisible] = React.useState(false);
   const venueSearchbarRef = React.useRef<any>(null);
-  const translateY = useRef(new Animated.Value(0)).current;
+  const translateY = useSharedValue(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const titleInputRef = useRef<View>(null);
   const descInputRef = useRef<View>(null);
   const venueContainerRef = useRef<TouchableOpacity>(null);
   const focusedInputRef = useRef<'title' | 'desc' | 'venue' | null>(null);
 
-  // Pan responder for drag handle
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 5;
-      },
-      onPanResponderGrant: () => {
-        setIsDraggingDown(true);
-        translateY.setOffset(0);
-        translateY.setValue(0);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        setIsDraggingDown(false);
-        translateY.flattenOffset();
+  // Callback functions for gesture handler
+  const handleDismissComplete = React.useCallback(() => {
+    setIsDismissing(false);
+  }, []);
 
-        if (gestureState.dy > 100) {
-          setIsDismissing(true);
-          onClose();
-          Animated.timing(translateY, {
-            toValue: 1000,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            translateY.setValue(0);
-            setIsDismissing(false);
+  // Gesture handler for drag-to-dismiss
+  const panGesture = React.useMemo(
+    () =>
+      Gesture.Pan()
+        .onStart(() => {
+          runOnJS(setIsDraggingDown)(true);
+        })
+        .onUpdate((event) => {
+          // Only allow downward swipes
+          if (event.translationY > 0) {
+            translateY.value = event.translationY;
+          }
+        })
+        .onEnd((event) => {
+          runOnJS(setIsDraggingDown)(false);
+
+          // If dragged down more than 100px, dismiss the modal
+          if (event.translationY > 100) {
+            runOnJS(setIsDismissing)(true);
+            runOnJS(onClose)();
+            translateY.value = withTiming(1000, { duration: 200 }, (finished) => {
+              if (finished) {
+                translateY.value = 0;
+                runOnJS(handleDismissComplete)();
+              }
+            });
+          } else {
+            // Spring back to original position
+            translateY.value = withSpring(0, {
+              damping: 7,
+              stiffness: 50,
+            });
+          }
+        })
+        .onFinalize(() => {
+          runOnJS(setIsDraggingDown)(false);
+          translateY.value = withSpring(0, {
+            damping: 7,
+            stiffness: 50,
           });
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 50,
-            friction: 7,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        setIsDraggingDown(false);
-        translateY.flattenOffset();
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 50,
-          friction: 7,
-        }).start();
-      },
-    })
-  ).current;
+        }),
+    [onClose, handleDismissComplete]
+  );
+
+  // Animated style for the container
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: translateY.value }],
+    };
+  });
 
 
   React.useEffect(() => {
     if (isVisible) {
       setIsDismissing(false);
-      translateY.setValue(0);
+      translateY.value = 0;
       // Reset form when modal opens
       onChangeTitle("");
       onChangeDesc("");
@@ -406,8 +410,6 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
       isVisible={isVisible && !isDismissing}
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
-      onSwipeComplete={isUploadStep ? onClose : undefined}
-      swipeDirection={isUploadStep ? "down" : undefined}
       style={styles.modal}
       animationIn="slideInUp"
       animationOut="slideOutDown"
@@ -420,10 +422,10 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
         style={[
           styles.container,
           {
-            transform: [{ translateY }],
             height: containerHeight,
             maxHeight: screenHeight * 0.95,
           },
+          animatedContainerStyle,
         ]}
       >
         {/* Gradient Background */}
@@ -440,35 +442,21 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
         </View>
 
         <SafeAreaView style={styles.safeArea}>
-          {/* Swipe Indicator - only show during upload step */}
-          {isUploadStep && (
-            <View style={styles.swipeIndicatorContainer}>
-              <View style={styles.swipeIndicator} />
-            </View>
-          )}
-          
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Create Event</Text>
-            {!isUploadStep && (
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleCreate}
-                disabled={!isFormValid}
-              >
-                <Icon
-                  type={IconTypes.Ionicons}
-                  name="checkmark"
-                  size={24}
-                  color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-
           {isUploadStep ? (
-            // Upload UI or Extracting UI
-            <View style={styles.uploadContainer}>
+            <GestureDetector gesture={panGesture}>
+              <View style={{ flex: 1 }}>
+                {/* Swipe Indicator - only show during upload step */}
+                <View style={styles.swipeIndicatorContainer}>
+                  <View style={styles.swipeIndicator} />
+                </View>
+                
+                {/* Header */}
+                <View style={styles.header}>
+                  <Text style={styles.headerTitle}>Create Event</Text>
+                </View>
+
+                {/* Upload UI or Extracting UI */}
+                <View style={styles.uploadContainer}>
               {isExtracting ? (
                 <View style={styles.uploadButton}>
                   <ActivityIndicator size="large" color="#fff" />
@@ -493,10 +481,29 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                   <Text style={styles.uploadSubtitle}>Tap to select an image</Text>
                 </TouchableOpacity>
               )}
-            </View>
+                </View>
+              </View>
+            </GestureDetector>
           ) : (
-            // Form UI
-            <KeyboardAvoidingView
+            <>
+              {/* Header */}
+              <View style={styles.header}>
+                <Text style={styles.headerTitle}>Create Event</Text>
+                <TouchableOpacity
+                  style={styles.headerButton}
+                  onPress={handleCreate}
+                  disabled={!isFormValid}
+                >
+                  <Icon
+                    type={IconTypes.Ionicons}
+                    name="checkmark"
+                    size={24}
+                    color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
+                  />
+                </TouchableOpacity>
+              </View>
+              {/* Form UI */}
+              <KeyboardAvoidingView
               behavior={Platform.OS === "ios" ? "padding" : "height"}
               style={{ flex: 1 }}
               keyboardVerticalOffset={0}
@@ -672,6 +679,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                 </TouchableWithoutFeedback>
               </View>
             </KeyboardAvoidingView>
+            </>
           )}
         </SafeAreaView>
       </Animated.View>
