@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   SectionList,
+  ActivityIndicator,
 } from "react-native";
 import { EventCard } from "./EventCard";
 import { LumaEventCard } from "./LumaEventCard";
@@ -15,6 +16,7 @@ import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
 import { getBookmarkedEvents } from "../utils/bookmarks";
 import moment from "moment";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 interface BookmarksModalProps {
   isVisible: boolean;
@@ -29,6 +31,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
   const [eventsGroup, setEventsGroup] = useState<
     { data: (DAEvent | LumaEvent | RAEvent)[]; title: string; subtitle: string; sortDate?: number; dateKey?: string }[]
   >([]);
+  const [isLoading, setIsLoading] = useState(false);
   const sectionListRef = useRef<SectionList>(null);
 
   // State for web modal
@@ -70,8 +73,15 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
   useEffect(() => {
     if (isVisible) {
       const loadBookmarks = async () => {
-        const bookmarks = await getBookmarkedEvents();
-        setBookmarkedEvents(bookmarks);
+        setIsLoading(true);
+        try {
+          const bookmarks = await getBookmarkedEvents();
+          setBookmarkedEvents(bookmarks);
+        } catch (error) {
+          console.error("Error loading bookmarks:", error);
+        } finally {
+          setIsLoading(false);
+        }
       };
       
       loadBookmarks();
@@ -83,8 +93,15 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
     const listener = EventRegister.addEventListener("BookmarkEvent", () => {
       if (isVisible) {
         const loadBookmarks = async () => {
-          const bookmarks = await getBookmarkedEvents();
-          setBookmarkedEvents(bookmarks);
+          setIsLoading(true);
+          try {
+            const bookmarks = await getBookmarkedEvents();
+            setBookmarkedEvents(bookmarks);
+          } catch (error) {
+            console.error("Error loading bookmarks:", error);
+          } finally {
+            setIsLoading(false);
+          }
         };
         loadBookmarks();
       }
@@ -191,6 +208,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
         isVisible={isVisible}
         onClose={onClose}
         title="Bookmarked Events"
+        backgroundColor={theme.background}
       >
         {({ onScroll, scrollEnabled }) => (
           <SectionList
@@ -217,8 +235,8 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
                     <EventCard
                       event={daEvent}
                       options={{
-                        showDate: true,
-                        showBookmark: true,
+                        showDate: false,
+                        showBookmark: false,
                         showVenue: true,
                         showImage: true,
                       }}
@@ -272,11 +290,17 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
               return `event-${index}`;
             }}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <View style={styles.emptyTextContainer}>
-                  <Text style={styles.emptyText}>No bookmarked events</Text>
+              isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#6366F1" />
                 </View>
-              </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <View style={styles.emptyTextContainer}>
+                    <Text style={styles.emptyText}>No bookmarked events</Text>
+                  </View>
+                </View>
+              )
             }
           />
         )}
@@ -300,6 +324,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
   },
   emptyContainer: {
     flex: 1,

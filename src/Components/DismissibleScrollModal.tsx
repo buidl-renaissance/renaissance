@@ -24,6 +24,7 @@ interface DismissibleScrollModalProps {
   height?: string | number;
   showDragHandle?: boolean;
   headerRight?: ReactNode;
+  backgroundColor?: string;
 }
 
 export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
@@ -34,9 +35,7 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
   height = "90%",
   showDragHandle = true,
   headerRight,
-  onScroll,
-  scrollViewRef,
-  contentContainerStyle,
+  backgroundColor = theme.surface,
 }) => {
   const [isDismissing, setIsDismissing] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -108,12 +107,7 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
     const wasAtTop = offsetY <= 0;
     setIsAtTop(wasAtTop);
     isAtTopRef.current = wasAtTop;
-    
-    // Call custom onScroll if provided
-    if (onScroll) {
-      onScroll(event);
-    }
-  }, [onScroll]);
+  }, []);
 
   React.useEffect(() => {
     if (isVisible) {
@@ -141,6 +135,7 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
           styles.container,
           {
             height,
+            backgroundColor,
             transform: [{ translateY }],
           },
         ]}
@@ -153,7 +148,7 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
         )}
         
         {/* Title header */}
-        <View style={styles.titleHeader} {...panResponder.panHandlers}>
+        <View style={[styles.titleHeader, { backgroundColor }]} {...panResponder.panHandlers}>
           <Text style={styles.titleHeaderText}>{title}</Text>
           <View style={styles.headerRight}>
             {headerRight}
@@ -185,7 +180,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: theme.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: "hidden",
@@ -208,7 +202,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: theme.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
   },
