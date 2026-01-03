@@ -262,10 +262,12 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: theme.inputBackground,
     borderRadius: 25,
     padding: 4,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border,
   },
   tab: {
     flex: 1,
@@ -275,15 +277,15 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   activeTab: {
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
   },
   tabText: {
     fontSize: 16,
     fontWeight: "600",
-    color: theme.textSecondary,
+    color: theme.textTertiary,
   },
   activeTabText: {
-    color: "white",
+    color: theme.textOnPrimary,
   },
   contentContainer: {
     minHeight: 300,
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
   },
   cornerLine: {
     position: "absolute",
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
   },
   cornerLineHorizontal: {
     height: 3,
@@ -419,13 +421,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scanAgainButton: {
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   scanAgainText: {
-    color: "white",
+    color: theme.textOnPrimary,
     fontWeight: "600",
     fontSize: 16,
   },
@@ -436,13 +438,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   permissionButton: {
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   permissionButtonText: {
-    color: "white",
+    color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
   },
