@@ -8,7 +8,7 @@ import { Button } from '../Components/Button';
 import { ArtistCard } from '../Components/ArtistCard';
 import { ArtworkCard } from '../Components/ArtworkCard';
 
-import { darkGrey, lightGreen } from '../colors';
+import { darkGrey, lightGreen, theme } from '../colors';
 
 const ArtistScreen = ({
     navigation,
@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#d2e4dd',
         flexDirection: 'column',
         borderTopWidth: 1,
-        borderColor: '#999',
+        borderColor: theme.border,
     },
     buttonContainer: {
         paddingHorizontal: 16,
         paddingTop: 4,
         paddingBottom: 32,
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
         // backgroundColor: lightGreen,
         backgroundColor: darkGrey,

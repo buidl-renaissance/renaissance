@@ -1,5 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import { theme } from "../colors";
 
 import AccountScreen from "../Screens/AccountScreen";
 import AdminScreen from "../Screens/AdminScreen";
@@ -32,7 +33,6 @@ import ContentUploadScreen from "../Screens/ContentUploadScreen";
 import DPoPAuthScreen from "../Screens/DPoPAuthScreen";
 import VerifyScreen from "../Screens/VerifyScreen";
 import MiniAppScreen from "../Screens/MiniAppScreen";
-import MiniAppsScreen from "../Screens/MiniAppsScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
@@ -94,9 +94,9 @@ const HomeNavigationStack = () => {
         name="GetStarted"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       /> */}
       <Stack.Screen
@@ -104,9 +104,9 @@ const HomeNavigationStack = () => {
         name="Calendar"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -114,9 +114,9 @@ const HomeNavigationStack = () => {
         name="CalendarView"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -124,9 +124,9 @@ const HomeNavigationStack = () => {
         name="DPoPAuth"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -134,9 +134,9 @@ const HomeNavigationStack = () => {
         name="Verify"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -144,9 +144,9 @@ const HomeNavigationStack = () => {
         name="CreateProposal"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -154,9 +154,9 @@ const HomeNavigationStack = () => {
         name="ReviewEvents"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -164,9 +164,9 @@ const HomeNavigationStack = () => {
         name="Chat"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -174,9 +174,9 @@ const HomeNavigationStack = () => {
         name="Activity"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -184,9 +184,9 @@ const HomeNavigationStack = () => {
         name="EventEdit"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -194,9 +194,9 @@ const HomeNavigationStack = () => {
         name="Files"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -204,9 +204,9 @@ const HomeNavigationStack = () => {
         name="ProposalList"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -214,9 +214,9 @@ const HomeNavigationStack = () => {
         name="CreateGrant"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -224,9 +224,9 @@ const HomeNavigationStack = () => {
         name="ProposalDetail"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -234,9 +234,9 @@ const HomeNavigationStack = () => {
         name="Account"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -244,9 +244,9 @@ const HomeNavigationStack = () => {
         name="FarcasterProfile"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -254,9 +254,9 @@ const HomeNavigationStack = () => {
         name="Admin"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -264,9 +264,9 @@ const HomeNavigationStack = () => {
         name="GetStarted"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Get Connected",
         }}
       />
@@ -275,9 +275,9 @@ const HomeNavigationStack = () => {
         name="Login"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Sign In",
         }}
       />
@@ -286,9 +286,9 @@ const HomeNavigationStack = () => {
         name="Bookmarks"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -296,9 +296,9 @@ const HomeNavigationStack = () => {
         name="BrowseMap"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -306,9 +306,9 @@ const HomeNavigationStack = () => {
         name="Map"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -316,9 +316,9 @@ const HomeNavigationStack = () => {
         name="Share"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -326,9 +326,9 @@ const HomeNavigationStack = () => {
         name="ContentUpload"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -336,9 +336,9 @@ const HomeNavigationStack = () => {
         name="Search"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -346,9 +346,9 @@ const HomeNavigationStack = () => {
         name="Event"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -356,9 +356,9 @@ const HomeNavigationStack = () => {
         name="Art"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Art",
         }}
       />
@@ -367,9 +367,9 @@ const HomeNavigationStack = () => {
         name="Artwork"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -377,9 +377,9 @@ const HomeNavigationStack = () => {
         name="AudioContent"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -387,20 +387,9 @@ const HomeNavigationStack = () => {
         name="AddContent"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
-        }}
-      />
-      <Stack.Screen
-        component={MiniAppsScreen}
-        name="MiniApps"
-        options={{
-          headerStyle: {
-            backgroundColor: "#d2e4dd",
-          },
-          headerTintColor: "#000",
-          title: "Mini Apps",
+          headerTintColor: theme.text,
         }}
       />
       <Stack.Screen
@@ -408,9 +397,9 @@ const HomeNavigationStack = () => {
         name="MiniApp"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Mini App",
           animationEnabled: true,
           gestureEnabled: true,
@@ -421,9 +410,9 @@ const HomeNavigationStack = () => {
         name="AccountManagement"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Account",
         }}
       />
@@ -432,9 +421,9 @@ const HomeNavigationStack = () => {
         name="Wallet"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Wallet",
         }}
       />
@@ -443,9 +432,9 @@ const HomeNavigationStack = () => {
         name="Restaurants"
         options={{
           headerStyle: {
-            backgroundColor: "#d2e4dd",
+            backgroundColor: theme.background,
           },
-          headerTintColor: "#000",
+          headerTintColor: theme.text,
           title: "Restaurants",
         }}
       />

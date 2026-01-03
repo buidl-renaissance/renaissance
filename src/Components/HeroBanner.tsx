@@ -1,6 +1,7 @@
 import React from "react";
 import { Animated, ImageBackground, Text, View } from "react-native";
 import { TreasuryBalanceCard } from "./TreasuryBalanceCard";
+import { theme } from "../colors";
 
 export const HeroBanner = ({ children }) => {
 
@@ -12,18 +13,18 @@ export const HeroBanner = ({ children }) => {
       >
         <Animated.View
           style={{
-            paddingTop: 160,
+            paddingTop: 108,
             paddingHorizontal: 16,
             paddingVertical: 16,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            borderBottomColor: "gray",
+            backgroundColor: theme.overlay,
+            borderBottomColor: theme.border,
             borderBottomWidth: 1,
           }}
         >
           {/* <TreasuryBalanceCard /> */}
           <Text
             style={{
-              color: "white",
+              color: theme.textOnDark,
               fontSize: 32,
               fontWeight: "bold",
               textAlign: "left",
@@ -34,7 +35,7 @@ export const HeroBanner = ({ children }) => {
           </Text>
           <Text
             style={{
-              color: "white",
+              color: theme.textOnDark,
               fontSize: 16,
               textAlign: "left",
               marginVertical: 4,

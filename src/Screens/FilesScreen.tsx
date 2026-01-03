@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Files from '../Components/Files';
+import { theme } from '../colors';
 
 type RootStackParamList = {
     Files: { path: string };
@@ -34,7 +35,7 @@ const FilesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.background,
   },
 });
 

@@ -4,6 +4,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import QRCode from "react-qr-code";
 import Icon, { IconTypes } from "./Icon";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 
 interface QRCodeModalProps {
   isVisible: boolean;
@@ -100,7 +101,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Connect</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon type={IconTypes.Ionicons} name="close" size={24} color="#333" />
+              <Icon type={IconTypes.Ionicons} name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderRadius: 20,
     width: "90%",
     maxWidth: 400,
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
   },
   closeButton: {
     padding: 4,
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
+    color: theme.textSecondary,
   },
   activeTabText: {
     color: "white",
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
   },
   qrCodeContainer: {
     padding: 16,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     marginBottom: 12,
   },
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -324,12 +325,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginBottom: 6,
   },
   instruction: {
     fontSize: 13,
-    color: "#666",
+    color: theme.textSecondary,
     textAlign: "center",
     paddingHorizontal: 20,
   },
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
   },
   notAuthenticatedText: {
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
     textAlign: "center",
     marginBottom: 24,
   },
@@ -430,7 +431,7 @@ const styles = StyleSheet.create({
   },
   permissionText: {
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
     textAlign: "center",
     marginBottom: 20,
   },

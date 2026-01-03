@@ -13,7 +13,7 @@ import {
 import { TextInput } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/Auth";
-import { lightGreen } from "../colors";
+import { lightGreen, theme } from "../colors";
 
 interface LoginScreenProps {
   navigation: any;
@@ -30,7 +30,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     navigation.setOptions({
       title: "Sign In",
       headerStyle: {
-        backgroundColor: "#d2e4dd",
+        backgroundColor: theme.background,
       },
     });
   }, [navigation]);
@@ -151,7 +151,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           onPress={handleWalletLogin}
           activeOpacity={0.8}
         >
-          <Ionicons name="wallet-outline" size={24} color="#333" />
+          <Ionicons name="wallet-outline" size={24} color={theme.text} />
           <Text style={styles.secondaryButtonText}>Continue Anonymously</Text>
         </TouchableOpacity>
 
@@ -161,12 +161,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           onPress={() => setShowEmailForm(!showEmailForm)}
           activeOpacity={0.8}
         >
-          <Ionicons name="mail-outline" size={24} color="#333" />
+          <Ionicons name="mail-outline" size={24} color={theme.text} />
           <Text style={styles.secondaryButtonText}>Sign in with Email</Text>
           <Ionicons
             name={showEmailForm ? "chevron-up" : "chevron-down"}
             size={20}
-            color="#666"
+            color={theme.textSecondary}
           />
         </TouchableOpacity>
 
@@ -180,7 +180,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textTertiary}
             />
             <TextInput
               style={styles.input}
@@ -188,7 +188,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.textTertiary}
             />
             <TouchableOpacity
               style={styles.emailLoginButton}
@@ -212,7 +212,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightGreen,
+    backgroundColor: theme.background,
   },
   scrollContent: {
     padding: 24,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
   },
   header: {
     alignItems: "center",
@@ -235,11 +235,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 8,
   },
   farcasterButton: {
@@ -288,32 +288,32 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#ccc",
+    backgroundColor: theme.divider,
   },
   dividerText: {
     marginHorizontal: 16,
-    color: "#666",
+    color: theme.textSecondary,
     fontSize: 14,
   },
   secondaryButton: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#e5e5e5",
+    borderColor: theme.border,
   },
   secondaryButtonText: {
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
-    color: "#333",
+    color: theme.text,
     fontWeight: "500",
   },
   emailForm: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -321,22 +321,23 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderColor: "#e5e5e5",
+    borderColor: theme.border,
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: "#fafafa",
+    backgroundColor: theme.inputBackground,
+    color: theme.text,
   },
   emailLoginButton: {
-    backgroundColor: "#333",
+    backgroundColor: theme.surfaceElevated,
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
   },
   emailLoginButtonText: {
-    color: "#fff",
+    color: theme.text,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: "#999",
+    color: theme.textTertiary,
     textAlign: "center",
     lineHeight: 18,
   },
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     fontSize: 12,
-    color: "#666",
+    color: theme.textSecondary,
   },
 });
 

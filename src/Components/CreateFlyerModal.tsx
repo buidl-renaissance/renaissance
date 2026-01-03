@@ -18,6 +18,7 @@ import * as FileSystem from "expo-file-system";
 import { DismissibleScrollModal } from "./DismissibleScrollModal";
 import { FlatList } from "react-native";
 import { Searchbar } from "react-native-paper";
+import { theme } from "../colors";
 import { darkGrey } from "../colors";
 import Svg, { Defs, LinearGradient, Stop, Rect, Line } from "react-native-svg";
 
@@ -662,7 +663,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                         <View ref={descInputRef} style={styles.formSection}>
                           <TextInputGroup
                             placeholder="Add Description"
-                            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                            placeholderTextColor={theme.textTertiary}
                             multiline={true}
                             onChangeText={onChangeDesc}
                             value={desc}
@@ -1063,7 +1064,7 @@ const styles = StyleSheet.create({
   },
   venueListItemText: {
     fontSize: 16,
-    color: "#333",
+    color: theme.text,
     flex: 1,
   },
   venueListItemTextSelected: {
@@ -1077,7 +1078,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#999",
+    color: theme.textSecondary,
   },
   venueModalContent: {
     flex: 1,
@@ -1086,12 +1087,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 8,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
   searchbar: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
     elevation: 0,
   },
   extractingContainer: {

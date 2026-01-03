@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator }
 import { useLocalStorage } from '../context/LocalStorage';
 import Icon, { IconTypes } from '../Components/Icon';
 import { ContentUpload } from '../interfaces';
+import { theme } from '../colors';
 
 const ContentUploadScreen: React.FC = () => {
   const { 
@@ -97,13 +98,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: theme.border,
   },
   itemText: {
     fontSize: 16,
   },
   uploadAllButton: {
-    backgroundColor: '#0000ff',
+    backgroundColor: '#6366F1',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',

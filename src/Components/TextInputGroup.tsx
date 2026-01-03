@@ -1,18 +1,19 @@
 import React from 'react';
 import { Text, TextInput, TextInputProps, StyleProp, TextStyle } from "react-native";
+import { theme } from '../colors';
 
 const TextInputStyles: StyleProp<TextStyle> = {
     height: 44,
     borderWidth: 1,
     padding: 10,
     marginBottom: 12,
-    backgroundColor: 'white',
-    color: '#000000',
+    backgroundColor: theme.inputBackground,
+    color: theme.text,
 };
 
 const TextLabelStyles: StyleProp<TextStyle> = {
     marginVertical: 6,
-    color: '#000000',
+    color: theme.text,
 }
 
 interface TextInputGroupProps extends TextInputProps {

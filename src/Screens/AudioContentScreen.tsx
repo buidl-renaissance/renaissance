@@ -5,6 +5,7 @@ import AudioView from '../Components/Content/AudioView';
 import { ContentView } from '../Components/ContentView';
 import { useArtworks, useContent } from "../hooks/useArtwork";
 import { DAContent } from '../interfaces';
+import { theme } from '../colors';
 
 const AudioContentScreen: React.FC = () => {
   const [content] = useContent();

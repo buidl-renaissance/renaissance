@@ -11,7 +11,7 @@ import { Button } from "../Components/Button";
 import { EventCard } from "../Components/EventCard";
 import { RenderHTML } from "../Components/RenderHTML";
 
-import { lightGreen, darkGrey } from "../colors";
+import { lightGreen, darkGrey, theme } from "../colors";
 
 interface EventPopupProps {
   event: any;
@@ -82,14 +82,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: lightGreen,
     flexDirection: "column",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderBottomWidth: 1,
     // backgroundColor: lightGreen,
     backgroundColor: darkGrey,

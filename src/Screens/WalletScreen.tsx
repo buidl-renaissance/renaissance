@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getWallet } from "../utils/wallet";
 import { useAuth } from "../context/Auth";
 import { getUSDCBalance } from "../api/usdc-balance";
+import { theme } from "../colors";
 
 interface WalletScreenProps {
   navigation: any;
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   paginationDotActive: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
   },
   actionButtonsContainer: {
     flexDirection: "row",
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   tabTextActive: {
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     marginBottom: 12,
     fontWeight: "500",
   },
@@ -513,7 +514,7 @@ const styles = StyleSheet.create({
   },
   tokenBalance: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
   },
   tokenApy: {
     fontSize: 14,
@@ -564,7 +565,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
   },
 });
 

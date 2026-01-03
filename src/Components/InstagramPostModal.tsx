@@ -17,6 +17,7 @@ import { InstagramEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     height: "90%",
@@ -542,7 +543,7 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#333",
+    color: theme.text,
     marginBottom: 12,
   },
   timeframeContainer: {
@@ -595,7 +596,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     fontSize: 15,
-    color: "#333",
+    color: theme.text,
     lineHeight: 22,
     marginBottom: 12,
   },

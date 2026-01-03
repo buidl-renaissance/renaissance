@@ -6,7 +6,7 @@ import { ArtistCard } from '../Components/ArtistCard';
 import { Button } from '../Components/Button';
 import { EventCard } from '../Components/EventCard';
 // import { RenderHTML } from '../Components/RenderHTML';
-import { darkGrey, lightGreen } from '../colors';
+import { darkGrey, lightGreen, theme } from '../colors';
 
 const ScavengerHunt = () => {
     return (
@@ -196,14 +196,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#d2e4dd',
         flexDirection: 'column',
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
     },
     buttonContainer: {
         paddingHorizontal: 16,
         paddingTop: 4,
         paddingBottom: 32,
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
         // backgroundColor: lightGreen,
         backgroundColor: darkGrey,

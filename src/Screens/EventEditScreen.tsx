@@ -13,6 +13,7 @@ import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { TextInputGroup } from "../Components/TextInputGroup";
 // import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DateTimePicker from "../Components/DateTimePicker";
+import { theme } from "../colors";
 import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
 import { AutocompleteDropdownContextProvider } from "react-native-autocomplete-dropdown";
 import { Button } from "../Components/Button";
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: darkGrey,
   },
   input: {
-    backgroundColor: "#e5ecf3",
+    backgroundColor: theme.inputBackground,
     borderRadius: 4,
     padding: 12,
     marginBottom: 8,

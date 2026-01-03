@@ -11,7 +11,7 @@ import { Button } from "../Components/Button";
 import { EventCard } from "../Components/EventCard";
 import { RenderHTML } from "../Components/RenderHTML";
 
-import { lightGreen, darkGrey } from "../colors";
+import { lightGreen, darkGrey, theme } from "../colors";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 const { height, width } = Dimensions.get("window");
@@ -105,14 +105,14 @@ const styles = StyleSheet.create({
     backgroundColor: darkGrey,
   },
   cardContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     // backgroundColor: '#d2e4dd',
     height: 180,
     margin: 4,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     borderWidth: 1,
     shadowColor: "black",
     shadowOffset: { width: 2, height: 2 },

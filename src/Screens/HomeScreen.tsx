@@ -6,7 +6,7 @@ import { Button } from '../Components/Button';
 import { HeaderTitleImage } from '../Components/HeaderTitleImage';
 import { LocationCard } from '../Components/LocationCard';
 
-import { darkGrey, lightGreen } from '../colors';
+import { darkGrey, lightGreen, theme } from '../colors';
 
 const HomeScreen = ({
     navigation
@@ -62,22 +62,16 @@ const HomeScreen = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#d2e4dd',
-        // padding: 8,
-        // alignItems: 'center',
-        // paddingBottom: 64,
-        borderColor: '#999',
+        backgroundColor: theme.background,
+        borderColor: theme.border,
         borderTopWidth: 1,
     },
     buttonContainer: {
         paddingHorizontal: 16,
         paddingTop: 4,
         paddingBottom: 32,
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
-        // backgroundColor: lightGreen,
-        // backgroundColor: darkGrey,
-        // opacity: 0,
     },
 });
     

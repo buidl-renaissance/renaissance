@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Modal from "react-native-modal";
 import Icon, { IconTypes } from "./Icon";
 import { getWallet } from "../utils/wallet";
+import { theme } from "../colors";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { useAuth } from "../context/Auth";
 import { sendUSDC } from "../api/send-usdc";
@@ -537,7 +538,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
                     <TextInput
                       style={[styles.input, { flex: 1, backgroundColor: "transparent" }]}
                       placeholder="0x..."
-                      placeholderTextColor="#6B7280"
+                      placeholderTextColor={theme.textTertiary}
                       value={sendRecipient}
                       onChangeText={setSendRecipient}
                       autoCapitalize="none"
@@ -560,7 +561,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
               <TextInput
                 style={styles.input}
                 placeholder="0.00"
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={theme.textTertiary}
                 value={sendAmount}
                 onChangeText={setSendAmount}
                 keyboardType="decimal-pad"
@@ -737,7 +738,7 @@ const styles = StyleSheet.create({
   },
   walletAddressText: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     fontFamily: "monospace",
   },
   closeButton: {
@@ -767,7 +768,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     marginBottom: 12,
     fontWeight: "500",
   },
@@ -801,7 +802,7 @@ const styles = StyleSheet.create({
   },
   rewardDescription: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     marginBottom: 4,
   },
   rewardDate: {
@@ -823,7 +824,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
   },
   actionButtonsContainer: {
     flexDirection: "row",
@@ -877,7 +878,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   input: {
@@ -944,13 +945,13 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   qrCodeContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     padding: 16,
     borderRadius: 12,
   },
   walletAddressFull: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     fontFamily: "monospace",
     textAlign: "center",
     paddingHorizontal: 20,

@@ -6,6 +6,7 @@ import { RAEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 export interface RAEventCardOptions {
   showDate?: boolean;
@@ -97,7 +98,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
             paddingVertical: 6,
             flex: 1,
             flexDirection: "row",
-            borderColor: isFeatured ? "#3449ff" : "#7c3aed",
+            borderColor: isFeatured ? theme.eventFeatured : theme.eventRA,
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
@@ -121,7 +122,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -134,6 +135,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                     fontWeight: "bold",
                     fontSize: 22,
                     textAlign: "center",
+                    color: theme.text,
                   }}
                 >
                   {formatDay(event.startTime)}
@@ -160,8 +162,8 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                         styles.subtitle,
                         {
                           fontSize: 8,
-                          backgroundColor: "#f59e0b",
-                          color: "white",
+                          backgroundColor: theme.warning,
+                          color: theme.textOnWarning,
                           borderRadius: 4,
                           paddingHorizontal: 3,
                           paddingVertical: 1,
@@ -185,7 +187,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                     <Text
                       style={{
                         fontSize: 8,
-                        color: "white",
+                        color: theme.textOnPrimary,
                         fontWeight: "600",
                       }}
                     >
@@ -195,7 +197,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                   {isFeatured && (
                     <View
                       style={{
-                        backgroundColor: "#10b981",
+                        backgroundColor: theme.success,
                         borderRadius: 4,
                         paddingHorizontal: 4,
                         paddingVertical: 1,
@@ -205,7 +207,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                       <Text
                         style={{
                           fontSize: 8,
-                          color: "white",
+                          color: theme.textOnSuccess,
                           fontWeight: "600",
                         }}
                       >
@@ -234,7 +236,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                       <Icon
                         type={IconTypes.Ionicons}
                         size={14}
-                        color="#3449ff"
+                        color={theme.primary}
                         name="bookmark"
                       />
                     </TouchableOpacity>
@@ -250,13 +252,13 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                   <Text style={styles.subtitle}>{event.venue.name}</Text>
                 )}
                 {artistsText && options?.showArtists && (
-                  <Text style={[styles.subtitle, { fontSize: 11, color: "#7c3aed" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 11, color: theme.text }]}>
                     {artistsText}
                     {event.artists.length > 3 && ` +${event.artists.length - 3} more`}
                   </Text>
                 )}
                 {event.interestedCount !== null && event.interestedCount > 0 && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {event.interestedCount} interested
                   </Text>
                 )}
@@ -288,17 +290,19 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   bookmarkBadge: {
     marginLeft: 6,

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Restaurant, RestaurantCategory } from "../interfaces";
+import { theme } from "../colors";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -59,7 +60,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
         <Image source={{ uri: restaurant.image }} style={styles.image} />
       ) : (
         <View style={styles.imagePlaceholder}>
-          <Ionicons name="restaurant" size={40} color="#ccc" />
+          <Ionicons name="restaurant" size={40} color={theme.textSecondary} />
         </View>
       )}
       <View style={styles.content}>
@@ -106,7 +107,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     marginBottom: 12,
     marginHorizontal: 16,
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: "100%",
     height: 180,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -152,12 +153,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
     marginBottom: 4,
   },
   neighborhood: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginBottom: 8,
   },
   categoriesContainer: {
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 11,
-    color: "#666",
+    color: theme.textSecondary,
     fontWeight: "500",
     textTransform: "capitalize",
   },
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 14,
-    color: "#333",
+    color: theme.text,
     marginLeft: 4,
     fontWeight: "600",
   },

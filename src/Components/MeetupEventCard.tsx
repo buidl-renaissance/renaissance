@@ -6,6 +6,7 @@ import { MeetupEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 export interface MeetupEventCardOptions {
   showDate?: boolean;
@@ -106,7 +107,7 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
             paddingVertical: 6,
             flex: 1,
             flexDirection: "row",
-            borderColor: "#f97316",
+            borderColor: theme.eventMeetup,
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
@@ -130,7 +131,7 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -169,8 +170,8 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                         styles.subtitle,
                         {
                           fontSize: 8,
-                          backgroundColor: "#f97316",
-                          color: "white",
+                          backgroundColor: theme.eventMeetup,
+                          color: theme.textOnPrimary,
                           borderRadius: 4,
                           paddingHorizontal: 3,
                           paddingVertical: 1,
@@ -191,7 +192,7 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                       <Icon
                         type={IconTypes.Ionicons}
                         size={14}
-                        color="#3449ff"
+                        color={theme.primary}
                         name="bookmark"
                       />
                     </TouchableOpacity>
@@ -215,7 +216,7 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                   <Text style={styles.subtitle}>Group: {event.group.name}</Text>
                 )}
                 {attendeeCount !== null && attendeeCount !== undefined && attendeeCount > 0 && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {attendeeCount} {attendeeCount === 1 ? 'attendee' : 'attendees'}
                   </Text>
                 )}
@@ -247,17 +248,19 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   bookmarkBadge: {
     marginLeft: 6,

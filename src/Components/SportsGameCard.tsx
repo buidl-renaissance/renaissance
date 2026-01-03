@@ -7,6 +7,7 @@ import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
 import * as Linking from "expo-linking";
+import { theme } from "../colors";
 
 export interface SportsGameCardOptions {
   showDate?: boolean;
@@ -159,7 +160,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -172,6 +173,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                     fontWeight: "bold",
                     fontSize: 22,
                     textAlign: "center",
+                    color: theme.text,
                   }}
                 >
                   {formatDay(game.startTime)}
@@ -204,7 +206,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                     <Text
                       style={{
                         fontSize: 8,
-                        color: "white",
+                        color: theme.textOnPrimary,
                         fontWeight: "600",
                       }}
                     >
@@ -214,7 +216,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                   {isHomeGame && (
                     <View
                       style={{
-                        backgroundColor: "#10b981",
+                        backgroundColor: theme.success,
                         borderRadius: 4,
                         paddingHorizontal: 4,
                         paddingVertical: 1,
@@ -224,7 +226,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                       <Text
                         style={{
                           fontSize: 8,
-                          color: "white",
+                          color: theme.textOnPrimary,
                           fontWeight: "600",
                         }}
                       >
@@ -235,7 +237,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                   {isAwayGame && (
                     <View
                       style={{
-                        backgroundColor: "#f59e0b",
+                        backgroundColor: theme.warning,
                         borderRadius: 4,
                         paddingHorizontal: 4,
                         paddingVertical: 1,
@@ -245,7 +247,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                       <Text
                         style={{
                           fontSize: 8,
-                          color: "white",
+                          color: theme.textOnPrimary,
                           fontWeight: "600",
                         }}
                       >
@@ -274,7 +276,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                       <Icon
                         type={IconTypes.Ionicons}
                         size={14}
-                        color="#3449ff"
+                        color={theme.primary}
                         name="bookmark"
                       />
                     </TouchableOpacity>
@@ -292,7 +294,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                   </Text>
                 )}
                 {game.broadcasts && game.broadcasts.length > 0 && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#666", marginTop: 2 }]}>
+                  <Text style={[styles.subtitle, { fontSize: 10, color: theme.textSecondary, marginTop: 2 }]}>
                     {game.broadcasts.map(b => b.shortName || b.name).filter(Boolean).join(', ')}
                   </Text>
                 )}
@@ -321,7 +323,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                     </Text>
                   )}
                 </View>
-                <Text style={{ fontSize: 11, color: "#999", marginTop: -8 }}>@</Text>
+                <Text style={{ fontSize: 11, color: theme.textTertiary, marginTop: -8 }}>@</Text>
                 <View style={{ alignItems: "center" }}>
                   <Image
                     source={{
@@ -341,7 +343,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                 </View>
               </View>
               {(game.period !== null || game.periodType || game.displayClock) && (
-                <Text style={[styles.subtitle, { fontSize: 9, color: "#666", marginTop: 4 }]}>
+                <Text style={[styles.subtitle, { fontSize: 9, color: theme.textSecondary, marginTop: 4 }]}>
                   {(() => {
                     let periodText = '';
                     if (game.periodType && game.period !== null) {
@@ -370,17 +372,19 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   bookmarkBadge: {
     marginLeft: 6,

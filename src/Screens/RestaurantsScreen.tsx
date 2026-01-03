@@ -15,6 +15,7 @@ import { RestaurantRankingCard } from "../Components/RestaurantRankingCard";
 import { BucketListCard } from "../Components/BucketListCard";
 import { BucketListModal } from "../Components/BucketListModal";
 import { FoodPostCard } from "../Components/FoodPostCard";
+import { theme } from "../colors";
 import {
   Restaurant,
   RestaurantCategory,
@@ -449,13 +450,13 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     paddingVertical: 8,
   },
   tab: {

@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { darkGrey } from "../colors";
+import { darkGrey, theme } from "../colors";
 import AddMedia from "../Components/AddMedia";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { TextInput } from "../Components/Styled/TextInput";
@@ -94,13 +94,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#d2e4dd",
     flexDirection: "column",
     borderTopWidth: 1,
-    borderColor: "#999",
+    borderColor: theme.border,
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
     // backgroundColor: lightGreen,
     backgroundColor: darkGrey,

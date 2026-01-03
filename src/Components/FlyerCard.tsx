@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from "react-native";
 import { DAEvent, DAFlyer } from "../interfaces";
+import { theme } from "../colors";
 import { EventCard } from "./EventCard";
 import { Button } from "./Button";
 import EventParticipation from "./EventParticipation";
@@ -68,10 +69,10 @@ const styles = StyleSheet.create({
   container: {
     // padding: 4,
     // borderBottomColor: "#bcd0c7",
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     margin: 16,
     borderRadius: 14,
-    borderColor: "#ccc",
+    borderColor: theme.border,
     borderWidth: 1,
     borderBottomWidth: 1,
     overflow: "hidden",

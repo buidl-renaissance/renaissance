@@ -6,6 +6,7 @@ import { LumaEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 export interface LumaEventCardOptions {
   showDate?: boolean;
@@ -93,7 +94,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
             paddingVertical: 6,
             flex: 1,
             flexDirection: "row",
-            borderColor: "#ff6b6b",
+            borderColor: theme.eventLuma,
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
@@ -117,7 +118,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -130,6 +131,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                     fontWeight: "bold",
                     fontSize: 22,
                     textAlign: "center",
+                    color: theme.text,
                   }}
                 >
                   {formatDay(event.startAt)}
@@ -216,7 +218,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                       <Icon
                         type={IconTypes.Ionicons}
                         size={14}
-                        color="#3449ff"
+                        color={theme.primary}
                         name="bookmark"
                       />
                     </TouchableOpacity>
@@ -240,7 +242,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                   <Text style={styles.subtitle}>Hosted by: {hostsText}</Text>
                 )}
                 {event.guestCount > 0 && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {event.guestCount} {event.guestCount === 1 ? "guest" : "guests"}
                   </Text>
                 )}
@@ -272,17 +274,19 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   bookmarkBadge: {
     marginLeft: 6,

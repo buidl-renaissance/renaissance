@@ -13,6 +13,7 @@ import {
   Button,
 } from "react-native";
 import { useRef } from "react";
+import { theme } from "../colors";
 import { EventCard } from "../Components/EventCard";
 
 const DateRangeSelectorBox = ({}) => {
@@ -139,7 +140,7 @@ export default MapScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: Dimensions.get("window").height - 500,
     width: Dimensions.get("window").width,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopRightRadius: 16,
     borderTopLeftRadius: 16,
   },
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     zIndex: 100,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     // height: Dimensions.get("window").height - 500,
     width: Dimensions.get("window").width,
     flexDirection: "row",

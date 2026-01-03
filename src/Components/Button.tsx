@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
-import { lightGreen, darkGrey } from "../colors";
+import { lightGreen, darkGrey, theme } from "../colors";
 
 type ButtonVariant = "hollow" | "solid";
 type ButtonSize = "normal" | "small";
@@ -20,10 +20,10 @@ export const Button = ({
   variant = "hollow",
   size = "normal",
 }: ButtonProps) => {
-  const textColor = variant === "hollow" ? darkGrey : lightGreen;
-  const borderColor = variant === "hollow" ? darkGrey : lightGreen;
+  const textColor = variant === "hollow" ? theme.text : theme.text;
+  const borderColor = variant === "hollow" ? theme.border : lightGreen;
   const activeStyles = active
-    ? { color: "white", backgroundColor: darkGrey }
+    ? { color: theme.textOnDark, backgroundColor: darkGrey }
     : {};
   return (
     <TouchableOpacity
@@ -31,7 +31,7 @@ export const Button = ({
         styles.button,
         { borderColor: borderColor },
         size === "small" ? styles.smallButton : {},
-        active ? { backgroundColor: darkGrey } : {},
+        active ? { backgroundColor: theme.surfaceElevated } : {},
       ]}
       onPress={onPress}
     >
@@ -40,7 +40,7 @@ export const Button = ({
           styles.text,
           { color: textColor },
           size === "small" ? styles.smallText : {},
-          active ? { color: "white" } : {},
+          active ? { color: theme.textOnDark } : {},
         ]}
       >
         {title}

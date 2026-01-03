@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import Icon, { IconTypes } from "./Icon";
+import { theme } from "../colors";
 
 interface FloatingActionButtonsProps {
   onMapPress?: () => void;
@@ -50,7 +51,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
                 {walletBalance && (
                   <Text style={styles.balanceText}>${walletBalance}</Text>
                 )}
-                <Icon type={IconTypes.Ionicons} name="wallet-outline" size={18} color="#333" />
+                <Icon type={IconTypes.Ionicons} name="wallet-outline" size={18} color={theme.text} />
               </TouchableOpacity>
             )}
             {onQRCodePress && (
@@ -59,7 +60,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
                 style={styles.topButton}
                 activeOpacity={0.7}
               >
-                <Icon type={IconTypes.Ionicons} name="qr-code-outline" size={18} color="#333" />
+                <Icon type={IconTypes.Ionicons} name="qr-code-outline" size={18} color={theme.text} />
               </TouchableOpacity>
             )}
           </View>
@@ -76,7 +77,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
               style={[styles.navButton, index < mainButtons.length - 1 && styles.navButtonWithDivider]}
               activeOpacity={0.7}
             >
-              <Icon type={button.type} name={button.icon} size={22} color="#333" />
+              <Icon type={button.type} name={button.icon} size={22} color={theme.text} />
             </TouchableOpacity>
           ))}
         </View>
@@ -86,7 +87,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
             onPress={onSearchPress}
             activeOpacity={0.7}
           >
-            <Icon type={IconTypes.Ionicons} name="search" size={22} color="#333" />
+            <Icon type={IconTypes.Ionicons} name="search" size={22} color={theme.text} />
           </TouchableOpacity>
         )}
       </View>
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   topButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface, // Solid white for efficient shadow calculation
     borderRadius: 20,
     paddingHorizontal: 6,
     paddingVertical: 4,
@@ -117,12 +118,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderColor: theme.border,
   },
   balanceText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginRight: 6,
   },
   topButton: {
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   navigationBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface, // Solid white for efficient shadow calculation
     borderRadius: 30,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "#FFFFFF",
+    borderColor: theme.border,
   },
   navButton: {
     alignItems: "center",
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface, // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "#FFFFFF",
+    borderColor: theme.border,
   },
 });
 

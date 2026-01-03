@@ -6,6 +6,7 @@ import { View, Text, Image } from "react-native";
 import { SectionTitle } from "./SectionTitle";
 
 import * as Linking from "expo-linking";
+import { theme } from "../colors";
 
 const grants = [
   {
@@ -60,7 +61,7 @@ export const GrantOpportunities = ({}) => {
             }}
             /> */}
               <Text
-                style={{ color: '#150ae6', fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}
+                style={{ color: theme.text, fontSize: 20, fontWeight: 'bold', marginBottom: 4 }}
               >
                 {grant.title}
               </Text>

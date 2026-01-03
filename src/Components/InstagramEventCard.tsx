@@ -6,6 +6,7 @@ import { InstagramEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 export interface InstagramEventCardOptions {
   showDate?: boolean;
@@ -96,7 +97,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
             paddingVertical: 6,
             flex: 1,
             flexDirection: "row",
-            borderColor: "#E4405F",
+            borderColor: theme.eventInstagram,
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
@@ -120,7 +121,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -133,6 +134,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                     fontWeight: "bold",
                     fontSize: 22,
                     textAlign: "center",
+                    color: theme.text,
                   }}
                 >
                   {formatDay(event.startDatetime)}
@@ -159,8 +161,8 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                         styles.subtitle,
                         {
                           fontSize: 8,
-                          backgroundColor: "#f59e0b",
-                          color: "white",
+                          backgroundColor: theme.warning,
+                          color: theme.textOnWarning,
                           borderRadius: 4,
                           paddingHorizontal: 3,
                           paddingVertical: 1,
@@ -193,7 +195,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                       <Icon
                         type={IconTypes.Ionicons}
                         size={14}
-                        color="#3449ff"
+                        color={theme.primary}
                         name="bookmark"
                       />
                     </TouchableOpacity>
@@ -209,18 +211,18 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                   <Text style={styles.subtitle}>{event.venue}</Text>
                 )}
                 {event.location && options?.showVenue && (
-                  <Text style={[styles.subtitle, { fontSize: 11, color: "#666" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 11, color: theme.textSecondary }]}>
                     {event.location}
                   </Text>
                 )}
                 {artistsText && options?.showArtists && (
-                  <Text style={[styles.subtitle, { fontSize: 11, color: "#E4405F" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 11, color: theme.text }]}>
                     {artistsText}
                     {event.artistNames.length > 3 && ` +${event.artistNames.length - 3} more`}
                   </Text>
                 )}
                 {event.metadata?.additionalInfo && (
-                  <Text style={[styles.subtitle, { fontSize: 10, color: "#999" }]}>
+                  <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {event.metadata.additionalInfo}
                   </Text>
                 )}
@@ -252,17 +254,19 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   bookmarkBadge: {
     marginLeft: 6,

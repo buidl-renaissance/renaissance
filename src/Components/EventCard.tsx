@@ -6,6 +6,7 @@ import { formatDay, formatMonth } from "../utils/formatDate";
 import RenderHtml from "react-native-render-html";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
+import { theme } from "../colors";
 import { EventBookmarkButton } from "./EventBookmarkButton";
 
 export interface EventCardOptions {
@@ -69,7 +70,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             paddingVertical: 6,
             flex: 1,
             flexDirection: "row",
-            borderColor: "#3449ff",
+            borderColor: theme.primary,
             borderLeftWidth: 3,
             paddingLeft: 6,
             marginLeft: -8,
@@ -93,7 +94,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 <Text
                   style={{
                     marginTop: 2,
-                    color: "#666",
+                    color: theme.textSecondary,
                     textAlign: "center",
                     textTransform: "uppercase",
                   }}
@@ -106,6 +107,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     fontWeight: "bold",
                     fontSize: 22,
                     textAlign: "center",
+                    color: theme.text,
                   }}
                 >
                   {formatDay(event.start_date)}
@@ -131,8 +133,8 @@ export const EventCard: React.FC<EventCardProps> = ({
                         styles.subtitle,
                         {
                           fontSize: 8,
-                          backgroundColor: "blue",
-                          color: "white",
+                          backgroundColor: theme.eventNow,
+                          color: theme.textOnPrimary,
                           borderRadius: 4,
                           paddingHorizontal: 3,
                           paddingVertical: 1,
@@ -167,7 +169,10 @@ export const EventCard: React.FC<EventCardProps> = ({
                 {event?.excerpt && (
                   <View style={{ marginVertical: 4 }}>
                     <RenderHtml
-                      tagsStyles={{ p: { padding: 0, margin: 0 } }}
+                      tagsStyles={{ 
+                        p: { padding: 0, margin: 0, color: theme.textSecondary },
+                        i: { color: theme.textSecondary }
+                      }}
                       contentWidth={100}
                       source={{ html: `<i>${event?.excerpt}</i>` }}
                     />
@@ -198,7 +203,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           <TouchableOpacity
             style={{
               opacity: 1,
-              borderColor: "#999",
+              borderColor: theme.border,
               borderRadius: 14,
               borderWidth: 1,
               padding: 6,
@@ -209,7 +214,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             <Icon
               type={IconTypes.Ionicons}
               size={14}
-              color="#999"
+              color={theme.textSecondary}
               name="ellipsis-vertical-outline"
             />
           </TouchableOpacity>
@@ -234,17 +239,19 @@ const styles = StyleSheet.create({
     // padding: 4,
     // borderBottomColor: "#bcd0c7",
     paddingHorizontal: 0,
-    borderBottomColor: "#eee",
+    borderBottomColor: theme.border,
     borderBottomWidth: 1,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    color: theme.text,
   },
   subtitle: {
     fontSize: 12,
     width: "auto",
     fontWeight: "500",
+    color: theme.textSecondary,
   },
   tagsContainer: {
     paddingVertical: 4,
@@ -253,8 +260,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   chip: {
-    color: "#28303d",
-    borderColor: "#28303d",
+    color: theme.text,
+    borderColor: theme.border,
     borderWidth: 1,
     paddingHorizontal: 4,
     // paddingVertical: 1,

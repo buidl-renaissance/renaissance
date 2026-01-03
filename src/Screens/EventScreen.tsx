@@ -18,6 +18,7 @@ import { RenderHTML } from "../Components/RenderHTML";
 
 import QRCode from "react-qr-code";
 import { useContent } from "../hooks/useArtwork";
+import { theme } from "../colors";
 import { ContentView } from "../Components/ContentView";
 
 const EventScreen = ({ navigation, route }) => {
@@ -43,7 +44,7 @@ const EventScreen = ({ navigation, route }) => {
               <Icon
                 type={IconTypes.Feather}
                 size={20}
-                color="black"
+                color={theme.text}
                 name={"edit"}
               />
             </TouchableOpacity>
@@ -130,7 +131,7 @@ const EventScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
   },
   scrollView: {
     flex: 1,
@@ -139,11 +140,11 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   cardContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     marginBottom: 1,
   },
   imageContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     marginBottom: 1,
   },
   eventImage: {
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   contentContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     paddingVertical: 20,
     marginBottom: 1,
   },
@@ -159,12 +160,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   contentSection: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     paddingVertical: 16,
     marginBottom: 1,
   },
   qrContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     alignItems: "center",
     paddingVertical: 32,
     paddingHorizontal: 24,
@@ -172,21 +173,21 @@ const styles = StyleSheet.create({
   qrLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginBottom: 20,
     textAlign: "center",
   },
   qrCode: {
     padding: 16,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    shadowColor: "#000",
+    borderTopColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: -2,

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
+import { theme } from "../colors";
 
 const ProposalCreationScreen = ({
   navigation
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   bottomSheetContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     padding: 16,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   bottomSheetItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: theme.border,
   },
 });
 

@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth, AuthUser } from "../context/Auth";
-import { lightGreen } from "../colors";
+import { lightGreen, theme } from "../colors";
 import { useImagePicker } from "../hooks/useImagePicker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { getWallet } from "../utils/wallet";
@@ -654,7 +654,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                     style={styles.modalCloseButton}
                     onPress={closeEditProfileModal}
                   >
-                    <Ionicons name="close" size={28} color="#333" />
+                    <Ionicons name="close" size={28} color={theme.text} />
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Edit Profile</Text>
                   <View style={styles.modalCloseButton} />
@@ -930,7 +930,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: theme.background,
   },
   keyboardView: {
     flex: 1,
@@ -948,13 +948,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#111827",
+    color: theme.text,
     marginTop: 20,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 15,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
     lineHeight: 22,
@@ -1022,18 +1022,18 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: "#6B7280",
+    color: theme.textSecondary,
     fontSize: 14,
   },
   infoBox: {
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     padding: 18,
     borderRadius: 16,
     marginTop: 28,
     alignItems: "flex-start",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -1044,7 +1044,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 14,
     fontSize: 13,
-    color: "#6B7280",
+    color: theme.textSecondary,
     lineHeight: 20,
   },
   // Profile styles
@@ -1052,16 +1052,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
     marginTop: 20,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     borderRadius: 20,
     padding: 24,
-    shadowColor: "#000",
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
     borderWidth: 1,
-    borderColor: "#F3F4F6",
+    borderColor: theme.border,
     position: "relative",
   },
   avatarContainer: {
@@ -1074,9 +1074,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
@@ -1117,7 +1117,7 @@ const styles = StyleSheet.create({
   displayName: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#111827",
+    color: theme.text,
     letterSpacing: -0.5,
     marginTop: 4,
   },
@@ -1129,13 +1129,13 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 26,
-    color: "#111827",
+    color: theme.text,
     fontWeight: "700",
     letterSpacing: -0.5,
   },
   renaissanceId: {
     fontSize: 18,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     fontWeight: "600",
     marginLeft: 2,
     letterSpacing: -0.5,
@@ -1159,12 +1159,12 @@ const styles = StyleSheet.create({
   },
   fidText: {
     fontSize: 13,
-    color: "#9CA3AF",
+    color: theme.textSecondary,
     marginTop: 10,
     fontWeight: "500",
   },
   infoSection: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
@@ -1179,7 +1179,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
+    color: theme.text,
     marginBottom: 16,
     letterSpacing: -0.3,
   },
@@ -1199,12 +1199,12 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: "#6B7280",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   infoValue: {
     fontSize: 14,
-    color: "#111827",
+    color: theme.text,
     fontWeight: "600",
     maxWidth: "60%",
     textAlign: "right",
@@ -1213,7 +1213,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     padding: 18,
     borderRadius: 16,
     marginTop: 12,
@@ -1241,7 +1241,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: "#374151",
+    color: theme.text,
     marginLeft: 8,
     fontWeight: "500",
   },
@@ -1252,27 +1252,27 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
+    color: theme.text,
     marginTop: 20,
     letterSpacing: -0.5,
   },
   formSubtitle: {
     fontSize: 15,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginTop: 10,
     textAlign: "center",
     lineHeight: 22,
     paddingHorizontal: 20,
   },
   input: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
     marginBottom: 14,
-    color: "#111827",
+    color: theme.text,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -1317,19 +1317,19 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#111827",
+    color: theme.text,
     marginBottom: 10,
   },
   profilePictureButton: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
     borderWidth: 2,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
     overflow: "hidden",
   },
   profilePicturePreview: {
@@ -1366,7 +1366,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 12,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginTop: 4,
     marginBottom: 8,
   },
@@ -1376,7 +1376,7 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: theme.background,
   },
   modalHeader: {
     flexDirection: "row",
@@ -1386,8 +1386,8 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
+    borderBottomColor: theme.border,
+    backgroundColor: theme.surface,
   },
   modalCloseButton: {
     width: 40,
@@ -1398,7 +1398,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: theme.text,
   },
   modalScrollContent: {
     padding: 20,
@@ -1415,12 +1415,12 @@ const styles = StyleSheet.create({
   updateLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: theme.text,
     marginBottom: 8,
   },
   updateHelperText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -1438,9 +1438,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: theme.inputBackground,
     borderWidth: 3,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
   },
   modalProfilePicturePlaceholder: {
     width: 120,
@@ -1488,7 +1488,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
     borderWidth: 1.5,
     borderColor: "#6366F1",
     gap: 8,
@@ -1510,10 +1510,10 @@ const styles = StyleSheet.create({
   },
   farcasterConnected: {
     padding: 16,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: theme.background,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
   },
   farcasterConnectedInfo: {
     flexDirection: "row",
@@ -1528,11 +1528,11 @@ const styles = StyleSheet.create({
   farcasterConnectedUsername: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: theme.text,
   },
   farcasterConnectedFid: {
     fontSize: 13,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginTop: 2,
   },
 });

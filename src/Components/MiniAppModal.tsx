@@ -6,6 +6,7 @@ import Icon, { IconTypes } from "./Icon";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
 import { useFarcasterFrame } from "../context/FarcasterFrame";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 
 interface MiniAppModalProps {
   isVisible: boolean;
@@ -511,7 +512,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                     type={IconTypes.Ionicons}
                     name="alert-circle-outline"
                     size={64}
-                    color="#EF4444"
+                    color={theme.error}
                   />
                   <Text style={styles.errorText}>Failed to load mini app</Text>
                   <Text style={styles.errorSubtext}>
@@ -537,7 +538,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                 <>
                   {state.isLoading && loading && (
                     <View style={styles.loadingOverlay}>
-                      <ActivityIndicator size="large" color="#8B5CF6" />
+                      <ActivityIndicator size="large" color={theme.accentPurple} />
                     </View>
                   )}
                   <WebView
@@ -571,7 +572,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                     cacheMode="LOAD_NO_CACHE"
                     renderLoading={() => (
                       <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#8B5CF6" />
+                        <ActivityIndicator size="large" color={theme.accentPurple} />
                         <Text style={styles.loadingText}>Loading mini app...</Text>
                       </View>
                     )}
@@ -695,7 +696,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                 type={IconTypes.Ionicons}
                 name={button.icon}
                 size={22}
-                color="#333"
+                color={theme.text}
               />
             </TouchableOpacity>
           ))}
@@ -743,7 +744,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
               disabled={state.primaryButton.disabled || state.primaryButton.loading}
             >
               {state.primaryButton.loading ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={theme.textOnPrimary} />
               ) : (
                 <Text style={styles.primaryButtonText}>
                   {state.primaryButton.text}
@@ -763,7 +764,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     height: "90%",
@@ -779,24 +780,24 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#ccc",
+    backgroundColor: theme.borderLight,
   },
   titleHeader: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: theme.border,
   },
   titleHeaderText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginBottom: 2,
   },
   titleHeaderUrl: {
     fontSize: 11,
-    color: "#666",
+    color: theme.textSecondary,
   },
   floatingButtons: {
     position: "absolute",
@@ -810,7 +811,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -826,7 +827,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -844,24 +845,24 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: theme.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: theme.overlayDark,
     zIndex: 10,
   },
   loadingText: {
     marginTop: 8,
-    color: "#666",
+    color: theme.textSecondary,
     fontSize: 14,
   },
   errorContainer: {
@@ -869,55 +870,56 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
   },
   errorText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
     textAlign: "center",
   },
   errorSubtext: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
     paddingHorizontal: 20,
   },
   retryButton: {
     marginTop: 24,
-    backgroundColor: "#8B5CF6",
+    backgroundColor: theme.accentPurple,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
   },
   primaryButtonContainer: {
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
+    borderTopColor: theme.border,
   },
   primaryButton: {
-    backgroundColor: "#8B5CF6",
+    backgroundColor: theme.accentPurple,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   primaryButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: theme.borderLight,
   },
   primaryButtonLoading: {
-    backgroundColor: "#a78bfa",
+    backgroundColor: theme.accentPurple,
+    opacity: 0.7,
   },
   primaryButtonText: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
   },

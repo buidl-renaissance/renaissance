@@ -168,7 +168,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar barStyle="default" />
+      <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <LocalStorageProvider>
         <AuthProvider>
           <FarcasterFrameProvider>

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { RestaurantRanking, RestaurantCategory } from "../interfaces";
 import { MOCK_RESTAURANTS } from "../mocks/restaurants";
+import { theme } from "../colors";
 
 interface RestaurantRankingCardProps {
   ranking: RestaurantRanking;
@@ -99,7 +100,7 @@ export const RestaurantRankingCard: React.FC<RestaurantRankingCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -142,12 +143,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
     marginBottom: 4,
   },
   neighborhood: {
     fontSize: 12,
-    color: "#666",
+    color: theme.textSecondary,
     marginBottom: 6,
   },
   pointsContainer: {
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   },
   categoryTagText: {
     fontSize: 10,
-    color: "#666",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
 });

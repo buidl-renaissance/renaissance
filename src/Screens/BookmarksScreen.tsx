@@ -10,6 +10,7 @@ import { SportsGame } from "../api/sports-games";
 import { getBookmarkedEvents } from "../utils/bookmarks";
 import { groupEventsByDate, TypedEvent } from "../utils/eventGrouping";
 import { useWebModal } from "../hooks/useWebModal";
+import { theme } from "../colors";
 
 const BookmarksScreen = ({ navigation, route }) => {
   navigation.setOptions({
@@ -195,7 +196,7 @@ const BookmarksScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
   loadingContainer: {
     flex: 1,
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },

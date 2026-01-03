@@ -3,7 +3,7 @@ import { StyleSheet, Image, View, Dimensions, ScrollView } from "react-native";
 
 import { Button } from "./Button";
 
-import { darkGrey } from "../colors";
+import { darkGrey, theme } from "../colors";
 import { useImagePicker } from "../hooks/useImagePicker";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Video, ResizeMode } from "expo-av";
@@ -128,16 +128,16 @@ const AddMedia = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     flexDirection: "column",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderBottomWidth: 1,
     // backgroundColor: lightGreen,
     backgroundColor: darkGrey,

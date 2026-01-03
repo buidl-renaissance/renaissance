@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '../interfaces/rewards';
+import { theme } from '../colors';
 
 interface BadgeDisplayProps {
   badge: Badge;
@@ -165,7 +166,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Badge Details</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
   badgeName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: theme.text,
     textAlign: 'center',
   },
   progressContainer: {
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 10,
-    color: '#6B7280',
+    color: theme.textSecondary,
     textAlign: 'center',
   },
   grid: {
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   modalContent: {
     padding: 20,
@@ -335,13 +336,13 @@ const styles = StyleSheet.create({
   modalBadgeName: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   modalBadgeDescription: {
     fontSize: 16,
-    color: '#6B7280',
+    color: theme.textSecondary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   modalProgressLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: theme.text,
     marginBottom: 8,
   },
   modalProgressBar: {
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
   },
   modalProgressText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: theme.textSecondary,
     textAlign: 'center',
   },
 });

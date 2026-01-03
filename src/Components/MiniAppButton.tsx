@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { theme } from "../colors";
 
 interface MiniAppButtonProps {
   emoji: string;
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 9,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     textAlign: "center",
     maxWidth: 66,
   },

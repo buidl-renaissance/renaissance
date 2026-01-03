@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BucketList } from "../interfaces";
+import { theme } from "../colors";
 
 interface BucketListCardProps {
   bucketList: BucketList;
@@ -60,7 +61,7 @@ export const BucketListCard: React.FC<BucketListCardProps> = ({
               onEdit();
             }}
           >
-            <Ionicons name="create-outline" size={18} color="#666" />
+            <Ionicons name="create-outline" size={18} color={theme.textSecondary} />
             <Text style={styles.actionText}>Edit</Text>
           </TouchableOpacity>
         )}
@@ -72,7 +73,7 @@ export const BucketListCard: React.FC<BucketListCardProps> = ({
               onShare();
             }}
           >
-            <Ionicons name="share-outline" size={18} color="#666" />
+            <Ionicons name="share-outline" size={18} color={theme.textSecondary} />
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
         )}
@@ -83,7 +84,7 @@ export const BucketListCard: React.FC<BucketListCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -124,14 +125,14 @@ const styles = StyleSheet.create({
   sharedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e8f5e9",
+    backgroundColor: theme.surfaceElevated,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   sharedText: {
     fontSize: 12,
-    color: "#4CAF50",
+    color: theme.text,
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -141,11 +142,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: theme.border,
   },
   collaboratorsLabel: {
     fontSize: 12,
-    color: "#999",
+    color: theme.textTertiary,
     marginRight: 4,
   },
   collaboratorsText: {

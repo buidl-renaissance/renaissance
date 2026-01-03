@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
+import { theme } from "../colors";
 
 export const SectionHeader = ({ title, subtitle }) => (
   <View
@@ -11,12 +12,12 @@ export const SectionHeader = ({ title, subtitle }) => (
       marginTop: 0,
       paddingBottom: 4,
       paddingHorizontal: 16,
-      backgroundColor: "white",
+      backgroundColor: theme.background,
     }}
   >
     <Text
       style={{
-        color: "black",
+        color: theme.text,
         fontSize: 24,
         paddingRight: 6,
         fontWeight: "bold",
@@ -29,7 +30,7 @@ export const SectionHeader = ({ title, subtitle }) => (
     {subtitle && (
       <Text
         style={{
-          color: "#999",
+          color: theme.textSecondary,
           fontSize: 16,
           paddingRight: 12,
           fontWeight: "bold",

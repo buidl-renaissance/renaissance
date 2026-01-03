@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, SafeAreaView, Text } from 'react-native';
 import { AudioRecorder } from '../Components/AudioRecorder';
+import { theme } from '../colors';
 
 const BroadcastScreen: React.FC = () => {
   return (
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.border,
   },
   headerText: {
     fontSize: 24,

@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FoodPost } from "../interfaces";
 import { MOCK_RESTAURANTS } from "../mocks/restaurants";
 import { ChatBox } from "./ChatBox";
+import { theme } from "../colors";
 
 interface FoodPostCardProps {
   post: FoodPost;
@@ -39,7 +40,7 @@ export const FoodPostCard: React.FC<FoodPostCardProps> = ({
             <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={20} color="#ccc" />
+              <Ionicons name="person" size={20} color={theme.textSecondary} />
             </View>
           )}
           <View>
@@ -58,7 +59,7 @@ export const FoodPostCard: React.FC<FoodPostCardProps> = ({
         <Image source={{ uri: post.image }} style={styles.image} />
       ) : (
         <View style={styles.imagePlaceholder}>
-          <Ionicons name="restaurant" size={40} color="#ccc" />
+          <Ionicons name="restaurant" size={40} color={theme.textSecondary} />
         </View>
       )}
 
@@ -84,7 +85,7 @@ export const FoodPostCard: React.FC<FoodPostCardProps> = ({
             style={styles.actionButton}
             onPress={() => setShowComments(!showComments)}
           >
-            <Ionicons name="chatbubble-outline" size={24} color="#666" />
+            <Ionicons name="chatbubble-outline" size={24} color={theme.textSecondary} />
             <Text style={styles.actionCount}>{post.comments.length}</Text>
           </TouchableOpacity>
         </View>
@@ -104,7 +105,7 @@ export const FoodPostCard: React.FC<FoodPostCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     marginBottom: 16,
     marginHorizontal: 16,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
   },
   restaurantName: {
     fontSize: 12,
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 12,
-    color: "#999",
+    color: theme.textTertiary,
   },
   image: {
     width: "100%",
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: "100%",
     height: 300,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     fontSize: 14,
-    color: "#333",
+    color: theme.text,
     marginBottom: 12,
     lineHeight: 20,
   },
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: theme.border,
   },
   actionButton: {
     flexDirection: "row",

@@ -7,7 +7,7 @@ import { TextInputGroup } from '../Components/TextInputGroup';
 
 // import * as Google from 'expo-auth-session/providers/google';
 
-import { lightGreen } from '../colors';
+import { lightGreen, theme } from '../colors';
 
 const GetStartedScreen = ({
     navigation,
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: lightGreen,
         flexDirection: 'column',
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
     },
     buttonContainer: {
         paddingHorizontal: 16,
         // paddingTop: 4,
         // paddingBottom: 32,
-        borderColor: '#999',
+        borderColor: theme.border,
         borderBottomWidth: 1,
         backgroundColor: lightGreen,
         // backgroundColor: darkGrey,

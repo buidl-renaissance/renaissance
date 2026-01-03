@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { DismissibleScrollModal } from "./DismissibleScrollModal";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 
 interface MiniApp {
   id: string;
@@ -134,7 +135,7 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
         <Ionicons
           name={authState.isAuthenticated ? "person-circle" : "person-circle-outline"}
           size={24}
-          color={authState.isAuthenticated ? "#6366F1" : "#666"}
+          color={authState.isAuthenticated ? "#6366F1" : theme.textSecondary}
         />
       </TouchableOpacity>
     );
@@ -175,7 +176,7 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
                   <Text style={styles.authBannerSubtitle}>{getAuthStatusLabel()}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#666" />
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
             </TouchableOpacity>
           }
           renderItem={({ item }) => (
@@ -215,13 +216,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FEF3C7",
+    backgroundColor: theme.warningBackground || theme.surfaceElevated,
     marginBottom: 16,
     padding: 12,
     borderRadius: 12,
   },
   authBannerAuthenticated: {
-    backgroundColor: "#D1FAE5",
+    backgroundColor: theme.successBackground || theme.surface,
   },
   authBannerContent: {
     flexDirection: "row",
@@ -235,15 +236,15 @@ const styles = StyleSheet.create({
   authBannerTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   authBannerSubtitle: {
     fontSize: 12,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 2,
   },
   appCard: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -272,11 +273,11 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   appDescription: {
     fontSize: 13,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 4,
     lineHeight: 18,
   },

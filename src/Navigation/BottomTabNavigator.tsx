@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import HomeNavigationStack from "./HomeNavigationStack";
 import { navigationRef } from "../../App";
+import { theme } from "../colors";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,9 +15,9 @@ const BottomTabNavigator = () => {
         tabBarActiveTintColor: "#3449ff",
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: theme.surface,
           borderTopWidth: 1,
-          borderTopColor: "#e5e5e5",
+          borderTopColor: theme.border,
           paddingBottom: 8,
           paddingTop: 8,
           height: 60,

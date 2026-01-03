@@ -13,6 +13,7 @@ import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
 import { useFarcasterFrame } from "../context/FarcasterFrame";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 import { Ionicons } from "@expo/vector-icons";
 
 const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) => {
@@ -148,7 +149,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             }
           }}
         >
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
       ),
       headerRight: () => (
@@ -159,7 +160,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             navigation.goBack();
           }}
         >
-          <Ionicons name="close" size={24} color="#000" />
+          <Ionicons name="close" size={24} color={theme.text} />
         </TouchableOpacity>
       ),
     });
@@ -383,7 +384,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Ionicons name="apps-outline" size={64} color="#999" />
+          <Ionicons name="apps-outline" size={64} color={theme.textSecondary} />
           <Text style={styles.emptyText}>No mini app selected</Text>
           <Text style={styles.emptySubtext}>
             Open a Farcaster Frame or mini app to view it here
@@ -397,7 +398,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Ionicons name="alert-circle-outline" size={64} color={theme.error} />
           <Text style={styles.emptyText}>Invalid URL</Text>
           <Text style={styles.emptySubtext}>
             The mini app URL is invalid or malformed
@@ -432,7 +433,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             <Text style={styles.splashTitle}>{title}</Text>
             <ActivityIndicator 
               size="large" 
-              color="#8B5CF6" 
+              color={theme.accentPurple} 
               style={styles.splashLoader}
             />
             <Text style={styles.splashSubtext}>Loading...</Text>
@@ -446,12 +447,12 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
           <>
             {state.isLoading && !hasError && !showSplash && (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#8B5CF6" />
+                <ActivityIndicator size="large" color={theme.accentPurple} />
               </View>
             )}
             {hasError ? (
               <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+                <Ionicons name="alert-circle-outline" size={64} color={theme.error} />
                 <Text style={styles.errorText}>Failed to load mini app</Text>
                 <Text style={styles.errorSubtext}>{errorMessage || "An error occurred while loading the app"}</Text>
                 <TouchableOpacity
@@ -600,7 +601,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
             disabled={state.primaryButton.disabled || state.primaryButton.loading}
           >
             {state.primaryButton.loading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={theme.textOnPrimary} />
             ) : (
               <Text style={styles.primaryButtonText}>
                 {state.primaryButton.text}
@@ -616,7 +617,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
   },
   splashContainer: {
     position: "absolute",
@@ -624,7 +625,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100,
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
   splashTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
     marginBottom: 32,
   },
@@ -649,7 +650,7 @@ const styles = StyleSheet.create({
   },
   splashSubtext: {
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
     fontWeight: "500",
   },
   webViewContainer: {
@@ -665,7 +666,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: theme.overlayDark,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
@@ -679,12 +680,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
@@ -693,31 +694,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
   },
   errorText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
     textAlign: "center",
   },
   errorSubtext: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
     paddingHorizontal: 20,
   },
   retryButton: {
     marginTop: 24,
-    backgroundColor: "#8B5CF6",
+    backgroundColor: theme.accentPurple,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -727,7 +728,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   backButtonText: {
-    color: "#8B5CF6",
+    color: theme.accentPurple,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -737,25 +738,26 @@ const styles = StyleSheet.create({
   },
   primaryButtonContainer: {
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: theme.background,
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
+    borderTopColor: theme.border,
   },
   primaryButton: {
-    backgroundColor: "#8B5CF6",
+    backgroundColor: theme.accentPurple,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   primaryButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: theme.borderLight,
   },
   primaryButtonLoading: {
-    backgroundColor: "#a78bfa",
+    backgroundColor: theme.accentPurple,
+    opacity: 0.7,
   },
   primaryButtonText: {
-    color: "#fff",
+    color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
   },

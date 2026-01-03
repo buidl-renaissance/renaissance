@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Badge } from '../interfaces/rewards';
+import { theme } from '../colors';
 
 interface RewardNotificationProps {
   visible: boolean;
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.border,
   },
   pointsContainer: {
     flexDirection: 'row',
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: theme.surfaceElevated,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -200,13 +201,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: theme.textSecondary,
     marginBottom: 2,
   },
   amount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   badgeContainer: {
     flexDirection: 'row',
@@ -226,13 +227,13 @@ const styles = StyleSheet.create({
   badgeTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: theme.textSecondary,
     marginBottom: 2,
   },
   badgeName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   rarityBadge: {
     paddingHorizontal: 10,

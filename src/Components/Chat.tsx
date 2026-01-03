@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import Icon, { IconTypes } from "./Icon";
+import { theme } from "../colors";
 
 interface Message {
   id: string;
@@ -201,12 +202,12 @@ export const Chat = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.background,
     marginBottom: 32,
   },
   messagesContainer: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.background,
   },
   scrollContent: {
     padding: 10,
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
   },
   otherMessage: {
     alignSelf: "flex-start",
-    backgroundColor: "#E5E5EA",
+    backgroundColor: theme.surfaceElevated,
   },
   messageText: {
     fontSize: 16,
@@ -232,30 +233,31 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   otherMessageText: {
-    color: "#000",
+    color: theme.text,
   },
   timestamp: {
     fontSize: 12,
-    color: "#888",
+    color: theme.textTertiary,
     marginTop: 4,
   },
   inputContainer: {
     flexDirection: "row",
     padding: 10,
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: theme.border,
     alignItems: "center",
   },
   input: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: theme.inputBackground,
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
     marginRight: 10,
     fontSize: 16,
     maxHeight: 100,
+    color: theme.text,
   },
   sendButton: {
     backgroundColor: "#007AFF",

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useNavigation } from '@react-navigation/native';
+import { theme } from '../colors';
 
 // Define types and constants locally since imports are causing errors
 type VerificationStatus = 'pending' | 'verified' | 'failed';
@@ -26,9 +27,9 @@ const VerifyScreen: React.FC = () => {
   navigation.setOptions({
     headerTitle: 'Get Connected',
     headerStyle: {
-      backgroundColor: '#d2e4dd',
+      backgroundColor: theme.background,
     },
-    headerTintColor: '#000',
+    headerTintColor: theme.text,
   });
   
   // Mock user data - in a real app, you would get this from your auth context

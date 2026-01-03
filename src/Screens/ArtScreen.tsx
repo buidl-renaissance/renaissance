@@ -11,6 +11,7 @@ import { SectionTitle } from "../Components/SectionTitle";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { useArtworks } from "../hooks/useArtwork";
 import { DAArtwork } from "../interfaces";
+import { theme } from "../colors";
 
 interface ArtScreenProps {
   navigation: any;
@@ -278,7 +279,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
   scrollView: {
     flex: 1,
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   section: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
   horizontalScroll: {
     paddingHorizontal: 16,
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 60,
     paddingHorizontal: 32,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     marginTop: 16,
     marginHorizontal: 16,
     borderRadius: 16,
@@ -333,17 +334,17 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
   miniAppsSection: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     paddingVertical: 16,
   },
   miniAppsContainer: {
@@ -370,11 +371,11 @@ const styles = StyleSheet.create({
   miniAppLabel: {
     fontSize: 9,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     textAlign: "center",
   },
   resourcesSection: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     paddingTop: 8,
     paddingBottom: 16,
   },
@@ -385,26 +386,26 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
+    color: theme.text,
     marginBottom: 12,
   },
   resourceItem: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: theme.border,
   },
   resourceName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: theme.text,
     marginBottom: 6,
   },
   resourceDescription: {
     fontSize: 14,
-    color: "#6B7280",
+    color: theme.textSecondary,
     lineHeight: 20,
   },
 });

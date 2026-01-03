@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 import { fetchUserProfile, fetchUserCasts, Cast } from "../utils/neynarAuth";
 
 interface FarcasterProfileScreenProps {
@@ -34,7 +35,7 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
     navigation.setOptions({
       title: "Profile",
       headerStyle: {
-        backgroundColor: "#fff",
+        backgroundColor: theme.surface,
       },
       headerTintColor: "#000",
     });
@@ -339,7 +340,7 @@ const FarcasterProfileScreen: React.FC<FarcasterProfileScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
   },
   scrollView: {
     flex: 1,
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginTop: 16,
   },
   emptySubtext: {
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   profileHeader: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -421,7 +422,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: theme.text,
     marginBottom: 2,
   },
   statLabel: {
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   displayName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
+    color: theme.text,
     marginBottom: 2,
   },
   username: {
@@ -446,7 +447,7 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 14,
-    color: "#000",
+    color: theme.text,
     lineHeight: 20,
     marginBottom: 0,
   },
@@ -478,7 +479,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   castCard: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -512,7 +513,7 @@ const styles = StyleSheet.create({
   castAuthorName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
+    color: theme.text,
     marginBottom: 0,
   },
   castAuthorUsername: {
@@ -527,7 +528,7 @@ const styles = StyleSheet.create({
   },
   castText: {
     fontSize: 14,
-    color: "#000",
+    color: theme.text,
     lineHeight: 20,
     marginBottom: 8,
     marginLeft: 44,
@@ -545,7 +546,7 @@ const styles = StyleSheet.create({
   },
   reactionCount: {
     fontSize: 13,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginLeft: 6,
     fontWeight: "500",
   },

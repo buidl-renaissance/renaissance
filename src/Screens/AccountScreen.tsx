@@ -7,6 +7,7 @@ import { Button } from "../Components/Button";
 import { skillsList } from "../mocks/skills";
 import { Contact, createUser, getContact, saveContact } from "../dpop";
 import { useAuth } from "../context/Auth";
+import { theme } from "../colors";
 
 // const artistAttributes = [
 //   { id: 1, name: 'Username', value: 'username' },
@@ -359,18 +360,18 @@ const styles = StyleSheet.create({
   item: {
     padding: 8,
     marginTop: 2,
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderColor: "#bbb",
     borderWidth: 1,
     borderRadius: 5,
   },
   itemText: {
-    color: "#222",
+    color: theme.text,
   },
   itemsContainer: {
     position: "absolute",
     borderWidth: 1,
-    backgroundColor: "#ddd",
+    backgroundColor: theme.inputBackground,
     borderColor: "#bbb",
     padding: 4,
     maxHeight: 140,
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     borderRadius: 8,
   },
   farcasterPfp: {
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   },
   farcasterFid: {
     fontSize: 12,
-    color: "#6B7280",
+    color: theme.textSecondary,
     marginTop: 2,
   },
   farcasterDisplayName: {
@@ -507,7 +508,7 @@ const styles = StyleSheet.create({
   },
   helpText: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: theme.textTertiary,
     marginTop: 12,
     textAlign: "center",
   },
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
   },
   notConnectedText: {
     fontSize: 14,
-    color: "#6B7280",
+    color: theme.textSecondary,
     textAlign: "center",
     marginTop: 8,
     paddingHorizontal: 20,

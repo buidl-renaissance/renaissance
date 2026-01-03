@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import Icon, { IconTypes } from "./Icon";
+import { theme } from "../colors";
 
 interface DismissibleScrollModalProps {
   isVisible: boolean;
@@ -157,7 +158,7 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
           <View style={styles.headerRight}>
             {headerRight}
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon type={IconTypes.Ionicons} name="close" size={24} color="#333" />
+              <Icon type={IconTypes.Ionicons} name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: "hidden",
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#ccc",
+    backgroundColor: theme.borderLight,
   },
   titleHeader: {
     flexDirection: "row",
@@ -207,14 +208,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: theme.border,
   },
   titleHeaderText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     flex: 1,
   },
   headerRight: {

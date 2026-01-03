@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import moment from "moment";
+import { theme } from "../colors";
 
 interface DayForecast {
   date: moment.Moment;
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 16,
     paddingHorizontal: 12,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
   scrollContent: {
     flexDirection: "row",
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#666",
+    color: theme.textSecondary,
     marginBottom: 6,
     textTransform: "uppercase",
   },
@@ -83,25 +84,25 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: theme.inputBackground,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 6,
   },
   dateBadgeToday: {
-    backgroundColor: "#6366F1",
+    backgroundColor: theme.accent,
   },
   dateText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
   },
   dateTextToday: {
-    color: "white",
+    color: theme.textOnPrimary,
   },
   eventCount: {
     fontSize: 9,
-    color: "#666",
+    color: theme.textSecondary,
     textAlign: "center",
   },
   badgesContainer: {
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     minWidth: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: theme.surfaceElevated,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 6,
@@ -125,10 +126,10 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   goingBadgeText: {
-    color: "white",
+    color: theme.textOnSuccess,
   },
 });
 

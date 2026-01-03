@@ -5,6 +5,7 @@ import { WebView } from "react-native-webview";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 
 interface EventWebModalProps {
   isVisible: boolean;
@@ -417,7 +418,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     height: "90%",
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
   titleHeader: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
@@ -454,12 +455,12 @@ const styles = StyleSheet.create({
   titleHeaderText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginBottom: 2,
   },
   titleHeaderUrl: {
     fontSize: 11,
-    color: "#666",
+    color: theme.textSecondary,
   },
   safariButton: {
     width: 36,
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface, // Solid white for efficient shadow calculation
     alignItems: "center",
     justifyContent: "center",
     // Shadow
@@ -530,7 +531,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -540,7 +541,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 8,
-    color: "#666",
+    color: theme.textSecondary,
     fontSize: 14,
   },
 });

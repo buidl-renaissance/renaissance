@@ -5,6 +5,7 @@ import { DAContent } from '../dpop';
 import { updateContent } from '../dpop'; // Assuming you have an API function to update content
 import { ArtworkView } from '../Components/ArtworkView';
 import moment from 'moment';
+import { theme } from '../colors';
 
 const EditContentScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: theme.border,
     borderRadius: 4,
     padding: 8,
     marginBottom: 12,

@@ -9,6 +9,7 @@ import { EventsSectionList } from "../Components/EventsSectionList";
 import { EventWebModal } from "../Components/EventWebModal";
 import { useWebModal } from "../hooks/useWebModal";
 import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
+import { theme } from "../colors";
 
 interface CalendarViewScreenProps {
   route: {
@@ -121,7 +122,7 @@ const CalendarViewScreen: React.FC<CalendarViewScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
   },
 });
 

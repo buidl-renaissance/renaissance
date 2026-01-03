@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BucketList, Restaurant } from "../interfaces";
+import { theme } from "../colors";
 
 interface BucketListModalProps {
   visible: boolean;
@@ -80,7 +81,7 @@ export const BucketListModal: React.FC<BucketListModalProps> = ({
               {bucketList ? "Edit Bucket List" : "Create Bucket List"}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
   },
   content: {
     padding: 16,
@@ -207,12 +208,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   restaurantsList: {
     maxHeight: 300,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 8,
   },
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontSize: 14,
-    color: "#333",
+    color: theme.text,
     marginLeft: 12,
   },
   collaboratorInput: {
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     minWidth: 100,
     alignItems: "center",
   },
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   footerButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   footerButtonTextPrimary: {
     color: "#fff",

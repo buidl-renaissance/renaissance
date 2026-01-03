@@ -8,7 +8,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { lightGreen } from "../colors";
+import { lightGreen, theme } from "../colors";
 
 interface AdminMenuItem {
   title: string;
@@ -75,7 +75,7 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Ionicons name="settings-outline" size={48} color="#333" />
+          <Ionicons name="settings-outline" size={48} color={theme.text} />
           <Text style={styles.headerTitle}>Admin Panel</Text>
           <Text style={styles.headerSubtitle}>
             Manage your content and settings
@@ -94,7 +94,7 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
               activeOpacity={0.7}
             >
               <View style={styles.menuIconContainer}>
-                <Ionicons name={item.icon} size={24} color="#333" />
+                <Ionicons name={item.icon} size={24} color={theme.text} />
               </View>
               <View style={styles.menuTextContainer}>
                 <Text style={styles.menuTitle}>{item.title}</Text>
@@ -112,7 +112,7 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: lightGreen,
+    backgroundColor: theme.background,
   },
   scrollView: {
     flex: 1,
@@ -125,16 +125,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.text,
     marginTop: 12,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 4,
   },
   menuContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.surface,
     marginHorizontal: 16,
     borderRadius: 12,
     shadowColor: "#000",
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -168,11 +168,11 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   menuSubtitle: {
     fontSize: 13,
-    color: "#666",
+    color: theme.textSecondary,
     marginTop: 2,
   },
 });

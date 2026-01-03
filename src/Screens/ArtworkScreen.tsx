@@ -6,7 +6,7 @@ import { ScrollView } from "react-native-gesture-handler";
 // import { Button } from "../Components/Button";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
-import { darkGrey } from "../colors";
+import { darkGrey, theme } from "../colors";
 import { useArtwork } from "../hooks/useArtwork";
 import { Title } from "react-native-paper";
 import moment from "moment";
@@ -180,7 +180,7 @@ const ArtworkScreen = ({ navigation, route }) => {
               style={{
                 fontSize: 10,
                 paddingHorizontal: 4,
-                color: "#666",
+                color: theme.textSecondary,
                 backgroundColor: "#eee",
                 fontStyle: "italic",
                 marginLeft: 12,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "#eee",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
     paddingBottom: 24,
   },
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   artworkDescription: {
     fontSize: 16,
-    color: "#333",
+    color: theme.text,
     marginBottom: 12,
     lineHeight: 22,
   },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
     // backgroundColor: lightGreen,
     backgroundColor: darkGrey,

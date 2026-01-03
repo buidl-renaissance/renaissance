@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { convertPointsToUSDC, getConversionInfo } from '../api/convert-points';
 import { useRewards } from '../hooks/useRewards';
+import { theme } from '../colors';
 
 interface ConvertPointsModalProps {
   isVisible: boolean;
@@ -112,7 +113,7 @@ export const ConvertPointsModal: React.FC<ConvertPointsModalProps> = ({
           <View style={styles.header}>
             <Text style={styles.title}>Convert Points to USDC</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   closeButton: {
     padding: 4,
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: theme.textSecondary,
     marginBottom: 8,
   },
   infoValue: {
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: theme.text,
     marginBottom: 8,
   },
   inputRow: {
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: theme.text,
   },
   maxButton: {
     backgroundColor: '#6366F1',

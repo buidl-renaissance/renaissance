@@ -13,6 +13,7 @@ import { RAEventCard } from "./RAEventCard";
 import { SectionHeader } from "./SectionHeader";
 import { DAEvent, LumaEvent, RAEvent } from "../interfaces";
 import moment from "moment";
+import { theme } from "../colors";
 
 interface SearchModalProps {
   isVisible: boolean;
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchContainer: {
-    backgroundColor: "#fafafa",
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },

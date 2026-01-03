@@ -9,7 +9,7 @@ import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 import QRCode from "react-qr-code";
 
-import { darkGrey } from "../colors";
+import { darkGrey, theme } from "../colors";
 import { HeroBanner } from "../Components/HeroBanner";
 
 const ShareScreen = ({ navigation, route }) => {
@@ -42,16 +42,16 @@ const ShareScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     flexDirection: "column",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 32,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderBottomWidth: 1,
     // backgroundColor: lightGreen,
     backgroundColor: darkGrey,

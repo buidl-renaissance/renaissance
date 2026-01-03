@@ -18,11 +18,27 @@ import { DAEvent } from "../interfaces";
 import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
+import { theme } from "../colors";
 import RenderHtml from "react-native-render-html";
 import { RenderHTML } from "./RenderHTML";
 import HTML from "react-native-render-html";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Custom renderer for links to ensure color is always applied
+const createLinkRenderer = () => ({
+  a: (props: any) => {
+    const { TDefaultRenderer, ...otherProps } = props;
+    return (
+      <TDefaultRenderer
+        {...otherProps}
+        textProps={{
+          style: { color: theme.primary, textDecorationLine: 'underline' },
+        }}
+      />
+    );
+  },
+});
 
 interface DAEventModalProps {
   isVisible: boolean;
@@ -377,7 +393,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                     type={IconTypes.Ionicons}
                     name="time-outline"
                     size={16}
-                    color="#666"
+                    color={theme.textSecondary}
                   />
                   <Text style={styles.timeframe}>
                     {displayEvent.start_date && formatDate(displayEvent.start_date)}
@@ -393,7 +409,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                     type={IconTypes.Ionicons}
                     name="location-outline"
                     size={16}
-                    color="#666"
+                    color={theme.textSecondary}
                   />
                   <Text style={styles.detailText}>{decode(displayEvent.venue.title)}</Text>
                 </View>
@@ -406,7 +422,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                     type={IconTypes.Ionicons}
                     name="people-outline"
                     size={16}
-                    color="#666"
+                    color={theme.textSecondary}
                   />
                   <Text style={styles.detailText}>{organizerText}</Text>
                 </View>
@@ -430,8 +446,18 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                     contentWidth={SCREEN_WIDTH - 64}
                     source={{ html: displayEvent.excerpt }}
                     tagsStyles={{
-                      p: { margin: 0, padding: 0 },
-                      i: { fontStyle: 'italic' },
+                      a: { color: theme.primary, textDecorationLine: 'underline' },
+                      html: { color: theme.text },
+                      div: { color: theme.text },
+                      p: { margin: 0, padding: 0, color: theme.text },
+                      i: { fontStyle: 'italic', color: theme.text },
+                      h1: { color: theme.text },
+                      h2: { color: theme.text },
+                      h3: { color: theme.text },
+                      h4: { color: theme.text },
+                      strong: { color: theme.text },
+                      b: { color: theme.text },
+                      li: { color: theme.text },
                     }}
                   />
                 </View>
@@ -442,8 +468,19 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                   <RenderHtml
                     contentWidth={SCREEN_WIDTH - 64}
                     source={{ html: displayEvent.description }}
+                    renderers={createLinkRenderer()}
                     tagsStyles={{
-                      p: { margin: 0, padding: 0 },
+                      a: { color: theme.primary, textDecorationLine: 'underline' },
+                      html: { color: theme.text },
+                      div: { color: theme.text },
+                      p: { margin: 0, padding: 0, color: theme.text },
+                      h1: { color: theme.text },
+                      h2: { color: theme.text },
+                      h3: { color: theme.text },
+                      h4: { color: theme.text },
+                      strong: { color: theme.text },
+                      b: { color: theme.text },
+                      li: { color: theme.text },
                     }}
                   />
                 </View>
@@ -457,23 +494,26 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                     source={{ html: `<div>${displayEvent.content}</div>` }}
                     contentWidth={SCREEN_WIDTH - 64}
                     ignoredStyles={['height', 'width']}
+                    renderers={createLinkRenderer()}
                     tagsStyles={{
-                      div: { margin: 0, padding: 0 },
-                      p: { margin: 0, padding: 0, marginBottom: 8 },
+                      a: { color: theme.primary, textDecorationLine: 'underline' },
+                      html: { color: theme.text },
+                      div: { margin: 0, padding: 0, color: theme.text },
+                      p: { margin: 0, padding: 0, marginBottom: 8, color: theme.text },
                       br: { margin: 0, padding: 0 },
-                      h1: { margin: 0, padding: 0, marginTop: 16, marginBottom: 8, fontSize: 24, fontWeight: '700' },
-                      h2: { margin: 0, padding: 0, marginTop: 16, marginBottom: 8, fontSize: 20, fontWeight: '700' },
-                      h3: { margin: 0, padding: 0, marginTop: 12, marginBottom: 6, fontSize: 18, fontWeight: '600' },
-                      h4: { margin: 0, padding: 0, marginTop: 12, marginBottom: 6, fontSize: 16, fontWeight: '600' },
+                      h1: { margin: 0, padding: 0, marginTop: 16, marginBottom: 8, fontSize: 24, fontWeight: '700', color: theme.text },
+                      h2: { margin: 0, padding: 0, marginTop: 16, marginBottom: 8, fontSize: 20, fontWeight: '700', color: theme.text },
+                      h3: { margin: 0, padding: 0, marginTop: 12, marginBottom: 6, fontSize: 18, fontWeight: '600', color: theme.text },
+                      h4: { margin: 0, padding: 0, marginTop: 12, marginBottom: 6, fontSize: 16, fontWeight: '600', color: theme.text },
                       ul: { margin: 0, padding: 0, paddingLeft: 20, marginBottom: 8 },
                       ol: { margin: 0, padding: 0, paddingLeft: 20, marginBottom: 8 },
-                      li: { margin: 0, padding: 0, marginBottom: 4 },
-                      blockquote: { margin: 0, padding: 0, paddingLeft: 16, borderLeftWidth: 3, borderLeftColor: '#ddd', marginBottom: 8 },
-                      pre: { margin: 0, padding: 0, marginBottom: 8 },
-                      code: { margin: 0, padding: 0 },
-                      strong: { fontWeight: '700' },
-                      em: { fontStyle: 'italic' },
-                      a: { color: '#3449ff' },
+                      li: { margin: 0, padding: 0, marginBottom: 4, color: theme.text },
+                      blockquote: { margin: 0, padding: 0, paddingLeft: 16, borderLeftWidth: 3, borderLeftColor: theme.border, marginBottom: 8, color: theme.text },
+                      pre: { margin: 0, padding: 0, marginBottom: 8, color: theme.text },
+                      code: { margin: 0, padding: 0, color: theme.text },
+                      strong: { fontWeight: '700', color: theme.text },
+                      em: { fontStyle: 'italic', color: theme.text },
+                      b: { color: theme.text },
                     }}
                   />
                 </View>
@@ -492,7 +532,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
               type={IconTypes.Ionicons}
               name="open-outline"
               size={20}
-              color="#FFFFFF"
+              color={theme.textOnPrimary}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -506,7 +546,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
               type={IconTypes.Ionicons}
               name={isBookmarked ? "bookmark" : "bookmark-outline"}
               size={22}
-              color="#3449ff"
+              color={theme.primary}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={styles.floatingCloseButton}>
@@ -514,7 +554,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
               type={IconTypes.Ionicons}
               name="close"
               size={24}
-              color="#333"
+              color={theme.textSecondary}
             />
           </TouchableOpacity>
         </View>
@@ -529,7 +569,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   container: {
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     height: "90%",
@@ -545,7 +585,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#ccc",
+    backgroundColor: theme.borderLight,
   },
   floatingButtons: {
     position: "absolute",
@@ -560,12 +600,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#B9C0FF",
+    backgroundColor: theme.primaryBackground,
     borderWidth: 2,
-    borderColor: "#3449ff",
+    borderColor: theme.primary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -575,18 +615,20 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   floatingBookmarkButtonActive: {
-    backgroundColor: "#6B7FFF",
+    backgroundColor: theme.primaryLight,
     borderWidth: 2,
-    borderColor: "#3449ff",
+    borderColor: theme.primary,
   },
   floatingCloseButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.surface,
+    borderWidth: 2,
+    borderColor: theme.border,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -609,7 +651,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: SCREEN_WIDTH - 32,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: theme.inputBackground,
     borderRadius: 12,
     overflow: "hidden",
   },
@@ -620,7 +662,7 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#333",
+    color: theme.text,
     marginBottom: 12,
   },
   timeframeContainer: {
@@ -630,7 +672,7 @@ const styles = StyleSheet.create({
   },
   timeframe: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginLeft: 6,
     fontWeight: "500",
   },
@@ -641,7 +683,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: "#666",
+    color: theme.textSecondary,
     marginLeft: 6,
     flex: 1,
     fontWeight: "500",
@@ -654,14 +696,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryBadge: {
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   categoryText: {
     fontSize: 12,
-    color: "#FFFFFF",
+    color: theme.textOnPrimary,
     fontWeight: "600",
   },
   descriptionSection: {
@@ -669,16 +711,16 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: theme.border,
   },
   viewDetailsButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#3449ff",
+    backgroundColor: theme.primary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.shadow,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -692,7 +734,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: theme.border,
   },
   htmlContent: {
     paddingHorizontal: 0,

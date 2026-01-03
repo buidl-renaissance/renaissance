@@ -5,6 +5,7 @@ import YoutubePlayer from "react-native-youtube-iframe";
 import { useAudioPlayer } from '../context/AudioPlayer';
 import AudioView from "./Content/AudioView";
 import moment from "moment";
+import { theme } from "../colors";
 
 interface ContentViewProps {
   content: any;
@@ -116,17 +117,20 @@ export const ContentView: React.FC<ContentViewProps> = ({ content }) => {
 const styles = StyleSheet.create({
   title: {
     fontSize: 24,
+    color: theme.text,
   },
   subtitle: {
     fontSize: 22,
+    color: theme.text,
   },
   caption: {
     fontSize: 18,
+    color: theme.text,
     marginBottom: 8,
   },
   timestamp: {
     fontSize: 12,
-    color: '#666',
+    color: theme.textSecondary,
     marginTop: 8,
     marginBottom: 8,
   },

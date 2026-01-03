@@ -19,6 +19,7 @@ import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
 import { DAEvent } from "../interfaces";
 import { useEvents } from "../hooks/useEvents";
+import { theme } from "../colors";
 
 const ActivityScreen = ({ navigation, route }) => {
   navigation.setOptions({
@@ -47,7 +48,7 @@ const ActivityScreen = ({ navigation, route }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flexDirection: "column", display: "flex" }}>
-          <View style={{ backgroundColor: "#fafafa" }}>
+          <View style={{ backgroundColor: theme.surface }}>
             <Searchbar
               placeholder="Search"
               onChangeText={onChangeSearch}
@@ -84,16 +85,16 @@ const ActivityScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     flexDirection: "column",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
   },
   buttonContainer: {
     paddingHorizontal: 16,
-    borderColor: "#999",
+    borderColor: theme.border,
     borderBottomWidth: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
   },
 });
 

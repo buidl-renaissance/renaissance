@@ -19,6 +19,7 @@ import { getProvider } from "../utils/web3";
 import Icon, { IconTypes } from "../Components/Icon";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
+import { theme } from "../colors";
 import { FloatingButton } from "../Components/FloatingButton";
 import { FloatingProfileButton } from "../Components/FloatingProfileButton";
 import { FloatingActionButtons } from "../Components/FloatingActionButtons";
@@ -992,11 +993,11 @@ const CalendarScreen = ({ navigation }) => {
         <Svg height={120} width={width} style={StyleSheet.absoluteFill}>
           <Defs>
             <LinearGradient id="topGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <Stop offset="0%" stopColor="white" stopOpacity="0.95" />
-              <Stop offset="25%" stopColor="white" stopOpacity="0.60" />
-              <Stop offset="50%" stopColor="white" stopOpacity="0.25" />
-              <Stop offset="70%" stopColor="white" stopOpacity="0.08" />
-              <Stop offset="100%" stopColor="white" stopOpacity="0" />
+              <Stop offset="0%" stopColor="#121212" stopOpacity="0.95" />
+              <Stop offset="25%" stopColor="#121212" stopOpacity="0.60" />
+              <Stop offset="50%" stopColor="#121212" stopOpacity="0.25" />
+              <Stop offset="70%" stopColor="#121212" stopOpacity="0.08" />
+              <Stop offset="100%" stopColor="#121212" stopOpacity="0" />
             </LinearGradient>
           </Defs>
           <Rect width="100%" height="100%" fill="url(#topGradient)" />
@@ -1111,10 +1112,8 @@ const CalendarScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     flexDirection: "column",
-    borderTopWidth: 1,
-    borderColor: "#999",
   },
   topGradientContainer: {
     position: "absolute",
@@ -1125,12 +1124,12 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   cardContainer: {
-    backgroundColor: "#FFFFFF", // Explicit solid white for efficient shadow calculation
+    backgroundColor: theme.surface,
     height: 180,
     margin: 8,
     padding: 16,
     borderRadius: 12,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     borderWidth: 1,
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 2 },
@@ -1168,7 +1167,7 @@ const styles = StyleSheet.create({
   itemContent: {
     marginHorizontal: SPACING * 3,
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: theme.surface,
     borderRadius: BORDER_RADIUS + SPACING * 2,
     height: 220,
   },

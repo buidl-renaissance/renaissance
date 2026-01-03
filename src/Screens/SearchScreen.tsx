@@ -27,6 +27,7 @@ import { useRAEvents } from "../hooks/useRAEvents";
 import { groupEventsByDate, TypedEvent } from "../utils/eventGrouping";
 import { getEventEndDate } from "../utils/eventDates";
 import { useWebModal } from "../hooks/useWebModal";
+import { theme } from "../colors";
 
 const SearchScreen = ({ navigation, route }) => {
   navigation.setOptions({
@@ -154,7 +155,7 @@ const SearchScreen = ({ navigation, route }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flexDirection: "column", display: "flex", flex: 1 }}>
-          <View style={{ backgroundColor: "#fafafa" }}>
+          <View style={{ backgroundColor: theme.surface }}>
             <Searchbar
               ref={searchbarRef}
               placeholder="Search"
@@ -204,9 +205,9 @@ const SearchScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     flexDirection: "column",
-    borderColor: "#999",
+    borderColor: theme.border,
     borderTopWidth: 1,
   },
   eventItem: {
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: theme.textSecondary,
   },
 });
 

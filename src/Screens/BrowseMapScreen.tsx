@@ -14,6 +14,7 @@ import MapView, {
   Region,
   MarkerPressEvent,
 } from "react-native-maps";
+import { theme } from "../colors";
 
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 
@@ -198,7 +199,7 @@ const BrowseMapScreen = ({ navigation }) => {
             <View
               style={{
                 backgroundColor: selectedVenue?.id === venue.id ? "#333" : "#ddd",
-                borderColor: "black",
+                borderColor: theme.border,
                 borderWidth: 1,
                 width: 24,
                 height: 24,
@@ -290,20 +291,20 @@ export default BrowseMapScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     flexDirection: "column",
     borderTopWidth: 1,
     borderColor: "#999",
   },
   cardContainer: {
-    backgroundColor: "white",
+    backgroundColor: theme.background,
     // backgroundColor: '#d2e4dd',
     height: 180,
     margin: 4,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    borderColor: "#ddd",
+    borderColor: theme.border,
     borderWidth: 1,
     shadowColor: "black",
     shadowOffset: { width: 2, height: 2 },

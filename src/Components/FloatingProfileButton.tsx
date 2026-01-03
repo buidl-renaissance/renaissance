@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity, Image, View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/Auth";
 import Icon, { IconTypes } from "./Icon";
+import { theme } from "../colors";
 
 interface FloatingProfileButtonProps {
   onPress?: () => void;
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     right: 16, // Align with action buttons container
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // Solid white for efficient shadow calculation
+    backgroundColor: theme.surface,
     borderRadius: 20,
     paddingHorizontal: 6,
     paddingVertical: 4,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderColor: theme.border,
   },
   loginButton: {
     paddingHorizontal: 10,
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: theme.text,
   },
   profileImage: {
     width: 36,

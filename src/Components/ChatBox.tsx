@@ -4,6 +4,7 @@ import { TextInput } from "./Styled/TextInput";
 import { Button } from "./Button";
 import { DAComment } from "../interfaces";
 import { styledInput } from "./Styles";
+import { theme } from "../colors";
 
 const CommentBox = ({ comment }: { comment: DAComment }) => {
   return (
@@ -14,8 +15,8 @@ const CommentBox = ({ comment }: { comment: DAComment }) => {
         paddingVertical: 4,
       }}
     >
-      <Text style={{ fontWeight: "bold" }}>{comment.user?.name}: </Text>
-      <Text>{comment.text}</Text>
+      <Text style={{ fontWeight: "bold", color: theme.text }}>{comment.user?.name}: </Text>
+      <Text style={{ color: theme.text }}>{comment.text}</Text>
     </View>
   );
 };
@@ -26,10 +27,10 @@ export const ChatBox = ({ comments, handleSubmit }) => {
     <View
       style={{
         margin: 16,
-        borderColor: "grey",
+        borderColor: theme.border,
         borderWidth: 1,
         padding: 16,
-        backgroundColor: "white",
+        backgroundColor: theme.surface,
       }}
     >
       {comments?.map((comment: DAComment, index: number) => (
@@ -84,7 +85,7 @@ export const ChatBox = ({ comments, handleSubmit }) => {
 const styles = StyleSheet.create({
   input: {
     height: 34,
-    borderColor: "gray",
+    borderColor: theme.border,
     borderWidth: 1,
     paddingHorizontal: 10,
     flexGrow: 1,

@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { HeaderTitleImage } from '../Components/HeaderTitleImage';
 import { EventCard } from '../Components/EventCard';
 // import { RenderHTML } from '../Components/RenderHTML';
-import { darkGrey, lightGreen } from '../colors';
+import { darkGrey, lightGreen, theme } from '../colors';
 import { Chat } from '../Components/Chat';
 
 const ChatScreen = ({
@@ -28,19 +28,18 @@ const ChatScreen = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#d2e4dd',
+        backgroundColor: theme.background,
         flexDirection: 'column',
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
     },
     buttonContainer: {
         paddingHorizontal: 16,
         paddingTop: 4,
         paddingBottom: 32,
-        borderColor: '#999',
+        borderColor: theme.border,
         borderTopWidth: 1,
-        // backgroundColor: lightGreen,
-        backgroundColor: darkGrey,
+        backgroundColor: theme.surface,
     },
     errorContainer: {
         flex: 1,

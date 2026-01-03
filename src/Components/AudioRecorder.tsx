@@ -18,6 +18,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
 import { useLocalStorage } from "../context/LocalStorage";
+import { theme } from "../colors";
 
 export const AudioRecorder = ({ event }: { event: DAEvent }) => {
   const [recording, setRecording] = useState<Audio.Recording>();
@@ -316,7 +317,7 @@ export const AudioRecorder = ({ event }: { event: DAEvent }) => {
         onChangeText={setCaption}
         value={caption}
         placeholder="Enter caption for your audio"
-        placeholderTextColor="#999"
+        placeholderTextColor={theme.textTertiary}
       />
 
       <View style={styles.recordButtonContainer}>
