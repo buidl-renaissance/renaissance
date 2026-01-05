@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   ImageBackground,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { SectionTitle } from "../Components/SectionTitle";
 import { ArtworkCard } from "../Components/ArtworkCard";
 import { useArtworks } from "../hooks/useArtwork";
@@ -45,12 +45,6 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const handleResourcePress = React.useCallback((url: string, title: string) => {
-    navigation.push("MiniApp", {
-      url,
-      title,
-    });
-  }, [navigation]);
 
   // Memoize mini apps configuration
   const miniApps: MiniApp[] = React.useMemo(() => [
@@ -89,11 +83,66 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
       backgroundColor: "#14B8A6",
       image: require("../../assets/make-art-work.png"),
     },
+    // Publications & Blogs
+    {
+      name: "barbed-magazine",
+      title: "Barbed Magazine",
+      url: "https://barbedmagazine.com/",
+      backgroundColor: "#8B5CF6",
+      emoji: "🖼️",
+    },
+    {
+      name: "runner-magazine",
+      title: "Runner Magazine",
+      url: "https://www.runnerdetroit.run/runnerart.html",
+      backgroundColor: "#F59E0B",
+      emoji: "📰",
+    },
+    {
+      name: "feedspot-blogs",
+      title: "Detroit Art Blogs",
+      url: "https://blog.feedspot.com/detroit_art_blogs/",
+      backgroundColor: "#EF4444",
+      emoji: "📚",
+    },
+    // Major Art Institutions
+    {
+      name: "dia",
+      title: "Detroit Institute of Arts",
+      url: "https://dia.org/",
+      backgroundColor: "#3B82F6",
+      emoji: "🏛️",
+    },
+    {
+      name: "dam",
+      title: "Detroit Artists Market",
+      url: "https://detroitartistsmarket.org/",
+      backgroundColor: "#EC4899",
+      emoji: "🎨",
+    },
+    {
+      name: "scarab-club",
+      title: "Scarab Club",
+      url: "https://scarabclub.org/",
+      backgroundColor: "#10B981",
+      emoji: "🦋",
+    },
+    {
+      name: "cranbrook",
+      title: "Cranbrook Art Museum",
+      url: "https://cranbrookartmuseum.org/",
+      backgroundColor: "#14B8A6",
+      emoji: "🏛️",
+    },
   ], []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={styles.container} edges={[]}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
         <ImageBackground
           source={require("../../assets/detroit-art.jpeg")}
           style={styles.header}
@@ -112,7 +161,7 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
             <ActivityIndicator size="large" color={theme.primary} />
             <Text style={styles.loadingText}>Loading artwork...</Text>
           </View>
-        ) : artworks && artworks.length > 0 ? (
+        ) : artworks && Array.isArray(artworks) && artworks.length > 0 ? (
           <>
             {/* Mini Apps Section */}
             <View style={styles.miniAppsSection}>
@@ -145,72 +194,6 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
                 })}
               </ScrollView>
             </View>
-
-            {/* Art Resources Section */}
-            <View style={styles.resourcesSection}>
-              <SectionTitle>ART RESOURCES</SectionTitle>
-
-              {/* Publications & Blogs */}
-              <View style={styles.resourceCategory}>
-                <Text style={styles.categoryTitle}>🖼️ Publications & Blogs</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://barbedmagazine.com/", "Barbed Magazine")}
-                >
-                  <Text style={styles.resourceName}>Barbed Magazine</Text>
-                  <Text style={styles.resourceDescription}>Detroit-area art publication amplifying LGBTQ+ and BIPOC artists</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://www.runnerdetroit.run/runnerart.html", "Runner Magazine - ART Section")}
-                >
-                  <Text style={styles.resourceName}>Runner Magazine – ART Section</Text>
-                  <Text style={styles.resourceDescription}>Detroit grassroots arts coverage with studio visits, reviews and features</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://blog.feedspot.com/detroit_art_blogs/", "Feedspot List of Detroit Art Blogs")}
-                >
-                  <Text style={styles.resourceName}>Feedspot List of Detroit Art Blogs</Text>
-                  <Text style={styles.resourceDescription}>Community blogs like Mint Artists Guild, Art In Motion, BridgeDetroit Arts & Culture, and others</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Major Art Institutions */}
-              <View style={styles.resourceCategory}>
-                <Text style={styles.categoryTitle}>🖼️ Major Art Institutions</Text>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://dia.org/", "Detroit Institute of Arts")}
-                >
-                  <Text style={styles.resourceName}>Detroit Institute of Arts (DIA)</Text>
-                  <Text style={styles.resourceDescription}>Museum site with exhibitions, events, and news</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://detroitartistsmarket.org/", "Detroit Artists Market")}
-                >
-                  <Text style={styles.resourceName}>Detroit Artists Market (DAM)</Text>
-                  <Text style={styles.resourceDescription}>Contemporary art gallery promoting local artists (website has exhibitions/events)</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://scarabclub.org/", "Scarab Club")}
-                >
-                  <Text style={styles.resourceName}>Scarab Club</Text>
-                  <Text style={styles.resourceDescription}>Historic artist club/gallery offering exhibitions and programs</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.resourceItem}
-                  onPress={() => handleResourcePress("https://cranbrookartmuseum.org/", "Cranbrook Art Museum")}
-                >
-                  <Text style={styles.resourceName}>Cranbrook Art Museum</Text>
-                  <Text style={styles.resourceDescription}>Renowned regional art museum with online resources, exhibitions, and research</Text>
-                </TouchableOpacity>
-              </View>
-
-
-            </View>
           </>
         ) : (
           <View style={styles.emptyState}>
@@ -233,6 +216,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   header: {
     width: "100%",
@@ -268,11 +255,13 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: theme.background,
+    paddingBottom: 24,
+    marginBottom: 16,
   },
   horizontalScroll: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 16,
+    paddingBottom: 24,
   },
   horizontalScrollContent: {
     paddingRight: 16,
@@ -320,40 +309,6 @@ const styles = StyleSheet.create({
   miniAppsSection: {
     backgroundColor: theme.background,
     paddingVertical: 16,
-  },
-  resourcesSection: {
-    backgroundColor: theme.background,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  resourceCategory: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.text,
-    marginBottom: 12,
-  },
-  resourceItem: {
-    backgroundColor: theme.surfaceElevated,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  resourceName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: theme.text,
-    marginBottom: 6,
-  },
-  resourceDescription: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    lineHeight: 20,
   },
 });
 

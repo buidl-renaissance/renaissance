@@ -5,8 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { SectionTitle } from "../Components/SectionTitle";
 import { CategoryFilter } from "../Components/CategoryFilter";
@@ -326,7 +326,7 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={[]}>
       <View style={styles.tabsContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === "rankings" && styles.activeTab]}
@@ -405,7 +405,11 @@ const RestaurantsScreen: React.FC<RestaurantsScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
         {renderTabContent()}
       </ScrollView>
 
@@ -459,8 +463,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 120,
+  },
   tabContent: {
-    flex: 1,
     paddingBottom: 20,
   },
   categorySelector: {

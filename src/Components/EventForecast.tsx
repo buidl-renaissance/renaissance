@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from "react-native";
 import moment from "moment";
 import { theme } from "../colors";
 
@@ -18,13 +18,45 @@ interface EventForecastProps {
 }
 
 export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }) => {
+  const screenWidth = Dimensions.get("window").width;
+  const pageGap = 16; // Extra gap between each group of 7 days (in addition to the 8px base margin)
+  // Container padding: 12px on each side = 24px total
+  // Margin between days: 8px * 6 gaps = 48px for 7 days
+  const availableWidth = screenWidth - 24; // Container padding only
+  const dayWidth = (availableWidth - 48) / 7; // Subtract margins for 7 days (6 gaps of 8px)
+  const sevenDayWidth = dayWidth * 7 + 48; // Width of 7 days including 6 margins of 8px
+  // Total width from start of page 1 to start of page 2: 7 days + 6 margins + 1 margin (8px) + gap (16px)
+  const snapInterval = sevenDayWidth + 8 + pageGap; // Width of 7 days + base margin (8px) + gap (16px)
+  
+  // Calculate exact snap offsets for each page
+  const snapOffsets = React.useMemo(() => {
+    const offsets: number[] = [0];
+    for (let i = 1; i < 4; i++) {
+      offsets.push(i * snapInterval);
+    }
+    return offsets;
+  }, [snapInterval]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.scrollContent}>
-        {days.map((day) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        snapToOffsets={snapOffsets}
+        snapToAlignment="start"
+        decelerationRate="fast"
+      >
+        {days.map((day, index) => (
           <TouchableOpacity
             key={day.dateKey}
-            style={styles.dayContainer}
+            style={[
+              styles.dayContainer,
+              { width: dayWidth },
+              // Add extra margin after every 7th day (except the last day) to create page gap
+              (index + 1) % 7 === 0 && index < days.length - 1 && { marginRight: 8 + pageGap }
+            ]}
             onPress={() => onDayPress(day.dateKey)}
             activeOpacity={0.7}
           >
@@ -53,7 +85,7 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
             )}
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -64,14 +96,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: theme.background,
   },
+  scrollView: {
+    flexGrow: 0,
+  },
   scrollContent: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: 4,
   },
   dayContainer: {
     alignItems: "center",
-    flex: 1,
+    marginRight: 8,
   },
   dayName: {
     fontSize: 11,

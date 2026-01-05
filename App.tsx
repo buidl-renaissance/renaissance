@@ -2,7 +2,17 @@
 import "text-encoding-polyfill";
 
 import React from "react";
+import { LogBox } from "react-native";
 import HomeNavigationStack from "./src/Navigation/HomeNavigationStack";
+
+// Suppress deprecation warnings from react-native-render-html
+// This is a known issue in the library that will be fixed in a future update
+LogBox.ignoreLogs([
+  "TNodeChildrenRenderer: Support for defaultProps will be removed from function components",
+  "TRenderEngineProvider: Support for defaultProps will be removed from function components",
+  "MemoizedTNodeRenderer: Support for defaultProps will be removed from memo components",
+  /defaultProps.*will be removed/i, // Catch any other defaultProps warnings from the library
+]);
 
 // import * as SplashScreen from 'expo-splash-screen';
 // SplashScreen.preventAutoHideAsync();

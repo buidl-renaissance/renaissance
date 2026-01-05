@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Image, Dimensions, ActivityIndicator, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, SafeAreaView, StatusBar } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS } from "react-native-reanimated";
 import Modal from "react-native-modal";
@@ -31,6 +32,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   isVisible,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets();
   const { pickImage, image } = useImagePicker({
     allowsEditing: false,
   });
@@ -60,6 +62,8 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   const [venueSearchQuery, setVenueSearchQuery] = React.useState("");
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] = React.useState(false);
   const [isEndDatePickerVisible, setIsEndDatePickerVisible] = React.useState(false);
+  const [isAtTop, setIsAtTop] = React.useState(true);
+  const [scrollEnabled, setScrollEnabled] = React.useState(true);
   const venueSearchbarRef = React.useRef<any>(null);
   const translateY = useSharedValue(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -67,13 +71,14 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   const descInputRef = useRef<View>(null);
   const venueContainerRef = useRef<TouchableOpacity>(null);
   const focusedInputRef = useRef<'title' | 'desc' | 'venue' | null>(null);
+  const isAtTopRef = React.useRef(true);
 
   // Callback functions for gesture handler
   const handleDismissComplete = React.useCallback(() => {
     setIsDismissing(false);
   }, []);
 
-  // Gesture handler for drag-to-dismiss
+  // Gesture handler for drag-to-dismiss (upload step)
   const panGesture = React.useMemo(
     () =>
       Gesture.Pan()
@@ -117,6 +122,148 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
     [onClose, handleDismissComplete]
   );
 
+  // Shared value to track if we're at top for gesture handler
+  const isAtTopShared = useSharedValue(true);
+
+  // Update shared value when scroll position changes
+  React.useEffect(() => {
+    isAtTopShared.value = isAtTop;
+  }, [isAtTop, isAtTopShared]);
+
+  // Helper function to handle drag dismiss logic (called from worklet)
+  const handleDragDismissWorklet = (translationY: number, shouldCheckTop: boolean = false) => {
+    'worklet';
+    if (shouldCheckTop && !isAtTopShared.value) {
+      return;
+    }
+
+    if (translationY > 100) {
+      runOnJS(setIsDismissing)(true);
+      runOnJS(onClose)();
+      translateY.value = withTiming(1000, { duration: 200 }, (finished) => {
+        if (finished) {
+          translateY.value = 0;
+          runOnJS(handleDismissComplete)();
+        }
+      });
+    } else {
+      translateY.value = withSpring(0, {
+        damping: 7,
+        stiffness: 50,
+      });
+    }
+  };
+
+  // Create a reusable gesture configuration function
+  const createDragDismissGesture = React.useCallback(() => {
+    return Gesture.Pan()
+      .minDistance(5)
+      .activeOffsetY(5)
+      .failOffsetX([-10, 10])
+      .onStart(() => {
+        'worklet';
+        runOnJS(setIsDraggingDown)(true);
+        runOnJS(setScrollEnabled)(false);
+      })
+      .onUpdate((event) => {
+        'worklet';
+        if (event.translationY > 0) {
+          translateY.value = event.translationY;
+        }
+      })
+      .onEnd((event) => {
+        'worklet';
+        runOnJS(setIsDraggingDown)(false);
+        runOnJS(setScrollEnabled)(true);
+        handleDragDismissWorklet(event.translationY, false);
+      })
+      .onFinalize(() => {
+        'worklet';
+        runOnJS(setIsDraggingDown)(false);
+        runOnJS(setScrollEnabled)(true);
+        translateY.value = withSpring(0, {
+          damping: 7,
+          stiffness: 50,
+        });
+      });
+  }, []);
+
+  // Gesture handler for swipe indicator (always active)
+  const swipeIndicatorPanGesture = React.useMemo(
+    () => createDragDismissGesture(),
+    [createDragDismissGesture]
+  );
+
+  // Gesture handler for header (always active)
+  const headerPanGesture = React.useMemo(
+    () => createDragDismissGesture(),
+    [createDragDismissGesture]
+  );
+
+  // Gesture handler for content area (only when at top)
+  const contentPanGesture = React.useMemo(
+    () =>
+      Gesture.Pan()
+        .minDistance(5)
+        .activeOffsetY(5)
+        .failOffsetX([-10, 10])
+        .onBegin(() => {
+          'worklet';
+          if (!isAtTopShared.value) {
+            return;
+          }
+        })
+        .onStart(() => {
+          'worklet';
+          if (!isAtTopShared.value) {
+            return;
+          }
+          runOnJS(setIsDraggingDown)(true);
+          runOnJS(setScrollEnabled)(false);
+        })
+        .onUpdate((event) => {
+          'worklet';
+          if (isAtTopShared.value && event.translationY > 0) {
+            translateY.value = event.translationY;
+          } else {
+            translateY.value = 0;
+            runOnJS(setIsDraggingDown)(false);
+            runOnJS(setScrollEnabled)(true);
+          }
+        })
+        .onEnd((event) => {
+          'worklet';
+          runOnJS(setIsDraggingDown)(false);
+          runOnJS(setScrollEnabled)(true);
+          if (isAtTopShared.value) {
+            handleDragDismissWorklet(event.translationY, true);
+          } else {
+            translateY.value = withSpring(0, {
+              damping: 7,
+              stiffness: 50,
+            });
+          }
+        })
+        .onFinalize(() => {
+          'worklet';
+          runOnJS(setIsDraggingDown)(false);
+          runOnJS(setScrollEnabled)(true);
+          translateY.value = withSpring(0, {
+            damping: 7,
+            stiffness: 50,
+          });
+        }),
+    [isAtTopShared]
+  );
+
+  // Handle scroll events to track if we're at the top
+  const handleScroll = React.useCallback((event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const wasAtTop = offsetY <= 0;
+    setIsAtTop(wasAtTop);
+    isAtTopRef.current = wasAtTop;
+  }, []);
+
   // Animated style for the container
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
@@ -129,6 +276,9 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
     if (isVisible) {
       setIsDismissing(false);
       translateY.value = 0;
+      setIsAtTop(true);
+      isAtTopRef.current = true;
+      setScrollEnabled(true);
       // Reset form when modal opens
       onChangeTitle("");
       onChangeDesc("");
@@ -398,6 +548,23 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
   const containerHeight = (image && !isExtracting) ? fullHeight : initialHeight;
   const isUploadStep = !image || (isExtracting && !extractedData);
 
+  // Memoize SVG gradient height to avoid recalculation
+  const gradientHeight = React.useMemo(() => {
+    return containerHeight;
+  }, [containerHeight]);
+
+  // Memoize date formatting to avoid recalculation on every render
+  const startDateFormatted = React.useMemo(() => {
+    return moment(startDate).format("ddd, MMM D [at] h:mm A");
+  }, [startDate]);
+
+  const endDateFormatted = React.useMemo(() => {
+    const isSameDay = moment(startDate).isSame(moment(endDate), 'day');
+    return isSameDay 
+      ? moment(endDate).format("h:mm A")
+      : moment(endDate).format("ddd, MMM D [at] h:mm A");
+  }, [startDate, endDate]);
+
   // Reset focused input when modal closes
   React.useEffect(() => {
     if (!isVisible) {
@@ -431,14 +598,14 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
       >
         {/* Gradient Background */}
         <View style={styles.gradientContainer}>
-          <Svg height={containerHeight} width={screenWidth} style={StyleSheet.absoluteFill}>
+          <Svg height={gradientHeight} width={screenWidth} style={StyleSheet.absoluteFill}>
             <Defs>
               <LinearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                 <Stop offset="0%" stopColor="#1E40AF" stopOpacity="1" />
                 <Stop offset="100%" stopColor="#1E3A8A" stopOpacity="1" />
               </LinearGradient>
             </Defs>
-            <Rect width={screenWidth} height={containerHeight} fill="url(#gradient)" />
+            <Rect width={screenWidth} height={gradientHeight} fill="url(#gradient)" />
           </Svg>
         </View>
 
@@ -458,107 +625,125 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
 
                 {/* Upload UI or Extracting UI */}
                 <View style={styles.uploadContainer}>
-              {isExtracting ? (
-                <View style={styles.uploadButton}>
-                  <ActivityIndicator size="large" color="#fff" />
-                  <Text style={styles.uploadTitle}>Extracting flyer details</Text>
-                  <Text style={styles.uploadSubtitle}>Please wait...</Text>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={pickImage}
-                  activeOpacity={0.8}
-                  style={styles.uploadButton}
-                >
-                  <View style={styles.uploadIconContainer}>
-                    <Icon
-                      type={IconTypes.Ionicons}
-                      name="cloud-upload-outline"
-                      size={48}
-                      color="#fff"
-                    />
-                  </View>
-                  <Text style={styles.uploadTitle}>Upload Flyer</Text>
-                  <Text style={styles.uploadSubtitle}>Tap to select an image</Text>
-                </TouchableOpacity>
-              )}
+                  {isExtracting ? (
+                    <View style={styles.uploadButton}>
+                      <ActivityIndicator size="large" color="#fff" />
+                      <Text style={styles.uploadTitle}>Extracting flyer details</Text>
+                      <Text style={styles.uploadSubtitle}>Please wait...</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={pickImage}
+                      activeOpacity={0.8}
+                      style={styles.uploadButton}
+                    >
+                      <View style={styles.uploadIconContainer}>
+                        <Icon
+                          type={IconTypes.Ionicons}
+                          name="cloud-upload-outline"
+                          size={48}
+                          color="#fff"
+                        />
+                      </View>
+                      <Text style={styles.uploadTitle}>Upload Flyer</Text>
+                      <Text style={styles.uploadSubtitle}>Tap to select an image</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </GestureDetector>
           ) : (
             <>
-              {/* Header */}
-              <View style={styles.header}>
-                <Text style={styles.headerTitle}>Create Event</Text>
-                <TouchableOpacity
-                  style={styles.headerButton}
-                  onPress={handleCreate}
-                  disabled={!isFormValid}
-                >
-                  <Icon
-                    type={IconTypes.Ionicons}
-                    name="checkmark"
-                    size={24}
-                    color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
-                  />
-                </TouchableOpacity>
-              </View>
+              {/* Swipe Indicator - Always draggable */}
+              <GestureDetector gesture={swipeIndicatorPanGesture}>
+                <View style={styles.swipeIndicatorContainer}>
+                  <View style={styles.swipeIndicator} />
+                </View>
+              </GestureDetector>
+              
+              {/* Header - Always draggable */}
+              <GestureDetector gesture={headerPanGesture}>
+                <View style={styles.header}>
+                  <Text style={styles.headerTitle}>Create Event</Text>
+                  <TouchableOpacity
+                    style={styles.headerButton}
+                    onPress={handleCreate}
+                    disabled={!isFormValid}
+                  >
+                    <Icon
+                      type={IconTypes.Ionicons}
+                      name="checkmark"
+                      size={24}
+                      color={isFormValid ? "#fff" : "rgba(255, 255, 255, 0.5)"}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </GestureDetector>
+              
               {/* Form UI */}
               <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              style={{ flex: 1 }}
-              keyboardVerticalOffset={0}
-            >
-              <View
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={{ flex: 1 }}
-                collapsable={false}
+                keyboardVerticalOffset={0}
               >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                  <ScrollView
-                    ref={scrollViewRef}
-                    style={styles.scrollView}
-                    contentContainerStyle={[
-                      styles.scrollContent,
-                      { paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 120 }
-                    ]}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={true}
-                    keyboardDismissMode="interactive"
-                    scrollEnabled={true}
-                    nestedScrollEnabled={true}
+                {/* Content wrapper - Only draggable when at top */}
+                <GestureDetector gesture={contentPanGesture}>
+                  <View
+                    style={{ flex: 1 }}
+                    collapsable={false}
                   >
-                    {/* Image Card - only show when not extracting */}
-                    {!isExtracting && image && image[0] && (
-                      <View style={styles.imageCardWrapper}>
-                        <TouchableOpacity
-                          onPress={pickImage}
-                          style={styles.imageCard}
-                          onPressIn={() => setIsImagePressed(true)}
-                          onPressOut={() => setIsImagePressed(false)}
-                          activeOpacity={0.9}
-                        >
-                          <Image
-                            source={{ uri: image[0].uri }}
-                            style={[
-                              styles.imageCardImage,
-                              image[0].width && image[0].height ? {
-                                height: (Dimensions.get("window").width * 0.75) * (image[0].height / image[0].width) - 36
-                              } : undefined
-                            ]}
-                            resizeMode="cover"
-                          />
-                          <View style={styles.imageChangeButton}>
-                            <Icon
-                              type={IconTypes.Ionicons}
-                              name="image-outline"
-                              size={20}
-                              color="#fff"
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                      <ScrollView
+                        ref={scrollViewRef}
+                        style={styles.scrollView}
+                        contentContainerStyle={[
+                          styles.scrollContent,
+                          { paddingBottom: Math.max(
+                            keyboardHeight > 0 ? keyboardHeight + 50 : 160,
+                            160 + insets.bottom
+                          ) }
+                        ]}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={true}
+                        keyboardDismissMode="interactive"
+                        scrollEnabled={scrollEnabled && !isDraggingDown}
+                        nestedScrollEnabled={true}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                      >
+                      {/* Image Card */}
+                      {image && image[0] && (
+                        <View style={styles.imageCardWrapper}>
+                          <TouchableOpacity
+                            onPress={pickImage}
+                            style={styles.imageCard}
+                            onPressIn={() => setIsImagePressed(true)}
+                            onPressOut={() => setIsImagePressed(false)}
+                            activeOpacity={0.9}
+                          >
+                            <Image
+                              source={{ uri: image[0].uri }}
+                              style={[
+                                styles.imageCardImage,
+                                image[0].width && image[0].height ? {
+                                  height: (Dimensions.get("window").width * 0.75) * (image[0].height / image[0].width) - 36
+                                } : undefined
+                              ]}
+                              resizeMode="cover"
                             />
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                    {!isExtracting && (
+                            <View style={styles.imageChangeButton}>
+                              <Icon
+                                type={IconTypes.Ionicons}
+                                name="image-outline"
+                                size={20}
+                                color="#fff"
+                              />
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                      
+                      {/* Form Fields */}
                       <>
                         {/* Event Name */}
                         <View ref={titleInputRef} style={styles.formSection}>
@@ -587,7 +772,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                                 style={styles.timeValueTouchable}
                               >
                                 <Text style={styles.timeValueText}>
-                                  {moment(startDate).format("ddd, MMM D [at] h:mm A")}
+                                  {startDateFormatted}
                                 </Text>
                               </TouchableOpacity>
                             </View>
@@ -602,9 +787,7 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                                 style={styles.timeValueTouchable}
                               >
                                 <Text style={styles.timeValueText}>
-                                  {moment(startDate).isSame(moment(endDate), 'day')
-                                    ? moment(endDate).format("h:mm A")
-                                    : moment(endDate).format("ddd, MMM D [at] h:mm A")}
+                                  {endDateFormatted}
                                 </Text>
                               </TouchableOpacity>
                             </View>
@@ -675,11 +858,11 @@ export const CreateFlyerModal: React.FC<CreateFlyerModalProps> = ({
                           />
                         </View>
                       </>
-                    )}
-                  </ScrollView>
-                </TouchableWithoutFeedback>
-              </View>
-            </KeyboardAvoidingView>
+                      </ScrollView>
+                    </TouchableWithoutFeedback>
+                  </View>
+                </GestureDetector>
+              </KeyboardAvoidingView>
             </>
           )}
         </SafeAreaView>
@@ -906,7 +1089,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120, // Extra padding to ensure content isn't cut off
+    paddingBottom: 160, // Extra padding to ensure content isn't cut off (increased for safe area)
   },
   imageCardWrapper: {
     marginBottom: 24,

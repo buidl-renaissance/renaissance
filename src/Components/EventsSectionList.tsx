@@ -72,6 +72,14 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
     [showSectionHeaders]
   );
 
+  const handleScrollToIndexFailed = React.useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    // Wait a bit and try again, or just handle the failure gracefully
+    setTimeout(() => {
+      // Optionally retry scrolling, but for now we'll just silently handle the failure
+      // as the user can manually scroll if needed
+    }, 100);
+  }, []);
+
   return (
     <View style={[styles.container, containerStyle]}>
       <SectionList
@@ -96,6 +104,7 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
         updateCellsBatchingPeriod={updateCellsBatchingPeriod}
         initialNumToRender={initialNumToRender}
         windowSize={windowSize}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
       />
     </View>
   );

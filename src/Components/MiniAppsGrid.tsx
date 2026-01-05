@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    justifyContent: "space-between",
+    gap: 10,
+    justifyContent: "flex-start",
   },
 });

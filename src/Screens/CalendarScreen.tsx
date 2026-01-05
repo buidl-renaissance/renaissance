@@ -490,7 +490,7 @@ const CalendarScreen = ({ navigation }) => {
     goingCount: number;
   }>>([]);
 
-  // Calculate event counts for the next 7 days - optimized with batching
+  // Calculate event counts for the next 4 weeks (28 days) - optimized with batching
   React.useEffect(() => {
     const calculateForecast = async () => {
       const today = moment().startOf("day");
@@ -596,8 +596,8 @@ const CalendarScreen = ({ navigation }) => {
         }
       });
 
-      // Generate 7 days starting from today
-      for (let i = 0; i < 7; i++) {
+      // Generate 28 days (4 weeks) starting from today
+      for (let i = 0; i < 28; i++) {
         const date = today.clone().add(i, "days");
         const dateKey = date.format("YYYY-MM-DD");
         const isToday = i === 0;
@@ -663,8 +663,6 @@ const CalendarScreen = ({ navigation }) => {
 
       // If we found a valid section, scroll to it
       if (sectionIndex >= 0) {
-        const section = eventsGroup[sectionIndex];
-        
         // Calculate status bar offset to prevent header from being covered
         const statusBarHeight = Platform.select({
           ios: 108,
@@ -672,8 +670,11 @@ const CalendarScreen = ({ navigation }) => {
           default: 0,
         });
         
-        // Use requestAnimationFrame and setTimeout to ensure the list has fully rendered
-        requestAnimationFrame(() => {
+        // Retry mechanism with increasing delays for sections that may not be rendered yet
+        const scrollWithRetry = (attempt: number = 0) => {
+          const delays = [100, 300, 500, 800]; // Increasing delays for retries
+          const delay = delays[Math.min(attempt, delays.length - 1)];
+          
           setTimeout(() => {
             try {
               sectionListRef.current?.scrollToLocation({
@@ -683,9 +684,19 @@ const CalendarScreen = ({ navigation }) => {
                 viewOffset: statusBarHeight,
               });
             } catch (error) {
-              console.error("Error scrolling to location:", error);
+              // Retry if we haven't exhausted attempts and it's a scroll-related error
+              if (attempt < delays.length - 1) {
+                scrollWithRetry(attempt + 1);
+              } else {
+                console.error("Error scrolling to location after retries:", error);
+              }
             }
-          }, 100);
+          }, delay);
+        };
+        
+        // Start the scroll attempt
+        requestAnimationFrame(() => {
+          scrollWithRetry(0);
         });
       }
     },
