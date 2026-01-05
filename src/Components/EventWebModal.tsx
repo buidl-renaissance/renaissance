@@ -381,7 +381,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
         </View>
 
         {/* Floating action buttons */}
-        <View style={styles.floatingButtons}>
+        <View style={[styles.floatingButtons, eventType === 'meetup' && styles.floatingButtonsMeetup]}>
           {eventType && eventData && (
             <TouchableOpacity
               onPress={handleToggleBookmark}
@@ -403,7 +403,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               type={IconTypes.Ionicons}
               name="close"
               size={24}
-              color="#333"
+              color={theme.text}
             />
           </TouchableOpacity>
         </View>
@@ -477,6 +477,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+  },
+  floatingButtonsMeetup: {
+    bottom: 100,
   },
   floatingBookmarkButton: {
     width: 44,

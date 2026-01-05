@@ -554,7 +554,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
               type={IconTypes.Ionicons}
               name="close"
               size={24}
-              color={theme.textSecondary}
+              color={theme.text}
             />
           </TouchableOpacity>
         </View>

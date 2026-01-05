@@ -315,6 +315,24 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
         )}
       </View>
 
+      {/* Connections Section */}
+      {authState.isAuthenticated && (
+        <View style={styles.connectionsSection}>
+          <Text style={styles.sectionTitle}>Connections</Text>
+          <TouchableOpacity
+            style={styles.connectionsButton}
+            onPress={() => navigation.navigate("Connections")}
+          >
+            <Ionicons name="people-outline" size={18} color={theme.primary} />
+            <Text style={styles.connectionsButtonText}>View Connections</Text>
+            <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          <Text style={styles.helpText}>
+            Connect with other users via QR code to see shared events
+          </Text>
+        </View>
+      )}
+
       {/* Sign Out Button */}
       {authState.isAuthenticated && (
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
@@ -544,6 +562,27 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 8,
     paddingHorizontal: 20,
+  },
+  connectionsSection: {
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  connectionsButton: {
+    backgroundColor: theme.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+    marginTop: 8,
+  },
+  connectionsButtonText: {
+    color: theme.text,
+    fontWeight: "600",
+    marginLeft: 8,
+    flex: 1,
   },
 });
 

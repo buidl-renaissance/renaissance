@@ -7,6 +7,7 @@ interface FloatingActionButtonsProps {
   onMapPress?: () => void;
   onSearchPress?: () => void;
   onBookmarkPress?: () => void;
+  onConnectionsPress?: () => void;
   onChatPress?: () => void;
   onQRCodePress?: () => void;
   onWalletPress?: () => void;
@@ -20,6 +21,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   onMapPress,
   onSearchPress,
   onBookmarkPress,
+  onConnectionsPress,
   onChatPress,
   onQRCodePress,
   onWalletPress,
@@ -28,10 +30,11 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   showAdmin = false,
   walletBalance,
 }) => {
-  // Filter to show main buttons: map, bookmark, chat, mini apps (search moved to far right)
+  // Filter to show main buttons: map, bookmark, connections, chat, mini apps (search moved to far right)
   const mainButtons = [
     onMapPress && { onPress: onMapPress, icon: "map-outline", type: IconTypes.Ionicons },
     onBookmarkPress && { onPress: onBookmarkPress, icon: "bookmark-outline", type: IconTypes.Ionicons },
+    onConnectionsPress && { onPress: onConnectionsPress, icon: "people-outline", type: IconTypes.Ionicons },
     onChatPress && { onPress: onChatPress, icon: "chat", type: IconTypes.MaterialIcons },
     onAppsPress && { onPress: onAppsPress, icon: "apps-outline", type: IconTypes.Ionicons },
   ].filter((button): button is { onPress: () => void; icon: string; type: IconTypes } => Boolean(button));

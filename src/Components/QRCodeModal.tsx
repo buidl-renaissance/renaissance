@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Modal, Alert, Image } from "react-native";
-import { BarCodeScanner } from "expo-barcode-scanner";
+import { View, StyleSheet, TouchableOpacity, Text, Modal, Alert, Image, ActivityIndicator, Platform } from "react-native";
+import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import QRCode from "react-qr-code";
 import Icon, { IconTypes } from "./Icon";
 import { useAuth } from "../context/Auth";
 import { theme } from "../colors";
+import { generateConnectionRequest, createConnection, ConnectionRequest, getConnectionsForUser } from "../utils/connections";
+import { getWallet } from "../utils/wallet";
 
 interface QRCodeModalProps {
   isVisible: boolean;
@@ -19,74 +21,228 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 }) => {
   const { state: authState } = useAuth();
   const [activeTab, setActiveTab] = useState<"share" | "scan">("share");
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [isGeneratingConnection, setIsGeneratingConnection] = useState(false);
+  const [connectionQrData, setConnectionQrData] = useState<string | null>(null);
+  const isProcessingScan = React.useRef(false);
+  const lastScannedData = React.useRef<string | null>(null);
 
-  // Get user profile data for QR code
-  const getUserQRData = () => {
-    if (!authState.isAuthenticated || !authState.user) {
-      return null;
-    }
-
-    const userData = {
-      type: "renaissance_profile",
-      fid: authState.user.fid,
-      username: authState.user.username,
-      displayName: authState.user.displayName,
-      pfpUrl: authState.user.pfpUrl,
-    };
-
-    return JSON.stringify(userData);
+  // Get connection QR code data
+  const getConnectionQRData = () => {
+    return connectionQrData;
   };
 
-  useEffect(() => {
-    if (isVisible && activeTab === "scan") {
-      (async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync();
-        setHasPermission(status === "granted");
-      })();
+  // Generate connection request QR code
+  const generateConnectionQR = async () => {
+    if (!authState.isAuthenticated || !authState.user) {
+      Alert.alert("Error", "Please log in to generate a connection QR code");
+      return;
     }
-  }, [isVisible, activeTab]);
+
+    setIsGeneratingConnection(true);
+    try {
+      const wallet = await getWallet();
+      const userId = authState.user.fid?.toString() || wallet.address;
+      
+      const connectionRequest = await generateConnectionRequest(
+        userId,
+        wallet.address,
+        authState.user.username,
+        authState.user.displayName,
+        authState.user.pfpUrl
+      );
+
+      const qrData = JSON.stringify(connectionRequest);
+      setConnectionQrData(qrData);
+    } catch (error) {
+      console.error("Error generating connection QR:", error);
+      Alert.alert("Error", "Failed to generate connection QR code");
+    } finally {
+      setIsGeneratingConnection(false);
+    }
+  };
+
+  // Handle connection request scan
+  const handleConnectionScan = async (scannedRequest: ConnectionRequest) => {
+    if (!authState.isAuthenticated || !authState.user) {
+      Alert.alert("Error", "Please log in to connect with other users");
+      setScanned(false);
+      isProcessingScan.current = false;
+      lastScannedData.current = null;
+      return;
+    }
+
+    const wallet = await getWallet();
+    const currentUserId = authState.user.fid?.toString() || wallet.address;
+
+    // Check if trying to connect with self
+    if (scannedRequest.userId === currentUserId) {
+      Alert.alert("Error", "You cannot connect with yourself");
+      setScanned(false);
+      isProcessingScan.current = false;
+      lastScannedData.current = null;
+      return;
+    }
+
+    // Check if already connected
+    const existingConnections = await getConnectionsForUser(currentUserId);
+    const alreadyConnected = existingConnections.some(
+      (conn) =>
+        conn.userA.userId === scannedRequest.userId ||
+        conn.userB.userId === scannedRequest.userId
+    );
+
+    if (alreadyConnected) {
+      Alert.alert("Already Connected", "You are already connected with this user");
+      setScanned(false);
+      isProcessingScan.current = false;
+      lastScannedData.current = null;
+      return;
+    }
+
+    Alert.alert(
+      "Connect with User",
+      `Connect with @${scannedRequest.username || scannedRequest.userId}?`,
+      [
+        {
+          text: "Cancel",
+          onPress: () => {
+            setScanned(false);
+            isProcessingScan.current = false;
+            lastScannedData.current = null;
+          },
+          style: "cancel",
+        },
+        {
+          text: "Connect",
+          onPress: async () => {
+            try {
+              if (!authState.user) {
+                Alert.alert("Error", "User not authenticated");
+                setScanned(false);
+                isProcessingScan.current = false;
+                lastScannedData.current = null;
+                return;
+              }
+              
+              await createConnection(scannedRequest, {
+                userId: currentUserId,
+                walletAddress: wallet.address,
+                username: authState.user.username,
+                displayName: authState.user.displayName,
+                pfpUrl: authState.user.pfpUrl,
+              });
+
+              Alert.alert("Success", "Connection created successfully!", [
+                { text: "OK", onPress: () => {
+                  setScanned(false);
+                  isProcessingScan.current = false;
+                  lastScannedData.current = null;
+                  onClose();
+                }},
+              ]);
+            } catch (error) {
+              console.error("Error creating connection:", error);
+              Alert.alert("Error", "Failed to create connection");
+              setScanned(false);
+              isProcessingScan.current = false;
+              lastScannedData.current = null;
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Permission is handled by useCameraPermissions hook
 
   useEffect(() => {
     if (!isVisible) {
       setActiveTab("share");
       setScanned(false);
+      setConnectionQrData(null);
+      isProcessingScan.current = false;
+      lastScannedData.current = null;
     }
   }, [isVisible]);
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    if (scanned) return;
+  useEffect(() => {
+    // Generate QR code when modal is visible, on share tab, user is authenticated, and QR data doesn't exist
+    if (isVisible && activeTab === "share" && !connectionQrData && authState.isAuthenticated && authState.user) {
+      generateConnectionQR();
+    }
+  }, [isVisible, activeTab, connectionQrData, authState.isAuthenticated, authState.user]);
+
+  const handleBarCodeScanned = React.useCallback(({ data }: { data: string }) => {
+    console.log("[QRCodeModal] Scan detected:", data?.substring?.(0, 50) || data);
     
+    // Prevent multiple scans using ref to avoid race conditions
+    // Check ref first (synchronous) before any state checks
+    if (isProcessingScan.current) {
+      console.log("[QRCodeModal] Already processing scan, ignoring");
+      return;
+    }
+    
+    // Prevent processing the same QR code data multiple times
+    if (lastScannedData.current === data) {
+      console.log("[QRCodeModal] Duplicate scan detected, ignoring");
+      return;
+    }
+    
+    // Set both state and ref immediately to prevent duplicate scans
+    isProcessingScan.current = true;
+    lastScannedData.current = data;
     setScanned(true);
+    
+    console.log("[QRCodeModal] Processing scan...");
     
     try {
       const parsedData = JSON.parse(data);
-      if (parsedData.type === "renaissance_profile") {
-        // Handle profile QR code scan
-        Alert.alert(
-          "Profile Found",
-          `@${parsedData.username || "user"}`,
-          [
-            { text: "View Profile", onPress: () => onScanResult?.(data) },
-            { text: "Cancel", onPress: () => setScanned(false), style: "cancel" },
-          ]
-        );
+      if (parsedData.type === "renaissance_connection") {
+        // Handle connection request scan
+        handleConnectionScan(parsedData as ConnectionRequest);
       } else {
-        onScanResult?.(data);
+        // Legacy support - if it's a profile QR, try to convert it
+        if (parsedData.type === "renaissance_profile") {
+          Alert.alert(
+            "Profile QR Code",
+            "This appears to be a profile QR code. Please use a connection QR code to connect.",
+            [{ 
+              text: "OK", 
+              onPress: () => {
+                setScanned(false);
+                isProcessingScan.current = false;
+                lastScannedData.current = null;
+              }
+            }]
+          );
+        } else {
+          onScanResult?.(data);
+          // Reset after callback
+          setScanned(false);
+          isProcessingScan.current = false;
+          lastScannedData.current = null;
+        }
       }
     } catch (e) {
       // Not JSON, treat as plain text
-      onScanResult?.(data);
+      Alert.alert(
+        "Invalid QR Code",
+        "This QR code is not a valid connection request.",
+        [{ 
+          text: "OK", 
+          onPress: () => {
+            setScanned(false);
+            isProcessingScan.current = false;
+            lastScannedData.current = null;
+          }
+        }]
+      );
     }
+  }, [handleConnectionScan, onScanResult]);
 
-    // Reset after 2 seconds
-    setTimeout(() => {
-      setScanned(false);
-    }, 2000);
-  };
-
-  const qrData = getUserQRData();
+  const qrData = getConnectionQRData();
 
   return (
     <Modal
@@ -94,9 +250,10 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      {...(Platform.OS === "android" && { hardwareAccelerated: true })}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={styles.modalContent} collapsable={false} removeClippedSubviews={false}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Connect</Text>
@@ -129,65 +286,64 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           <View style={styles.contentContainer}>
             {activeTab === "share" ? (
               <View style={styles.displayContainer}>
-                {qrData ? (
+                {isGeneratingConnection ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                    <Text style={styles.loadingText}>Generating connection QR code...</Text>
+                  </View>
+                ) : qrData ? (
                   <>
                     <View style={styles.qrCodeContainer}>
                       <View style={styles.qrCodeWrapper}>
-                        <QRCode value={qrData} size={200} />
-                        {authState.user?.pfpUrl && (
-                          <View style={styles.avatarOverlay}>
-                            <Image
-                              key={authState.user.pfpUrl}
-                              source={{ uri: authState.user.pfpUrl }}
-                              style={styles.avatarImage}
-                            />
-                          </View>
-                        )}
+                        <QRCode value={qrData} size={250} />
                       </View>
                     </View>
                     {authState.user?.username && (
                       <Text style={styles.username}>@{authState.user.username}</Text>
                     )}
                     <Text style={styles.instruction}>
-                      Scan this code to view my profile
+                      Scan this code to connect with me
                     </Text>
                   </>
                 ) : (
                   <View style={styles.notAuthenticatedContainer}>
                     <Text style={styles.notAuthenticatedText}>
-                      Please log in to view your profile QR code
+                      Please log in to generate your connection QR code
                     </Text>
                   </View>
                 )}
               </View>
             ) : (
-              <View style={styles.scanContainer}>
-                {hasPermission === null ? (
+              <View style={styles.scanContainer} collapsable={false}>
+                {!permission ? (
                   <View style={styles.centerContainer}>
                     <Text style={styles.permissionText}>Requesting camera permission...</Text>
                   </View>
-                ) : hasPermission === false ? (
+                ) : !permission.granted ? (
                   <View style={styles.centerContainer}>
                     <Text style={styles.permissionText}>
                       No access to camera. Please enable camera permissions.
                     </Text>
                     <TouchableOpacity
                       style={styles.permissionButton}
-                      onPress={async () => {
-                        const { status } = await BarCodeScanner.requestPermissionsAsync();
-                        setHasPermission(status === "granted");
-                      }}
+                      onPress={requestPermission}
                     >
                       <Text style={styles.permissionButtonText}>Grant Permission</Text>
                     </TouchableOpacity>
                   </View>
                 ) : (
                   <>
-                    <BarCodeScanner
-                      onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                      style={styles.scanner}
-                      barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
-                    />
+                    <View style={styles.scannerWrapper} collapsable={false}>
+                      <CameraView
+                        style={styles.scanner}
+                        facing="back"
+                        autofocus="on"
+                        onBarcodeScanned={!scanned ? handleBarCodeScanned : undefined}
+                        barcodeScannerSettings={{
+                          barcodeTypes: ["qr"],
+                        }}
+                      />
+                    </View>
                     <View style={styles.scanFrameOverlay}>
                       {/* Top-left corner */}
                       <View style={styles.cornerTopLeft}>
@@ -214,7 +370,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                       <View style={styles.scanAgainContainer}>
                         <TouchableOpacity
                           style={styles.scanAgainButton}
-                          onPress={() => setScanned(false)}
+                          onPress={() => {
+                            setScanned(false);
+                            isProcessingScan.current = false;
+                            lastScannedData.current = null;
+                          }}
                         >
                           <Text style={styles.scanAgainText}>Scan Again</Text>
                         </TouchableOpacity>
@@ -245,6 +405,10 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     maxHeight: "80%",
     padding: 20,
+    overflow: "hidden",
+    ...(Platform.OS === "android" && {
+      elevation: 24,
+    }),
   },
   header: {
     flexDirection: "row",
@@ -289,12 +453,13 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     minHeight: 300,
+    overflow: "hidden",
   },
   displayContainer: {
     alignItems: "center",
     width: "100%",
-    height: 300,
-    justifyContent: "center",
+    minHeight: 300,
+    justifyContent: "flex-start",
     paddingVertical: 10,
   },
   qrCodeContainer: {
@@ -305,24 +470,10 @@ const styles = StyleSheet.create({
   },
   qrCodeWrapper: {
     position: "relative",
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
     justifyContent: "center",
     alignItems: "center",
-  },
-  avatarOverlay: {
-    position: "absolute",
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: theme.surface,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarImage: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
   },
   username: {
     fontSize: 16,
@@ -335,6 +486,8 @@ const styles = StyleSheet.create({
     color: theme.textSecondary,
     textAlign: "center",
     paddingHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 0,
   },
   notAuthenticatedContainer: {
     alignItems: "center",
@@ -352,6 +505,14 @@ const styles = StyleSheet.create({
     position: "relative",
     borderRadius: 12,
     overflow: "hidden",
+    backgroundColor: theme.inputBackground,
+  },
+  scannerWrapper: {
+    width: "100%",
+    height: "100%",
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 12,
   },
   scanner: {
     width: "100%",
@@ -447,6 +608,16 @@ const styles = StyleSheet.create({
     color: theme.textOnPrimary,
     fontSize: 16,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 300,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: theme.textSecondary,
   },
 });
 

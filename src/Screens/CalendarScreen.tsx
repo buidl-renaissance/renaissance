@@ -198,6 +198,10 @@ const CalendarScreen = ({ navigation }) => {
     setBookmarksModalVisible(true);
   }, []);
 
+  const handleConnectionsPress = React.useCallback(() => {
+    navigation.push("Connections");
+  }, [navigation]);
+
   const handleQRCodePress = React.useCallback(() => {
     setQrCodeModalVisible(true);
   }, []);
@@ -637,6 +641,46 @@ const CalendarScreen = ({ navigation }) => {
 
   const get7DayForecast = forecastData;
 
+  // Helper function to find the nearest section index for a given date
+  const findNearestSectionIndex = React.useCallback((targetDate: moment.Moment) => {
+    // First, try to find an exact match for the date
+    let sectionIndex = eventsGroup.findIndex((group: any) => {
+      const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+      return groupDateKey === targetDate.format("YYYY-MM-DD");
+    });
+
+    // If no exact match, find the next section with events (closest future date)
+    if (sectionIndex < 0) {
+      sectionIndex = eventsGroup.findIndex((group: any) => {
+        const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+        const groupDate = moment(groupDateKey);
+        return groupDate.isSame(targetDate, 'day') || groupDate.isAfter(targetDate, 'day');
+      });
+    }
+
+    // If still no match (no future events), find the closest past date with events
+    if (sectionIndex < 0) {
+      let closestIndex = -1;
+      let closestDate: moment.Moment | null = null;
+      
+      eventsGroup.forEach((group: any, index: number) => {
+        const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+        const groupDate = moment(groupDateKey);
+        
+        if (groupDate.isSameOrBefore(targetDate, 'day')) {
+          if (!closestDate || groupDate.isAfter(closestDate)) {
+            closestDate = groupDate;
+            closestIndex = index;
+          }
+        }
+      });
+      
+      sectionIndex = closestIndex;
+    }
+
+    return sectionIndex;
+  }, [eventsGroup]);
+
   // Handle scrolling to a specific day's events
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
@@ -645,31 +689,17 @@ const CalendarScreen = ({ navigation }) => {
       }
 
       const targetDate = moment(dateKey);
-      
-      // First, try to find an exact match for the date
-      let sectionIndex = eventsGroup.findIndex((group: any) => {
-        const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
-        return groupDateKey === dateKey;
+      const sectionIndex = findNearestSectionIndex(targetDate);
+
+      // Calculate status bar offset to prevent header from being covered
+      const statusBarHeight = Platform.select({
+        ios: 108,
+        android: StatusBar.currentHeight || 24,
+        default: 0,
       });
 
-      // If no exact match, find the next section with events (closest future date)
-      if (sectionIndex < 0) {
-        sectionIndex = eventsGroup.findIndex((group: any) => {
-          const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
-          const groupDate = moment(groupDateKey);
-          return groupDate.isSame(targetDate, 'day') || groupDate.isAfter(targetDate, 'day');
-        });
-      }
-
-      // If we found a valid section, scroll to it
+      // If we found a valid section, try scrolling to it
       if (sectionIndex >= 0) {
-        // Calculate status bar offset to prevent header from being covered
-        const statusBarHeight = Platform.select({
-          ios: 108,
-          android: StatusBar.currentHeight || 24,
-          default: 0,
-        });
-        
         // Retry mechanism with increasing delays for sections that may not be rendered yet
         const scrollWithRetry = (attempt: number = 0) => {
           const delays = [100, 300, 500, 800]; // Increasing delays for retries
@@ -684,7 +714,7 @@ const CalendarScreen = ({ navigation }) => {
                 viewOffset: statusBarHeight,
               });
             } catch (error) {
-              // Retry if we haven't exhausted attempts and it's a scroll-related error
+              // Retry if we haven't exhausted attempts
               if (attempt < delays.length - 1) {
                 scrollWithRetry(attempt + 1);
               } else {
@@ -700,7 +730,7 @@ const CalendarScreen = ({ navigation }) => {
         });
       }
     },
-    [eventsGroup]
+    [eventsGroup, findNearestSectionIndex]
   );
 
   // Memoize mini apps configuration
@@ -990,13 +1020,14 @@ const CalendarScreen = ({ navigation }) => {
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
-        initialNumToRender={10}
+        initialNumToRender={Platform.OS === "android" ? 10 : 1000}
         windowSize={10}
       />
       {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
       <FloatingActionButtons
         onSearchPress={handleSearchPress}
         onBookmarkPress={handleBookmarkPress}
+        onConnectionsPress={authState.isAuthenticated ? handleConnectionsPress : undefined}
         onQRCodePress={authState.isAuthenticated ? handleQRCodePress : undefined}
         onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
         onAppsPress={handleMiniAppsPress}

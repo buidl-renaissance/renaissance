@@ -39,6 +39,8 @@ import RestaurantsScreen from "../Screens/RestaurantsScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 import CalendarViewScreen from "../Screens/CalendarViewScreen";
 import WalletScreen from "../Screens/WalletScreen";
+import ConnectionsScreen from "../Screens/ConnectionsScreen";
+import SharedEventsScreen from "../Screens/SharedEventsScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -82,6 +84,8 @@ type HomeNavigationStackParamList = {
   Splash: undefined;
   Verify: undefined;
   Wallet: undefined;
+  Connections: undefined;
+  SharedEvents: { connection: any; otherUser: any };
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -436,6 +440,28 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Restaurants",
+        }}
+      />
+      <Stack.Screen
+        component={ConnectionsScreen}
+        name="Connections"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Connections",
+        }}
+      />
+      <Stack.Screen
+        component={SharedEventsScreen}
+        name="SharedEvents"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Shared Events",
         }}
       />
     </Stack.Navigator>
