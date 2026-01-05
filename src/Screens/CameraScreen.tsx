@@ -1,55 +1,43 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const CameraScreen = () => {
-    const [type, setType] = React.useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
-  
-    const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean>(false);
-
+    const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = React.useState(false);
-    const [hasPermission, setHasPermission] = React.useState<boolean>(false);
-
-    React.useEffect(() => {
-      const getBarCodeScannerPermissions = async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync();
-        setHasPermission(status === 'granted');
-      };
   
-      getBarCodeScannerPermissions();
-    }, []);
-  
-    const handleBarCodeScanned = ({ type, data }) => {
+    const handleBarCodeScanned = ({ data }: { data: string }) => {
       setScanned(true);
-      alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+      alert(`QR code scanned: ${data}`);
       setTimeout(() => {
         setScanned(false);
       }, 2000);
     };
 
-    React.useEffect(() => {
-            (async () => {
-            const cameraStatus = await Camera.requestCameraPermissionsAsync();
-            setHasCameraPermission(cameraStatus.status === 'granted');
-        })();
-    }, []);
+    if (!permission) {
+      return (
+        <View style={styles.container}>
+          <Text>Requesting camera permission...</Text>
+        </View>
+      );
+    }
 
-    // function toggleCameraType() {
-    //     setType((current) => (
-    //       current === CameraType.back ? CameraType.front : CameraType.back
-    //     ));
-    //   }
+    if (!permission.granted) {
+      return (
+        <View style={styles.container}>
+          <Text>No access to camera. Please enable camera permissions.</Text>
+        </View>
+      );
+    }
 
     return (
         <View style={styles.container}>
-            <Camera 
+            <CameraView 
                 style={styles.camera}
-                type={type}
-                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                barCodeScannerSettings={{
-                    barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+                facing="back"
+                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                barcodeScannerSettings={{
+                    barcodeTypes: ["qr"],
                 }}
             />
         </View>

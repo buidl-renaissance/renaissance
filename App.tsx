@@ -42,7 +42,6 @@ import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
 import * as Linking from "expo-linking";
-import { setupFarcasterAuthListener } from "./src/utils/farcasterAuth";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -169,12 +168,12 @@ export default function App() {
     };
   }, []);
 
-  // Set up Farcaster auth listener
-  React.useEffect(() => {
-    console.log("[App] Setting up Farcaster auth listener");
-    const cleanup = setupFarcasterAuthListener();
-    return cleanup;
-  }, []);
+  // Farcaster auth listener disabled
+  // React.useEffect(() => {
+  //   console.log("[App] Setting up Farcaster auth listener");
+  //   const cleanup = setupFarcasterAuthListener();
+  //   return cleanup;
+  // }, []);
 
   return (
     <>

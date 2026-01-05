@@ -10,7 +10,7 @@ import * as SecureStore from "expo-secure-store";
 import * as Linking from "expo-linking";
 import { getWallet } from "../utils/wallet";
 import { login as dpopLogin, register as dpopRegister } from "../dpop";
-import { initiateWarpcastAuth } from "../utils/farcasterAuth";
+// import { initiateWarpcastAuth } from "../utils/farcasterAuth"; // Disabled - viem compatibility issue
 import { fetchUserProfile } from "../utils/neynarAuth";
 import { getUserById } from "../api/user";
 
@@ -142,23 +142,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Sign in with Farcaster via Warpcast deep link
+  // Disabled temporarily due to viem compatibility issues with React Native
   const signInWithFarcaster = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-    try {
-      console.log("[Auth] Starting Warpcast sign-in flow...");
-      
-      // Use Warpcast deep-link flow for identity
-      await initiateWarpcastAuth();
-      
-      // The actual user data will be received via deep link callback
-      // which is handled in the farcasterAuth module and calls handleFarcasterCallback
-      // Don't set isLoading to false here - wait for callback
-      console.log("[Auth] Warpcast auth initiated - waiting for callback...");
-    } catch (error) {
-      console.error("[Auth] Farcaster sign in error:", error);
-      setState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
+    setState((prev) => ({ ...prev, isLoading: false }));
+    throw new Error("Farcaster auth is temporarily disabled due to compatibility issues");
+    // setState((prev) => ({ ...prev, isLoading: true }));
+    // try {
+    //   console.log("[Auth] Starting Warpcast sign-in flow...");
+    //   
+    //   // Use Warpcast deep-link flow for identity
+    //   await initiateWarpcastAuth();
+    //   
+    //   // The actual user data will be received via deep link callback
+    //   // which is handled in the farcasterAuth module and calls handleFarcasterCallback
+    //   // Don't set isLoading to false here - wait for callback
+    //   console.log("[Auth] Warpcast auth initiated - waiting for callback...");
+    // } catch (error) {
+    //   console.error("[Auth] Farcaster sign in error:", error);
+    //   setState((prev) => ({ ...prev, isLoading: false }));
+    //   throw error;
+    // }
   }, []);
 
   // Handle Farcaster auth callback (called from deep link handler)

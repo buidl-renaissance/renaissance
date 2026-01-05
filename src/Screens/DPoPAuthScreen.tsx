@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Alert, ActivityIndicator } from "react-native";
-import { BarCodeScanner } from "expo-barcode-scanner";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Button } from "../Components/Button";
 import { getWallet } from "../utils/wallet";
 import { submitDPoPAuth } from "../dpop";
@@ -11,17 +11,10 @@ interface DPoPAuthScreenProps {
 }
 
 const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
 
   useEffect(() => {
     console.log("ATTEMPTING TO CONNECT");
@@ -43,7 +36,7 @@ const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
     };
   }, []);
 
-  const handleBarCodeScanned = async ({ type, data }) => {
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
     setScanned(true);
     setLoading(true);
 
@@ -110,7 +103,7 @@ const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
     setScanned(false);
   };
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
       <View style={styles.container}>
         <Text>Requesting camera permission...</Text>
@@ -118,7 +111,7 @@ const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
       <View style={styles.container}>
         <Text>No access to camera. Please enable camera permissions.</Text>
@@ -129,9 +122,13 @@ const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.scannerContainer}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        <CameraView
           style={styles.scanner}
+          facing="back"
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
         />
       </View>
 
