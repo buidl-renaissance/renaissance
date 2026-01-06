@@ -223,18 +223,24 @@ export const EventCheckInButton: React.FC<EventCheckInButtonProps> = ({
             <View style={{ width: 24 }} />
           </View>
           {permission?.granted ? (
-            <CameraView
-              style={styles.camera}
-              facing="back"
-              onBarcodeScanned={scanned ? undefined : handleQRCodeScanned}
-            >
-              <View style={styles.scannerOverlay}>
-                <View style={styles.scannerFrame} />
-                <Text style={styles.scannerHint}>
-                  Position the QR code within the frame
-                </Text>
-              </View>
-            </CameraView>
+            <View collapsable={false}>
+              <CameraView
+                style={styles.camera}
+                facing="back"
+                autofocus="on"
+                onBarcodeScanned={scanned ? undefined : handleQRCodeScanned}
+                barcodeScannerSettings={{
+                  barcodeTypes: ["qr"],
+                }}
+              >
+                <View style={styles.scannerOverlay}>
+                  <View style={styles.scannerFrame} />
+                  <Text style={styles.scannerHint}>
+                    Position the QR code within the frame
+                  </Text>
+                </View>
+              </CameraView>
+            </View>
           ) : (
             <View style={styles.permissionContainer}>
               <Ionicons name="camera-outline" size={64} color="#999" />

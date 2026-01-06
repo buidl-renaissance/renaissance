@@ -121,10 +121,11 @@ const DPoPAuthScreen: React.FC<DPoPAuthScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.scannerContainer}>
+      <View style={styles.scannerContainer} collapsable={false}>
         <CameraView
           style={styles.scanner}
           facing="back"
+          autofocus="on"
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
           barcodeScannerSettings={{
             barcodeTypes: ["qr"],

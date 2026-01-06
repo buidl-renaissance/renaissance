@@ -626,10 +626,11 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
                 )}
 
                 {permission && permission.granted && (
-                  <View style={styles.qrScannerBody}>
+                  <View style={styles.qrScannerBody} collapsable={false}>
                     <CameraView
                       style={styles.qrScanner}
                       facing="back"
+                      autofocus="on"
                       onBarcodeScanned={scanned ? undefined : handleQRCodeScanned}
                       barcodeScannerSettings={{
                         barcodeTypes: ["qr"],

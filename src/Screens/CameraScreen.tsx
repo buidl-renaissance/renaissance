@@ -1,63 +1,57 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useVisionCamera, Camera } from '../hooks/useVisionCamera';
 
 const CameraScreen = () => {
-    const [permission, requestPermission] = useCameraPermissions();
-    const [scanned, setScanned] = React.useState(false);
-  
-    const handleBarCodeScanned = ({ data }: { data: string }) => {
-      setScanned(true);
-      alert(`QR code scanned: ${data}`);
-      setTimeout(() => {
-        setScanned(false);
-      }, 2000);
-    };
+  const { device, hasPermission, requestPermission } = useVisionCamera('back');
+  const [scanned, setScanned] = useState(false);
 
-    if (!permission) {
-      return (
-        <View style={styles.container}>
-          <Text>Requesting camera permission...</Text>
-        </View>
-      );
-    }
+  const handleBarCodeScanned = ({ data }: { data: string }) => {
+    setScanned(true);
+    alert(`QR code scanned: ${data}`);
+    setTimeout(() => {
+      setScanned(false);
+    }, 2000);
+  };
 
-    if (!permission.granted) {
-      return (
-        <View style={styles.container}>
-          <Text>No access to camera. Please enable camera permissions.</Text>
-        </View>
-      );
-    }
-
+  if (!hasPermission) {
     return (
-        <View style={styles.container}>
-            <CameraView 
-                style={styles.camera}
-                facing="back"
-                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                barcodeScannerSettings={{
-                    barcodeTypes: ["qr"],
-                }}
-            />
-        </View>
+      <View style={styles.container}>
+        <Text>No access to camera. Please enable camera permissions.</Text>
+      </View>
     );
-}
-    
+  }
+
+  if (!device) {
+    return (
+      <View style={styles.container}>
+        <Text>No camera device available</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Camera
+        style={styles.camera}
+        device={device}
+        isActive={true}
+        // TODO: Add barcode scanner frame processor
+        // frameProcessor={barcodeScanner.frameProcessor}
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        // backgroundColor: '#d2e4dd',
-        // padding: 8,
-        // alignItems: 'center',
-        // justifyContent: 'center',
-        // paddingBottom: 64,
-        // borderColor: '#999',
-        // borderTopWidth: 1,
-    },
-    camera: {
-       flex: 1,
-    }
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  camera: {
+    flex: 1,
+  },
 });
 
 export default CameraScreen;
