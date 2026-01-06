@@ -60,6 +60,7 @@ interface SportsGameCardProps {
   game: SportsGame;
   options?: SportsGameCardOptions;
   onSelectEvent?: () => void;
+  initialBookmarkStatus?: boolean;
 }
 
 export const SportsGameCard: React.FC<SportsGameCardProps> = ({
@@ -67,9 +68,10 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
   game,
   options = { showVenue: true, showImage: true },
   onSelectEvent,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
   React.useEffect(() => {
     const start = moment(game.startTime);
@@ -82,13 +84,14 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
     }
   }, [game.startTime]);
 
-  // Load bookmark status
+  // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
+    if (initialBookmarkStatus !== undefined) return;
     (async () => {
       const bookmarked = await getBookmarkStatusForWebEvent(game, 'sports');
       setIsBookmarked(bookmarked);
     })();
-  }, [game]);
+  }, [game, initialBookmarkStatus]);
 
   // Listen for bookmark changes
   React.useEffect(() => {

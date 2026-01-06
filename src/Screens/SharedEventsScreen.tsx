@@ -147,6 +147,7 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
             showImage: true,
             showBookmark: true,
           }}
+          initialBookmarkStatus={true}
         />
       );
     },

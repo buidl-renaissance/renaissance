@@ -28,6 +28,7 @@ interface LumaEventCardProps {
   event: LumaEvent;
   options?: LumaEventCardOptions;
   onSelectEvent?: () => void;
+  initialBookmarkStatus?: boolean;
 }
 
 export const LumaEventCard: React.FC<LumaEventCardProps> = ({
@@ -35,9 +36,10 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
   event,
   options = { showLocation: true, showImage: true },
   onSelectEvent,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
   React.useEffect(() => {
     const start = moment(event.startAt);
@@ -49,13 +51,14 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
     }
   }, [event.startAt, event.endAt]);
 
-  // Load bookmark status
+  // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
+    if (initialBookmarkStatus !== undefined) return;
     (async () => {
       const bookmarked = await getBookmarkStatusForWebEvent(event, 'luma');
       setIsBookmarked(bookmarked);
     })();
-  }, [event]);
+  }, [event, initialBookmarkStatus]);
 
   // Listen for bookmark changes
   React.useEffect(() => {

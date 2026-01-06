@@ -29,6 +29,7 @@ interface RAEventCardProps {
   options?: RAEventCardOptions;
   onSelectEvent?: () => void;
   isFeatured?: boolean;
+  initialBookmarkStatus?: boolean;
 }
 
 export const RAEventCard: React.FC<RAEventCardProps> = ({
@@ -37,9 +38,10 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
   options = { showVenue: true, showImage: true, showArtists: true },
   onSelectEvent,
   isFeatured = false,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
   React.useEffect(() => {
     const start = moment(event.startTime);
@@ -51,13 +53,14 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
     }
   }, [event.startTime, event.endTime]);
 
-  // Load bookmark status
+  // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
+    if (initialBookmarkStatus !== undefined) return;
     (async () => {
       const bookmarked = await getBookmarkStatusForWebEvent(event, 'ra');
       setIsBookmarked(bookmarked);
     })();
-  }, [event]);
+  }, [event, initialBookmarkStatus]);
 
   // Listen for bookmark changes
   React.useEffect(() => {

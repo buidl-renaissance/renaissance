@@ -32,6 +32,7 @@ interface InstagramEventCardProps {
   event: InstagramEvent;
   options?: InstagramEventCardOptions;
   onSelectEvent?: () => void;
+  initialBookmarkStatus?: boolean;
 }
 
 export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
@@ -39,9 +40,10 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
   event,
   options = { showVenue: true, showImage: true, showArtists: true },
   onSelectEvent,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
   React.useEffect(() => {
     const start = moment(event.startDatetime);
@@ -53,13 +55,14 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
     }
   }, [event.startDatetime, event.endDatetime]);
 
-  // Load bookmark status
+  // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
+    if (initialBookmarkStatus !== undefined) return;
     (async () => {
       const bookmarked = await getBookmarkStatusForWebEvent(event, 'instagram');
       setIsBookmarked(bookmarked);
     })();
-  }, [event]);
+  }, [event, initialBookmarkStatus]);
 
   // Listen for bookmark changes
   React.useEffect(() => {

@@ -31,6 +31,8 @@ export interface EventRendererProps {
   showFeaturedImage?: boolean; // Whether to show featured image for DA events (default: false)
   // EventCard specific options
   eventCardOptions?: EventCardOptions;
+  // Skip fetching bookmark status - use this initial value instead
+  initialBookmarkStatus?: boolean;
 }
 
 /**
@@ -49,6 +51,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   containerStyle = { paddingHorizontal: 16 },
   showFeaturedImage = false,
   eventCardOptions,
+  initialBookmarkStatus,
 }) => {
   // Default event card options - merge with provided options
   const defaultEventCardOptions = { showVenue: true, showImage: true };
@@ -81,6 +84,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showImage: true,
             showHosts: true,
           }}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectLumaEvent) {
               onSelectLumaEvent(lumaEvent);
@@ -104,6 +108,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showArtists: true,
           }}
           isFeatured={raEvent.isFeatured}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectRAEvent) {
               onSelectRAEvent(raEvent);
@@ -126,6 +131,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showImage: true,
             showGroup: true,
           }}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectMeetupEvent) {
               onSelectMeetupEvent(meetupEvent);
@@ -147,6 +153,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showVenue: true,
             showImage: true,
           }}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectSportsEvent) {
               onSelectSportsEvent(sportsGame);
@@ -169,6 +176,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showImage: true,
             showArtists: true,
           }}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectInstagramEvent) {
               onSelectInstagramEvent(instagramEvent);
@@ -193,6 +201,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
         <EventCard
           event={daEvent}
           options={mergedEventCardOptions}
+          initialBookmarkStatus={initialBookmarkStatus}
           onSelectEvent={() => {
             if (onSelectDAEvent) {
               onSelectDAEvent(daEvent);

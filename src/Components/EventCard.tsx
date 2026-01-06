@@ -39,6 +39,7 @@ interface EventCardProps {
   event: DAEvent;
   options?: EventCardOptions;
   onSelectEvent?: () => void;
+  initialBookmarkStatus?: boolean;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
@@ -46,6 +47,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   event,
   options = { showVenue: true },
   onSelectEvent,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
@@ -198,7 +200,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             />
           </TouchableOpacity>
         )}
-        {options.showBookmark && <EventBookmarkButton event={event} />}
+        {options.showBookmark && <EventBookmarkButton event={event} initialBookmarkStatus={initialBookmarkStatus} />}
         {isAdmin && (
           <TouchableOpacity
             style={{

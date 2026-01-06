@@ -30,6 +30,7 @@ interface MeetupEventCardProps {
   event: MeetupEvent;
   options?: MeetupEventCardOptions;
   onSelectEvent?: () => void;
+  initialBookmarkStatus?: boolean;
 }
 
 export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
@@ -37,9 +38,10 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
   event,
   options = { showLocation: true, showImage: true, showGroup: true },
   onSelectEvent,
+  initialBookmarkStatus,
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
-  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
   React.useEffect(() => {
     const start = moment(event.dateTime);
@@ -52,13 +54,14 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
     }
   }, [event.dateTime]);
 
-  // Load bookmark status
+  // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
+    if (initialBookmarkStatus !== undefined) return;
     (async () => {
       const bookmarked = await getBookmarkStatusForWebEvent(event, 'meetup');
       setIsBookmarked(bookmarked);
     })();
-  }, [event]);
+  }, [event, initialBookmarkStatus]);
 
   // Listen for bookmark changes
   React.useEffect(() => {
