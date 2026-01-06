@@ -101,8 +101,8 @@ export const ConnectionAvatars: React.FC<ConnectionAvatarsProps> = ({
       {showLabel && (
         <Text style={styles.label}>
           {connections.length === 1
-            ? `${connections[0].username || connections[0].name || "1 friend"} saved`
-            : `${connections.length} friends saved`}
+            ? `${connections[0].username || connections[0].name || "1 friend"} is interested`
+            : `${connections.length} friends are interested`}
         </Text>
       )}
     </View>

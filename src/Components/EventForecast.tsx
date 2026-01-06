@@ -96,7 +96,7 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
             )}
             {day.bookmarkedCount === 0 && (day.connectionBookmarkCount || 0) > 0 && (
               <Text style={styles.connectionCount}>
-                {`${day.connectionBookmarkCount} friend${day.connectionBookmarkCount === 1 ? "" : "s"}`}
+                {`${day.connectionBookmarkCount} interested`}
               </Text>
             )}
           </TouchableOpacity>
