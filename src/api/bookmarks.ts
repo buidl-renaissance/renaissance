@@ -283,3 +283,89 @@ export async function deleteBookmarkByEvent(
     throw error;
   }
 }
+
+/**
+ * Connection bookmark user type from the backend
+ */
+export interface ConnectionBookmarkUser {
+  id: number;
+  publicAddress: string;
+  username: string;
+  name: string | null;
+  profilePicture: string | null;
+  farcasterId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Response type for connection bookmarks endpoint
+ */
+export interface ConnectionBookmarksResponse {
+  bookmarks: Bookmark[];
+  users: ConnectionBookmarkUser[];
+}
+
+/**
+ * Construct the message that needs to be signed for fetching connection bookmarks
+ * Message format: "Fetch connection bookmarks for user: {username}"
+ */
+export function constructConnectionBookmarksMessage(username: string): string {
+  return `Fetch connection bookmarks for user: ${username}`;
+}
+
+/**
+ * Get all bookmarks from verified connections of a user
+ * @param username Username of the requesting user
+ * @returns Promise<ConnectionBookmarksResponse>
+ */
+export async function getConnectionBookmarks(
+  username: string
+): Promise<ConnectionBookmarksResponse> {
+  try {
+    const message = constructConnectionBookmarksMessage(username);
+    const signature = await signBookmarkMessage(message);
+
+    const params = new URLSearchParams();
+    params.append("signature", signature);
+
+    const url = `${API_BASE_URL}/bookmarks/connections/${encodeURIComponent(username)}?${params.toString()}`;
+
+    console.log("[BookmarksAPI] GET /bookmarks/connections Request:", {
+      url,
+      username,
+    });
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("[BookmarksAPI] Response status:", response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[BookmarksAPI] Error response:", errorText);
+      let errorMessage = "Failed to fetch connection bookmarks";
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorMessage;
+      } catch (e) {
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log("[BookmarksAPI] Connection bookmarks fetched:", {
+      bookmarkCount: result.bookmarks?.length || 0,
+      userCount: result.users?.length || 0,
+    });
+    return result;
+  } catch (error) {
+    console.error("[BookmarksAPI] Error fetching connection bookmarks:", error);
+    throw error;
+  }
+}

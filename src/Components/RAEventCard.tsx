@@ -7,6 +7,8 @@ import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
 import { theme } from "../colors";
+import { ConnectionBookmarkUser } from "../api/bookmarks";
+import { ConnectionAvatars } from "./ConnectionAvatars";
 
 export interface RAEventCardOptions {
   showDate?: boolean;
@@ -30,6 +32,8 @@ interface RAEventCardProps {
   onSelectEvent?: () => void;
   isFeatured?: boolean;
   initialBookmarkStatus?: boolean;
+  /** Connections who have bookmarked this event */
+  connections?: ConnectionBookmarkUser[];
 }
 
 export const RAEventCard: React.FC<RAEventCardProps> = ({
@@ -39,6 +43,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
   onSelectEvent,
   isFeatured = false,
   initialBookmarkStatus,
+  connections = [],
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
@@ -265,6 +270,16 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                     {event.interestedCount} interested
                   </Text>
                 )}
+                {connections.length > 0 && (
+                  <View style={styles.connectionsContainer}>
+                    <ConnectionAvatars
+                      connections={connections}
+                      size={18}
+                      maxDisplay={3}
+                      showLabel={true}
+                    />
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -310,6 +325,9 @@ const styles = StyleSheet.create({
   bookmarkBadge: {
     marginLeft: 6,
     padding: 2,
+  },
+  connectionsContainer: {
+    marginTop: 4,
   },
 });
 

@@ -8,6 +8,8 @@ import Icon, { IconTypes } from "../Components/Icon";
 import { DAEvent } from "../interfaces";
 import { theme } from "../colors";
 import { EventBookmarkButton } from "./EventBookmarkButton";
+import { ConnectionBookmarkUser } from "../api/bookmarks";
+import { ConnectionAvatars } from "./ConnectionAvatars";
 
 export interface EventCardOptions {
   showBookmark?: boolean;
@@ -40,6 +42,8 @@ interface EventCardProps {
   options?: EventCardOptions;
   onSelectEvent?: () => void;
   initialBookmarkStatus?: boolean;
+  /** Connections who have bookmarked this event */
+  connections?: ConnectionBookmarkUser[];
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
@@ -48,6 +52,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   options = { showVenue: true },
   onSelectEvent,
   initialBookmarkStatus,
+  connections = [],
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
@@ -180,6 +185,16 @@ export const EventCard: React.FC<EventCardProps> = ({
                     />
                   </View>
                 )}
+                {connections.length > 0 && (
+                  <View style={styles.connectionsContainer}>
+                    <ConnectionAvatars
+                      connections={connections}
+                      size={18}
+                      maxDisplay={3}
+                      showLabel={true}
+                    />
+                  </View>
+                )}
               </View>
             </View>
             {/* <Text style={{ marginTop: 4 }}>September 30 @ 5:30 pm - 9:00 pm</Text> */}
@@ -270,6 +285,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginRight: 4,
     marginBottom: 4,
+  },
+  connectionsContainer: {
+    marginTop: 4,
   },
 });
 

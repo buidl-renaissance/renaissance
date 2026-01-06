@@ -10,6 +10,7 @@ interface DayForecast {
   isToday: boolean;
   bookmarkedCount: number;
   goingCount: number;
+  connectionBookmarkCount?: number;
 }
 
 interface EventForecastProps {
@@ -63,24 +64,39 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
             <Text style={styles.dayName}>
               {day.isToday ? "TODAY" : day.date.format("ddd")}
             </Text>
-            <View
-              style={[
-                styles.dateBadge,
-                day.isToday && styles.dateBadgeToday,
-              ]}
-            >
-              <Text
+            <View style={styles.dateContainer}>
+              <View
                 style={[
-                  styles.dateText,
-                  day.isToday && styles.dateTextToday,
+                  styles.dateBadge,
+                  day.isToday && styles.dateBadgeToday,
+                  (day.connectionBookmarkCount || 0) > 0 && styles.dateBadgeConnection,
                 ]}
               >
-                {day.date.format("D")}
-              </Text>
+                <Text
+                  style={[
+                    styles.dateText,
+                    day.isToday && styles.dateTextToday,
+                  ]}
+                >
+                  {day.date.format("D")}
+                </Text>
+              </View>
+              {(day.connectionBookmarkCount || 0) > 0 && (
+                <View style={styles.connectionBadge}>
+                  <Text style={styles.connectionBadgeText}>
+                    {day.connectionBookmarkCount}
+                  </Text>
+                </View>
+              )}
             </View>
             {day.bookmarkedCount > 0 && (
               <Text style={styles.eventCount}>
                 {`${day.bookmarkedCount} ${day.bookmarkedCount === 1 ? "event" : "events"}`}
+              </Text>
+            )}
+            {day.bookmarkedCount === 0 && (day.connectionBookmarkCount || 0) > 0 && (
+              <Text style={styles.connectionCount}>
+                {`${day.connectionBookmarkCount} friend${day.connectionBookmarkCount === 1 ? "" : "s"}`}
               </Text>
             )}
           </TouchableOpacity>
@@ -113,6 +129,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textTransform: "uppercase",
   },
+  dateContainer: {
+    position: "relative",
+    marginBottom: 6,
+  },
   dateBadge: {
     width: 42,
     height: 42,
@@ -120,10 +140,30 @@ const styles = StyleSheet.create({
     backgroundColor: theme.inputBackground,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 6,
   },
   dateBadgeToday: {
     backgroundColor: theme.accent,
+  },
+  dateBadgeConnection: {
+    borderWidth: 2,
+    borderColor: "#8B5CF6",
+  },
+  connectionBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "#8B5CF6",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  connectionBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#FFFFFF",
   },
   dateText: {
     fontSize: 16,
@@ -136,6 +176,11 @@ const styles = StyleSheet.create({
   eventCount: {
     fontSize: 9,
     color: theme.textSecondary,
+    textAlign: "center",
+  },
+  connectionCount: {
+    fontSize: 9,
+    color: "#8B5CF6",
     textAlign: "center",
   },
   badgesContainer: {

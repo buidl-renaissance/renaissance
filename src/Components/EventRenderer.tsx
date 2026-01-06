@@ -15,6 +15,7 @@ import {
   InstagramEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
+import { ConnectionBookmarkUser, BookmarkSource } from "../api/bookmarks";
 
 const { width } = Dimensions.get("window");
 
@@ -33,6 +34,8 @@ export interface EventRendererProps {
   eventCardOptions?: EventCardOptions;
   // Skip fetching bookmark status - use this initial value instead
   initialBookmarkStatus?: boolean;
+  // Function to get connections who bookmarked a specific event
+  getConnectionsForEvent?: (eventId: string, source: BookmarkSource) => ConnectionBookmarkUser[];
 }
 
 /**
@@ -52,11 +55,35 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   showFeaturedImage = false,
   eventCardOptions,
   initialBookmarkStatus,
+  getConnectionsForEvent,
 }) => {
   // Default event card options - merge with provided options
   const defaultEventCardOptions = { showVenue: true, showImage: true };
   const mergedEventCardOptions = { ...defaultEventCardOptions, ...(eventCardOptions || {}) };
   const eventType = (item as any).eventType;
+  
+  // Get connections who bookmarked this event based on event type
+  const getConnections = React.useCallback((): ConnectionBookmarkUser[] => {
+    if (!getConnectionsForEvent) return [];
+    
+    if (eventType === 'luma' && item.apiId) {
+      return getConnectionsForEvent(item.apiId, 'luma');
+    } else if (eventType === 'ra' && item.id) {
+      return getConnectionsForEvent(item.id, 'ra');
+    } else if (eventType === 'meetup' && item.eventId) {
+      return getConnectionsForEvent(item.eventId, 'meetup');
+    } else if (eventType === 'sports' && item.id) {
+      return getConnectionsForEvent(String(item.id), 'sports');
+    } else if (eventType === 'instagram' && item.id) {
+      return getConnectionsForEvent(String(item.id), 'instagram');
+    } else if (item.id) {
+      // DA event
+      return getConnectionsForEvent(String(item.id), 'custom');
+    }
+    return [];
+  }, [getConnectionsForEvent, eventType, item]);
+  
+  const connections = getConnections();
 
   // Flyer event
   if (eventType === "flyer") {
@@ -85,6 +112,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showHosts: true,
           }}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectLumaEvent) {
               onSelectLumaEvent(lumaEvent);
@@ -109,6 +137,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
           }}
           isFeatured={raEvent.isFeatured}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectRAEvent) {
               onSelectRAEvent(raEvent);
@@ -132,6 +161,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showGroup: true,
           }}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectMeetupEvent) {
               onSelectMeetupEvent(meetupEvent);
@@ -154,6 +184,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showImage: true,
           }}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectSportsEvent) {
               onSelectSportsEvent(sportsGame);
@@ -177,6 +208,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
             showArtists: true,
           }}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectInstagramEvent) {
               onSelectInstagramEvent(instagramEvent);
@@ -202,6 +234,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
           event={daEvent}
           options={mergedEventCardOptions}
           initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
           onSelectEvent={() => {
             if (onSelectDAEvent) {
               onSelectDAEvent(daEvent);

@@ -8,6 +8,8 @@ import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../util
 import { EventRegister } from "react-native-event-listeners";
 import * as Linking from "expo-linking";
 import { theme } from "../colors";
+import { ConnectionBookmarkUser } from "../api/bookmarks";
+import { ConnectionAvatars } from "./ConnectionAvatars";
 
 export interface SportsGameCardOptions {
   showDate?: boolean;
@@ -61,6 +63,8 @@ interface SportsGameCardProps {
   options?: SportsGameCardOptions;
   onSelectEvent?: () => void;
   initialBookmarkStatus?: boolean;
+  /** Connections who have bookmarked this event */
+  connections?: ConnectionBookmarkUser[];
 }
 
 export const SportsGameCard: React.FC<SportsGameCardProps> = ({
@@ -69,6 +73,7 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
   options = { showVenue: true, showImage: true },
   onSelectEvent,
   initialBookmarkStatus,
+  connections = [],
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
@@ -301,6 +306,16 @@ export const SportsGameCard: React.FC<SportsGameCardProps> = ({
                     {game.broadcasts.map(b => b.shortName || b.name).filter(Boolean).join(', ')}
                   </Text>
                 )}
+                {connections.length > 0 && (
+                  <View style={styles.connectionsContainer}>
+                    <ConnectionAvatars
+                      connections={connections}
+                      size={18}
+                      maxDisplay={3}
+                      showLabel={true}
+                    />
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -392,6 +407,9 @@ const styles = StyleSheet.create({
   bookmarkBadge: {
     marginLeft: 6,
     padding: 2,
+  },
+  connectionsContainer: {
+    marginTop: 4,
   },
 });
 

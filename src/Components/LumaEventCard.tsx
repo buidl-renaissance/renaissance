@@ -7,6 +7,8 @@ import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
 import { theme } from "../colors";
+import { ConnectionBookmarkUser } from "../api/bookmarks";
+import { ConnectionAvatars } from "./ConnectionAvatars";
 
 export interface LumaEventCardOptions {
   showDate?: boolean;
@@ -29,6 +31,8 @@ interface LumaEventCardProps {
   options?: LumaEventCardOptions;
   onSelectEvent?: () => void;
   initialBookmarkStatus?: boolean;
+  /** Connections who have bookmarked this event */
+  connections?: ConnectionBookmarkUser[];
 }
 
 export const LumaEventCard: React.FC<LumaEventCardProps> = ({
@@ -37,6 +41,7 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
   options = { showLocation: true, showImage: true },
   onSelectEvent,
   initialBookmarkStatus,
+  connections = [],
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
@@ -249,6 +254,16 @@ export const LumaEventCard: React.FC<LumaEventCardProps> = ({
                     {event.guestCount} {event.guestCount === 1 ? "guest" : "guests"}
                   </Text>
                 )}
+                {connections.length > 0 && (
+                  <View style={styles.connectionsContainer}>
+                    <ConnectionAvatars
+                      connections={connections}
+                      size={18}
+                      maxDisplay={3}
+                      showLabel={true}
+                    />
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -294,6 +309,9 @@ const styles = StyleSheet.create({
   bookmarkBadge: {
     marginLeft: 6,
     padding: 2,
+  },
+  connectionsContainer: {
+    marginTop: 4,
   },
 });
 

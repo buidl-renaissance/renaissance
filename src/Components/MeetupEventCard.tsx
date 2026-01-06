@@ -7,6 +7,8 @@ import Icon, { IconTypes } from "./Icon";
 import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
 import { EventRegister } from "react-native-event-listeners";
 import { theme } from "../colors";
+import { ConnectionBookmarkUser } from "../api/bookmarks";
+import { ConnectionAvatars } from "./ConnectionAvatars";
 
 export interface MeetupEventCardOptions {
   showDate?: boolean;
@@ -31,6 +33,8 @@ interface MeetupEventCardProps {
   options?: MeetupEventCardOptions;
   onSelectEvent?: () => void;
   initialBookmarkStatus?: boolean;
+  /** Connections who have bookmarked this event */
+  connections?: ConnectionBookmarkUser[];
 }
 
 export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
@@ -39,6 +43,7 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
   options = { showLocation: true, showImage: true, showGroup: true },
   onSelectEvent,
   initialBookmarkStatus,
+  connections = [],
 }) => {
   const [isNow, setIsNow] = React.useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
@@ -223,6 +228,16 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
                     {attendeeCount} {attendeeCount === 1 ? 'attendee' : 'attendees'}
                   </Text>
                 )}
+                {connections.length > 0 && (
+                  <View style={styles.connectionsContainer}>
+                    <ConnectionAvatars
+                      connections={connections}
+                      size={18}
+                      maxDisplay={3}
+                      showLabel={true}
+                    />
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -268,6 +283,9 @@ const styles = StyleSheet.create({
   bookmarkBadge: {
     marginLeft: 6,
     padding: 2,
+  },
+  connectionsContainer: {
+    marginTop: 4,
   },
 });
 

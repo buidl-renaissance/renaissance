@@ -73,6 +73,8 @@ import { CreateFlyerModal } from "../Components/CreateFlyerModal";
 import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
+import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
+import { BookmarkSource } from "../api/bookmarks";
 
 const { height, width } = Dimensions.get("window");
 
@@ -102,6 +104,14 @@ const CalendarScreen = ({ navigation }) => {
   // Combined loading state - true if any events are still loading
   const isLoadingEvents = eventsLoading || lumaLoading || raLoading || meetupLoading || sportsLoading || instagramLoading;
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
+  
+  // Load connection bookmarks (shared bookmarks from verified connections)
+  const {
+    bookmarks: connectionBookmarks,
+    loading: connectionBookmarksLoading,
+    getBookmarkCountForEvent,
+    getConnectionsForEvent,
+  } = useConnectionBookmarks();
   
   const [contact] = useContact();
   const [flyers] = useFlyers();
@@ -500,7 +510,7 @@ const CalendarScreen = ({ navigation }) => {
     });
   }, []);
 
-  // State for forecast data with bookmark and going counts
+  // State for forecast data with bookmark, going, and connection bookmark counts
   const [forecastData, setForecastData] = React.useState<Array<{
     date: moment.Moment;
     dateKey: string;
@@ -508,6 +518,7 @@ const CalendarScreen = ({ navigation }) => {
     isToday: boolean;
     bookmarkedCount: number;
     goingCount: number;
+    connectionBookmarkCount: number;
   }>>([]);
 
   // Calculate event counts for the next 4 weeks (28 days) - optimized with batching
@@ -521,12 +532,20 @@ const CalendarScreen = ({ navigation }) => {
         isToday: boolean;
         bookmarkedCount: number;
         goingCount: number;
+        connectionBookmarkCount: number;
       }> = [];
 
-      // Create maps for event counts, bookmarked, and going
+      // Create maps for event counts, bookmarked, going, and connection bookmarks
       const eventCountMap: { [key: string]: number } = {};
       const bookmarkedCountMap: { [key: string]: number } = {};
       const goingCountMap: { [key: string]: number } = {};
+      const connectionBookmarkCountMap: { [key: string]: number } = {};
+      
+      // Build a set of connection bookmark event keys for quick lookup: "source/eventId"
+      const connectionBookmarkSet = new Set<string>();
+      connectionBookmarks.forEach((bookmark) => {
+        connectionBookmarkSet.add(`${bookmark.source}/${bookmark.eventId}`);
+      });
 
       // Get bookmark and going IDs once
       const [bookmarkIds, goingIds] = await Promise.all([
@@ -543,12 +562,45 @@ const CalendarScreen = ({ navigation }) => {
         eventCountMap[dateKey] = group.data.length;
         bookmarkedCountMap[dateKey] = 0;
         goingCountMap[dateKey] = 0;
+        connectionBookmarkCountMap[dateKey] = 0;
 
-        // Check each event in the group for bookmark and going status
+        // Check each event in the group for bookmark, going status, and connection bookmarks
         for (const event of group.data) {
           const eventType = event.eventType || 'da';
           let isBookmarked = false;
           let isGoing = false;
+
+          // Check if this event is bookmarked by any connection
+          let connectionEventId: string | null = null;
+          let connectionSource: BookmarkSource | null = null;
+          
+          if (eventType === 'da' && event.id) {
+            connectionEventId = String(event.id);
+            connectionSource = 'custom'; // DA events map to 'custom' source
+          } else if (eventType === 'luma' && event.apiId) {
+            connectionEventId = event.apiId;
+            connectionSource = 'luma';
+          } else if (eventType === 'ra' && event.id) {
+            connectionEventId = event.id;
+            connectionSource = 'ra';
+          } else if (eventType === 'meetup' && event.eventId) {
+            connectionEventId = event.eventId;
+            connectionSource = 'meetup';
+          } else if (eventType === 'sports' && event.id) {
+            connectionEventId = String(event.id);
+            connectionSource = 'sports';
+          } else if (eventType === 'instagram' && event.id) {
+            connectionEventId = String(event.id);
+            connectionSource = 'instagram';
+          }
+          
+          // Check if any connection has bookmarked this event
+          if (connectionEventId && connectionSource) {
+            const connectionKey = `${connectionSource}/${connectionEventId}`;
+            if (connectionBookmarkSet.has(connectionKey)) {
+              connectionBookmarkCountMap[dateKey] = (connectionBookmarkCountMap[dateKey] || 0) + 1;
+            }
+          }
 
           try {
             if (eventType === 'da' && event.id) {
@@ -629,6 +681,7 @@ const CalendarScreen = ({ navigation }) => {
           isToday,
           bookmarkedCount: bookmarkedCountMap[dateKey] || 0,
           goingCount: goingCountMap[dateKey] || 0,
+          connectionBookmarkCount: connectionBookmarkCountMap[dateKey] || 0,
         });
       }
 
@@ -653,7 +706,7 @@ const CalendarScreen = ({ navigation }) => {
         EventRegister.removeEventListener(goingListener);
       }
     };
-  }, [eventsGroup]);
+  }, [eventsGroup, connectionBookmarks]);
 
   const get7DayForecast = forecastData;
 
@@ -878,7 +931,7 @@ const CalendarScreen = ({ navigation }) => {
         )} */}
 
         {/* Mini Apps Section */}
-        <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
+        {/* <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} /> */}
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
@@ -1042,6 +1095,7 @@ const CalendarScreen = ({ navigation }) => {
           },
           onSelectInstagramEvent: openInstagramModal,
           showFeaturedImage: true,
+          getConnectionsForEvent: getConnectionsForEvent,
         }}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}

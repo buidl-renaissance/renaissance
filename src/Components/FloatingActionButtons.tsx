@@ -36,7 +36,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
     onBookmarkPress && { onPress: onBookmarkPress, icon: "bookmark-outline", type: IconTypes.Ionicons },
     onConnectionsPress && { onPress: onConnectionsPress, icon: "people-outline", type: IconTypes.Ionicons },
     onChatPress && { onPress: onChatPress, icon: "chat", type: IconTypes.MaterialIcons },
-    onAppsPress && { onPress: onAppsPress, icon: "apps-outline", type: IconTypes.Ionicons },
+    // onAppsPress && { onPress: onAppsPress, icon: "apps-outline", type: IconTypes.Ionicons },
   ].filter((button): button is { onPress: () => void; icon: string; type: IconTypes } => Boolean(button));
 
   return (
