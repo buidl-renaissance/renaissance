@@ -4,7 +4,6 @@ import { DAEvent, DAVenue } from "../interfaces";
 
 import {
   BottomSheetModal,
-  BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 
 import { Button } from "../Components/Button";
@@ -42,48 +41,46 @@ const VenuePopup = ({ venue, onClose, onSelectEvent }) => {
   if (!venue) return null;
 
   return (
-    <BottomSheetModalProvider>
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-      >
-        <View style={{ padding: 16 }}>
-          <View
-            style={[
-              {
-                height: 220,
-              },
-            ]}
-          >
-            <Text style={styles.title}>{venue.title}</Text>
-            {venue.events?.length && (
-              <Text>{venue.events?.length} upcoming events</Text>
-            )}
-            <View style={{ marginHorizontal: -4, marginTop: 8 }}>
-              {venue.events?.map((event: DAEvent) => {
-                return (
-                  <TouchableOpacity
-                    key={event.slug}
-                    onPress={() => onSelectEvent(event)}
-                  >
-                    <EventCard
-                      event={event}
-                      options={{
-                        showDate: true,
-                        showBookmark: true,
-                        showVenue: false,
-                      }}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      index={1}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+    >
+      <View style={{ padding: 16 }}>
+        <View
+          style={[
+            {
+              height: 220,
+            },
+          ]}
+        >
+          <Text style={styles.title}>{venue.title}</Text>
+          {venue.events?.length && (
+            <Text>{venue.events?.length} upcoming events</Text>
+          )}
+          <View style={{ marginHorizontal: -4, marginTop: 8 }}>
+            {venue.events?.map((event: DAEvent) => {
+              return (
+                <TouchableOpacity
+                  key={event.slug}
+                  onPress={() => onSelectEvent(event)}
+                >
+                  <EventCard
+                    event={event}
+                    options={{
+                      showDate: true,
+                      showBookmark: true,
+                      showVenue: false,
+                    }}
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+      </View>
+    </BottomSheetModal>
   );
 };
 

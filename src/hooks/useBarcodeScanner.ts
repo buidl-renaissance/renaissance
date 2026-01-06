@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { useFrameProcessor } from 'react-native-vision-camera';
-import { runOnJS } from 'react-native-reanimated';
+import { useCodeScanner } from 'react-native-vision-camera';
 
 interface BarcodeScanResult {
   data: string;
@@ -13,14 +12,8 @@ interface UseBarcodeScannerOptions {
 }
 
 /**
- * Hook for barcode scanning with react-native-vision-camera
- * 
- * Note: This requires a barcode scanner frame processor plugin.
- * For Expo, you'll need to use vision-camera-code-scanner or implement
- * a custom frame processor plugin.
- * 
- * This is a placeholder implementation - you'll need to install
- * vision-camera-code-scanner or implement frame processor logic.
+ * Hook for barcode scanning with react-native-vision-camera v4
+ * Uses built-in useCodeScanner hook for barcode detection
  */
 export const useBarcodeScanner = ({
   onBarcodeScanned,
@@ -30,51 +23,46 @@ export const useBarcodeScanner = ({
   const scannedRef = useRef(false);
 
   const handleBarcodeDetected = useCallback(
-    (barcodes: any[]) => {
-      if (!enabled || scannedRef.current || !onBarcodeScanned) return;
+    (codes: any[]) => {
+      if (!enabled || scannedRef.current || !onBarcodeScanned || !codes || codes.length === 0) return;
       
-      if (barcodes && barcodes.length > 0) {
-        const barcode = barcodes[0];
-        const data = barcode.rawValue || barcode.displayValue || '';
+      const code = codes[0];
+      const data = code.value || '';
+      
+      // Prevent duplicate scans
+      if (data && data !== lastScannedData.current) {
+        console.log('[useBarcodeScanner] QR code detected:', data?.substring?.(0, 50) || data);
+        lastScannedData.current = data;
+        scannedRef.current = true;
+        onBarcodeScanned({
+          data,
+          type: code.type || 'unknown',
+        });
         
-        // Prevent duplicate scans
-        if (data && data !== lastScannedData.current) {
-          lastScannedData.current = data;
-          scannedRef.current = true;
-          onBarcodeScanned({
-            data,
-            type: barcode.type || 'unknown',
-          });
-          
-          // Reset after a delay
-          setTimeout(() => {
-            scannedRef.current = false;
-          }, 2000);
-        }
+        // Reset after a delay
+        setTimeout(() => {
+          scannedRef.current = false;
+        }, 2000);
       }
     },
     [enabled, onBarcodeScanned]
   );
 
-  // TODO: Implement frame processor with barcode scanner plugin
-  // For now, this is a placeholder - you'll need to:
-  // 1. Install vision-camera-code-scanner: npm install vision-camera-code-scanner
-  // 2. Or implement a custom frame processor with MLKit/ZXing
-  const frameProcessor = useFrameProcessor((frame) => {
-    'worklet';
-    // This is a placeholder - actual implementation requires barcode scanner plugin
-    // Example with vision-camera-code-scanner:
-    // const barcodes = scanBarcodes(frame);
-    // runOnJS(handleBarcodeDetected)(barcodes);
-  }, [handleBarcodeDetected]);
+  // Always create the codeScanner, even when disabled
+  // On Android, passing undefined can cause issues
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr', 'ean-13', 'ean-8', 'code-128', 'code-39', 'code-93', 'codabar', 'upc-a', 'upc-e', 'pdf417', 'aztec', 'data-matrix'],
+    onCodeScanned: enabled ? handleBarcodeDetected : () => {}, // Empty handler when disabled
+  });
 
   const resetScanner = useCallback(() => {
     lastScannedData.current = null;
     scannedRef.current = false;
   }, []);
 
+  // Always return codeScanner (don't return undefined on Android)
   return {
-    frameProcessor: enabled ? frameProcessor : undefined,
+    codeScanner: codeScanner,
     resetScanner,
   };
 };

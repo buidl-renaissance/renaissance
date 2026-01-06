@@ -23,6 +23,8 @@ export interface EventsSectionListProps {
   updateCellsBatchingPeriod?: number;
   initialNumToRender?: number;
   windowSize?: number;
+  /** When true, hides the "no events" empty state (useful while loading) */
+  loading?: boolean;
 }
 
 /**
@@ -46,6 +48,7 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
   updateCellsBatchingPeriod,
   initialNumToRender,
   windowSize,
+  loading = false,
 }, ref) => {
   const defaultRenderItem = React.useCallback(
     ({ item }: { item: any }) => {
@@ -92,9 +95,11 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
         renderItem={defaultRenderItem}
         keyExtractor={defaultKeyExtractor}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{emptyText}</Text>
-          </View>
+          loading ? null : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>{emptyText}</Text>
+            </View>
+          )
         }
         ListHeaderComponent={ListHeaderComponent}
         onScroll={onScroll}

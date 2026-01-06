@@ -2,6 +2,7 @@ import React from "react";
 import moment from "moment";
 import { SportsGame } from "../api/sports-games";
 import { getUpcomingSportsGames, getGameSummary } from "../api/sports-games";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 /**
  * Check if a game is ongoing (started but not finished)
@@ -45,13 +46,24 @@ export const useSportsGames = () => {
   const updateGames = React.useCallback(async () => {
     try {
       setLoading(true);
+      const cacheKey = 'sports_games';
+      
+      // Load cached data first
+      const cached = await getCachedData<SportsGame[]>(cacheKey);
+      if (cached) {
+        setGames(cached);
+      }
+      
       const gamesData = await getUpcomingSportsGames();
       setGames(gamesData);
+      await setCachedData(cacheKey, gamesData);
       setError(null);
     } catch (err) {
       console.error("Error fetching sports games:", err);
-      setError(err as Error);
-      setGames([]);
+      // Only set error if we don't have any games (cached or otherwise)
+      if (games.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }

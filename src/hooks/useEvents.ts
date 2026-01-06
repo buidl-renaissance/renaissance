@@ -1,6 +1,7 @@
 import React from "react";
 
 import { DAEvent } from "../interfaces";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 export interface EventsQuery {
   type?: string;
@@ -15,6 +16,13 @@ export const useEvents = (query?: EventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       setLoading(true);
+      const cacheKey = `da_events_${JSON.stringify(query || {})}`;
+      
+      // Load cached data first
+      const cached = await getCachedData<DAEvent[]>(cacheKey);
+      if (cached) {
+        setEvents(cached);
+      }
       
       const params = new URLSearchParams(query);
       const eventsRes = await fetch(
@@ -26,18 +34,17 @@ export const useEvents = (query?: EventsQuery) => {
       }
 
       const fetchedEvents = await eventsRes.json();
+      const eventsData = fetchedEvents.data || [];
       
-      if (fetchedEvents.data) {
-        setEvents(fetchedEvents.data);
-      } else {
-        setEvents([]);
-      }
-      
+      setEvents(eventsData);
+      await setCachedData(cacheKey, eventsData);
       setError(null);
     } catch (err) {
       console.error("Error fetching Detroit Art events:", err);
-      setError(err as Error);
-      setEvents([]);
+      // Only set error if we don't have any events (cached or otherwise)
+      if (events.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }

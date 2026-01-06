@@ -26,7 +26,9 @@ import {
   Text,
   View,
   Button,
+  Alert,
 } from "react-native";
+import { useShareIntent } from "expo-share-intent";
 
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
@@ -36,6 +38,8 @@ export const isReadyRef = React.createRef();
 export const navigationRef = React.createRef();
 
 import { NavigationContainer } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { checkForUpdates } from "./src/utils/checkForUpdate";
 import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
@@ -82,10 +86,12 @@ export default function App() {
       });
 
     return () => {
-      Notifications.removeNotificationSubscription(
-        notificationListener.current
-      );
-      Notifications.removeNotificationSubscription(responseListener.current);
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
     };
   }, []);
 
@@ -168,6 +174,39 @@ export default function App() {
     };
   }, []);
 
+  // Handle URLs shared from other apps via share sheet
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
+
+  React.useEffect(() => {
+    if (hasShareIntent && shareIntent) {
+      console.log("[App] Received share intent:", shareIntent);
+      
+      // Extract the URL from the shared content
+      const sharedUrl = shareIntent.webUrl || shareIntent.text;
+      
+      if (sharedUrl) {
+        console.log("[App] Shared URL from share sheet:", sharedUrl);
+        
+        // Navigate to SharedURLScreen to process the URL
+        const navigateToSharedURL = () => {
+          if (isReadyRef.current && navigationRef.current) {
+            (navigationRef.current as any).navigate("SharedURL", {
+              url: sharedUrl,
+            });
+          } else {
+            // If navigation isn't ready yet, wait and try again
+            setTimeout(navigateToSharedURL, 500);
+          }
+        };
+        
+        navigateToSharedURL();
+      }
+      
+      // Reset the share intent after handling
+      resetShareIntent();
+    }
+  }, [hasShareIntent, shareIntent, resetShareIntent]);
+
   // Farcaster auth listener disabled
   // React.useEffect(() => {
   //   console.log("[App] Setting up Farcaster auth listener");
@@ -176,25 +215,27 @@ export default function App() {
   // }, []);
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <LocalStorageProvider>
         <AuthProvider>
           <FarcasterFrameProvider>
             <AudioPlayerProvider>
-              <NavigationContainer
-                onReady={() => {
-                  isReadyRef.current = true;
-                }}
-                ref={navigationRef}
-              >
-                <HomeNavigationStack />
-              </NavigationContainer>
+              <BottomSheetModalProvider>
+                <NavigationContainer
+                  onReady={() => {
+                    isReadyRef.current = true;
+                  }}
+                  ref={navigationRef}
+                >
+                  <HomeNavigationStack />
+                </NavigationContainer>
+              </BottomSheetModalProvider>
             </AudioPlayerProvider>
           </FarcasterFrameProvider>
         </AuthProvider>
       </LocalStorageProvider>
-    </>
+    </GestureHandlerRootView>
   );
 }
 

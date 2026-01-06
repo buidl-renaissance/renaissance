@@ -437,7 +437,7 @@ export const InstagramPostModal: React.FC<InstagramPostModalProps> = ({
               type={IconTypes.Ionicons}
               name="close"
               size={24}
-              color={theme.text}
+              color="#333333"
             />
           </TouchableOpacity>
         </View>

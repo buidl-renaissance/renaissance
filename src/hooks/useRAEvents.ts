@@ -1,5 +1,6 @@
 import React from "react";
 import { RAEvent } from "../interfaces";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 export interface RAEventsQuery {
   dateFrom?: string;
@@ -8,6 +9,11 @@ export interface RAEventsQuery {
   // "upcoming" -> /api/events/upcoming (default)
   // "nye"      -> /api/events/nye
   type?: "upcoming" | "nye";
+}
+
+interface RAEventsCacheData {
+  events: RAEvent[];
+  total: number;
 }
 
 export const useRAEvents = (query?: RAEventsQuery) => {
@@ -22,6 +28,14 @@ export const useRAEvents = (query?: RAEventsQuery) => {
     try {
       setLoading(true);
       const endpointType = query?.type === "nye" ? "nye" : "upcoming";
+      const cacheKey = `ra_events_${endpointType}`;
+      
+      // Load cached data first
+      const cached = await getCachedData<RAEventsCacheData>(cacheKey);
+      if (cached) {
+        setEvents(cached.events);
+        setTotal(cached.total);
+      }
       
       const eventsRes = await fetch(
         `https://ra-events.vercel.app/api/events/${endpointType}`
@@ -34,8 +48,11 @@ export const useRAEvents = (query?: RAEventsQuery) => {
       const data = await eventsRes.json();
       
       if (data.success && data.events) {
-        setEvents(data.events);
-        setTotal(data.total || data.events.length);
+        const eventsData = data.events;
+        const totalCount = data.total || data.events.length;
+        setEvents(eventsData);
+        setTotal(totalCount);
+        await setCachedData(cacheKey, { events: eventsData, total: totalCount });
       } else {
         setEvents([]);
         setTotal(0);
@@ -44,9 +61,10 @@ export const useRAEvents = (query?: RAEventsQuery) => {
       setError(null);
     } catch (err) {
       console.error("Error fetching RA events:", err);
-      setError(err as Error);
-      setEvents([]);
-      setTotal(0);
+      // Only set error if we don't have any events (cached or otherwise)
+      if (events.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }

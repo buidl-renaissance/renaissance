@@ -1,5 +1,6 @@
 import React from "react";
 import { MeetupEvent } from "../interfaces";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 export interface MeetupEventsQuery {
   limit?: number;
@@ -15,6 +16,13 @@ export const useMeetupEvents = (query?: MeetupEventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       setLoading(true);
+      const cacheKey = 'meetup_events';
+      
+      // Load cached data first
+      const cached = await getCachedData<MeetupEvent[]>(cacheKey);
+      if (cached) {
+        setEvents(cached);
+      }
       
       const eventsRes = await fetch(
         `https://meetup.builddetroit.xyz/api/meetup/events`
@@ -25,18 +33,17 @@ export const useMeetupEvents = (query?: MeetupEventsQuery) => {
       }
 
       const data = await eventsRes.json();
+      const eventsData = data.events || [];
       
-      if (data.events) {
-        setEvents(data.events);
-      } else {
-        setEvents([]);
-      }
-      
+      setEvents(eventsData);
+      await setCachedData(cacheKey, eventsData);
       setError(null);
     } catch (err) {
       console.error("Error fetching Meetup events:", err);
-      setError(err as Error);
-      setEvents([]);
+      // Only set error if we don't have any events (cached or otherwise)
+      if (events.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }

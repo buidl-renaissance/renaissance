@@ -9,6 +9,7 @@ import {
   View,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 
@@ -51,7 +52,8 @@ import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { useSportsGames } from "../hooks/useSportsGames";
 import { useInstagramEvents } from "../hooks/useInstagramEvents";
 import { useAuth } from "../context/Auth";
-import { useUSDCBalance } from "../hooks/useUSDCBalance";
+// Wallet functionality hidden for now
+// import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { FlyerCard } from "../Components/FlyerCard";
 import { SectionHeader } from "../Components/SectionHeader";
 import * as Linking from "expo-linking";
@@ -63,11 +65,14 @@ import { DAEventModal } from "../Components/DAEventModal";
 import { EventWebModal } from "../Components/EventWebModal";
 import { QRCodeModal } from "../Components/QRCodeModal";
 import { BookmarksModal } from "../Components/BookmarksModal";
+import { ConnectionsModal } from "../Components/ConnectionsModal";
 import { MiniAppsModal } from "../Components/MiniAppsModal";
-import { WalletModal } from "../Components/WalletModal";
+// Wallet functionality hidden for now
+// import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
 import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
+import { Connection } from "../utils/connections";
 
 const { height, width } = Dimensions.get("window");
 
@@ -79,19 +84,23 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 
 const CalendarScreen = ({ navigation }) => {
-  const { events } = useEvents();
+  const { events, loading: eventsLoading } = useEvents();
   const { state: authState } = useAuth();
-  const { balance: walletBalance } = useUSDCBalance();
+  // Wallet functionality hidden for now
+  // const { balance: walletBalance } = useUSDCBalance();
   
   // Memoize query objects to prevent unnecessary re-fetches
   const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
-  const { events: lumaEvents } = useLumaEvents(lumaQuery);
-  const { events: raEvents } = useRAEvents();
+  const { events: lumaEvents, loading: lumaLoading } = useLumaEvents(lumaQuery);
+  const { events: raEvents, loading: raLoading } = useRAEvents();
   // NYE-specific RA events use the dedicated NYE endpoint.
   // const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
-  const { events: meetupEvents } = useMeetupEvents();
-  const { games: sportsGames } = useSportsGames();
-  const { events: instagramEvents } = useInstagramEvents();
+  const { events: meetupEvents, loading: meetupLoading } = useMeetupEvents();
+  const { games: sportsGames, loading: sportsLoading } = useSportsGames();
+  const { events: instagramEvents, loading: instagramLoading } = useInstagramEvents();
+  
+  // Combined loading state - true if any events are still loading
+  const isLoadingEvents = eventsLoading || lumaLoading || raLoading || meetupLoading || sportsLoading || instagramLoading;
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   const [contact] = useContact();
@@ -164,6 +173,9 @@ const CalendarScreen = ({ navigation }) => {
   // State for bookmarks modal
   const [bookmarksModalVisible, setBookmarksModalVisible] = React.useState<boolean>(false);
 
+  // State for connections modal
+  const [connectionsModalVisible, setConnectionsModalVisible] = React.useState<boolean>(false);
+
   // State for mini apps modal
   const [miniAppsModalVisible, setMiniAppsModalVisible] = React.useState<boolean>(false);
 
@@ -171,14 +183,17 @@ const CalendarScreen = ({ navigation }) => {
   // State for create flyer modal
   const [createFlyerModalVisible, setCreateFlyerModalVisible] = React.useState<boolean>(false);
 
-  // State for wallet modal
-  const [walletModalVisible, setWalletModalVisible] = React.useState<boolean>(false);
+  // Wallet functionality hidden for now
+  // const [walletModalVisible, setWalletModalVisible] = React.useState<boolean>(false);
 
-  navigation.setOptions({
-    title: "Home",
-    headerTitle: () => <HeaderTitleImage />,
-    headerShown: false,
-  });
+  // Set navigation options in useEffect to avoid setState during render
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: "Home",
+      headerTitle: () => <HeaderTitleImage />,
+      headerShown: false,
+    });
+  }, [navigation]);
 
   const handleToggleDisplay = React.useCallback(() => {
     navigation.push("BrowseMap");
@@ -199,16 +214,17 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
 
   const handleConnectionsPress = React.useCallback(() => {
-    navigation.push("Connections");
-  }, [navigation]);
+    setConnectionsModalVisible(true);
+  }, []);
 
   const handleQRCodePress = React.useCallback(() => {
     setQrCodeModalVisible(true);
   }, []);
 
-  const handleWalletPress = React.useCallback(() => {
-    setWalletModalVisible(true);
-  }, []);
+  // Wallet functionality hidden for now
+  // const handleWalletPress = React.useCallback(() => {
+  //   setWalletModalVisible(true);
+  // }, []);
 
   const handleMiniAppsPress = React.useCallback(() => {
     setMiniAppsModalVisible(true);
@@ -757,13 +773,6 @@ const CalendarScreen = ({ navigation }) => {
       backgroundColor: "#8B5CF6",
     },
     {
-      name: "quests",
-      title: "Quests",
-      url: "https://collectorquest.ai",
-      emoji: "🏆",
-      backgroundColor: "#3B82F6",
-    },
-    {
       name: "restaurants",
       title: "Restaurants",
       url: "native://Restaurants",
@@ -778,32 +787,39 @@ const CalendarScreen = ({ navigation }) => {
       backgroundColor: "#6366F1",
     },
     {
-      name: "mystic-island",
-      title: "Mystic Island",
-      url: "https://mystic-island.yourland.network/",
-      emoji: "🏝️",
-      backgroundColor: "#14B8A6",
+      name: "games",
+      title: "Games",
+      url: "native://Games",
+      emoji: "🎮",
+      backgroundColor: "#059669",
     },
     {
-      name: "dyno-detroit",
-      title: "Dyno Detroit",
-      url: "https://dynodetroit.com",
-      emoji: "🧗",
+      name: "fitness",
+      title: "Fitness",
+      url: "native://Fitness",
+      emoji: "💪",
       backgroundColor: "#DC2626",
     },
     {
-      name: "hot-bones",
-      title: "Hot Bones",
-      url: "https://hotbones.com",
-      emoji: "🧘",
-      backgroundColor: "#F97316",
+      name: "vibe-code-detroit",
+      title: "Vibe Code",
+      url: "https://vibe.builddetroit.xyz/",
+      backgroundColor: "#7C3AED",
+      image: require("../../assets/vibe-code-detroit.png"),
     },
     {
-      name: "beacon-hq",
-      title: "Beacon HQ",
-      url: "https://www.thebeaconhq.com/",
-      emoji: "🎮",
-      backgroundColor: "#059669",
+      name: "d-newtech",
+      title: "D-NewTech",
+      url: "https://dnewtech.builddetroit.xyz/",
+      backgroundColor: "#0EA5E9",
+      image: require("../../assets/d-new-tech.png"),
+    },
+    {
+      name: "art-night-detroit",
+      title: "Art Night",
+      url: "https://artnightdetroit.com",
+      backgroundColor: "#4338CA",
+      image: require("../../assets/art-night-detroit.png"),
     },
   ], []);
 
@@ -839,7 +855,8 @@ const CalendarScreen = ({ navigation }) => {
         {/* <AudioRecorder /> */}
 
 
-        {flyers?.length > 0 && (
+        {/* Flyers section hidden for now */}
+        {/* {flyers?.length > 0 && (
           <View
             style={{
               backgroundColor: "#eee",
@@ -858,7 +875,7 @@ const CalendarScreen = ({ navigation }) => {
               );
             })}
           </View>
-        )}
+        )} */}
 
         {/* Mini Apps Section */}
         <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
@@ -884,27 +901,35 @@ const CalendarScreen = ({ navigation }) => {
         */}
 
 
-        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16, marginTop: 16 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
             UPCOMING EVENTS
           </Text>
-          <TouchableOpacity onPress={handleCreateFlyer} style={{ padding: 4 }}>
+          {/* <TouchableOpacity onPress={handleCreateFlyer} style={{ padding: 4 }}>
             <Icon
               type={IconTypes.Ionicons}
               name="add-circle-outline"
               size={24}
               color="#999"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* 7-Day Event Forecast */}
         {get7DayForecast.length > 0 && (
           <EventForecast days={get7DayForecast} onDayPress={handleDayPress} />
         )}
+
+        {/* Loading indicator while events are loading */}
+        {isLoadingEvents && eventsGroup.length === 0 && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={styles.loadingText}>Loading events...</Text>
+          </View>
+        )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -992,6 +1017,7 @@ const CalendarScreen = ({ navigation }) => {
         ref={sectionListRef}
         eventsGroup={eventsGroup}
         ListHeaderComponent={sectionHeader}
+        loading={isLoadingEvents}
         eventRendererProps={{
           containerStyle: { paddingHorizontal: 16 },
           onSelectDAEvent: openDAModal,
@@ -1023,17 +1049,19 @@ const CalendarScreen = ({ navigation }) => {
         initialNumToRender={Platform.OS === "android" ? 10 : 1000}
         windowSize={10}
       />
-      {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />}
+      {/* Add event button hidden for now */}
+      {/* {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />} */}
       <FloatingActionButtons
         onSearchPress={handleSearchPress}
         onBookmarkPress={handleBookmarkPress}
         onConnectionsPress={authState.isAuthenticated ? handleConnectionsPress : undefined}
         onQRCodePress={authState.isAuthenticated ? handleQRCodePress : undefined}
-        onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
+        // Wallet functionality hidden for now
+        // onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
         onAppsPress={handleMiniAppsPress}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
-        walletBalance={walletBalance}
+        // walletBalance={walletBalance}
       />
       <FloatingProfileButton navigation={navigation} />
       {selectedEvent && (
@@ -1070,10 +1098,11 @@ const CalendarScreen = ({ navigation }) => {
           setQrCodeModalVisible(false);
         }}
       />
-      <WalletModal
+      {/* Wallet functionality hidden for now */}
+      {/* <WalletModal
         isVisible={walletModalVisible}
         onClose={() => setWalletModalVisible(false)}
-      />
+      /> */}
       <CreateFlyerModal
         isVisible={createFlyerModalVisible}
         onClose={() => setCreateFlyerModalVisible(false)}
@@ -1081,6 +1110,13 @@ const CalendarScreen = ({ navigation }) => {
       <BookmarksModal
         isVisible={bookmarksModalVisible}
         onClose={() => setBookmarksModalVisible(false)}
+      />
+      <ConnectionsModal
+        isVisible={connectionsModalVisible}
+        onClose={() => setConnectionsModalVisible(false)}
+        onViewSharedEvents={(connection, otherUser) => {
+          navigation.navigate("SharedEvents", { connection, otherUser });
+        }}
       />
       <MiniAppsModal
         isVisible={miniAppsModalVisible}
@@ -1156,6 +1192,17 @@ const styles = StyleSheet.create({
     backgroundColor: theme.surface,
     borderRadius: BORDER_RADIUS + SPACING * 2,
     height: 220,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: theme.textSecondary,
   },
 });
 

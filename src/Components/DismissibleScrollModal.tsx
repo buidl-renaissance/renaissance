@@ -70,14 +70,14 @@ export const DismissibleScrollModal: React.FC<DismissibleScrollModalProps> = ({
         // If dragged down more than 100px, dismiss the modal
         if (gestureState.dy > 100) {
           setIsDismissing(true);
-          onClose();
           Animated.timing(translateY, {
             toValue: 1000,
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
-            translateY.setValue(0);
-            setIsDismissing(false);
+            // Call onClose after animation completes
+            // isDismissing and translateY are reset in useEffect when modal becomes visible again
+            onClose();
           });
         } else {
           // Spring back to original position

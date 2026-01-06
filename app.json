@@ -18,16 +18,38 @@
     "plugins": [
       "@react-native-google-signin/google-signin",
       "expo-secure-store",
-      "expo-build-properties",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleProperties": {
+              "VisionCamera_enableCodeScanner": "true"
+            },
+            "packagingOptions": {
+              "pickFirst": [
+                "**/libc++_shared.so"
+              ]
+            }
+          }
+        }
+      ],
       "@react-native-community/datetimepicker",
       "expo-font",
       [
         "react-native-vision-camera",
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
-          "enableMicrophonePermission": true,
-          "microphonePermissionText": "$(PRODUCT_NAME) needs access to your Microphone.",
-          "enableFrameProcessors": true
+          "enableFrameProcessors": true,
+          "enableCodeScanner": true
+        }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+            "NSExtensionActivationSupportsText": true
+          }
         }
       ]
     ],

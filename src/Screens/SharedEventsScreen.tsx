@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Image,
   RefreshControl,
+  FlatList,
 } from "react-native";
-import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { theme } from "../colors";
 import { getSharedEvents, SharedEvent } from "../utils/sharedEvents";
-import { EventCard } from "../Components/EventCard";
-import { DAEvent } from "../interfaces";
+import { EventRenderer } from "../Components/EventRenderer";
+import { EventWebModal } from "../Components/EventWebModal";
+import { useWebModal } from "../hooks/useWebModal";
+import {
+  DAEvent,
+  LumaEvent,
+  RAEvent,
+  MeetupEvent,
+  InstagramEvent,
+} from "../interfaces";
+import { SportsGame } from "../api/sports-games";
 import Icon, { IconTypes } from "../Components/Icon";
+import { getUserProfileImageUrl } from "../api/user";
 
 interface SharedEventsScreenProps {
   navigation: any;
@@ -22,6 +30,7 @@ interface SharedEventsScreenProps {
       connection: any;
       otherUser: {
         userId: string;
+        backendUserId?: number; // Backend user ID for fetching bookmarks
         username?: string;
         displayName?: string;
         pfpUrl?: string;
@@ -35,9 +44,10 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
   route,
 }) => {
   const { connection, otherUser } = route.params;
+  const webModal = useWebModal();
 
   navigation.setOptions({
-    headerTitle: () => <HeaderTitleImage />,
+    headerTitle: otherUser.username ? `@${otherUser.username}` : otherUser.displayName || "User",
   });
 
   const [sharedEvents, setSharedEvents] = useState<SharedEvent[]>([]);
@@ -47,7 +57,8 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
   const loadSharedEvents = async () => {
     setLoading(true);
     try {
-      const events = await getSharedEvents();
+      // Pass the other user's backend ID to fetch their bookmarks from the API
+      const events = await getSharedEvents(otherUser.backendUserId);
       setSharedEvents(events);
     } catch (error) {
       console.error("Error loading shared events:", error);
@@ -66,121 +77,202 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
     setRefreshing(false);
   };
 
-  const handleEventPress = (event: SharedEvent) => {
-    if (event.eventType === "da") {
-      navigation.navigate("Event", { event: event.event as DAEvent });
-    } else {
-      // For other event types, you might want to open in a web view or handle differently
-      navigation.navigate("Event", { event: event.event });
-    }
-  };
+  // Event handlers matching CalendarScreen
+  const handleSelectDAEvent = useCallback(
+    (event: DAEvent) => {
+      navigation.navigate("Event", { event });
+    },
+    [navigation]
+  );
 
-  const renderEvent = (sharedEvent: SharedEvent, index: number) => {
-    if (sharedEvent.eventType === "da") {
+  const handleSelectLumaEvent = useCallback(
+    (event: LumaEvent) => {
+      webModal.openWebModal(`https://lu.ma/${event.url}`, event.name, "luma", event);
+    },
+    [webModal]
+  );
+
+  const handleSelectRAEvent = useCallback(
+    (event: RAEvent) => {
+      webModal.openWebModal(`https://ra.co${event.contentUrl}`, event.title, "ra", event);
+    },
+    [webModal]
+  );
+
+  const handleSelectMeetupEvent = useCallback(
+    (event: MeetupEvent) => {
+      webModal.openWebModal(event.eventUrl, event.title, "meetup", event);
+    },
+    [webModal]
+  );
+
+  const handleSelectSportsEvent = useCallback(
+    (game: SportsGame) => {
+      if (game.link) {
+        webModal.openWebModal(
+          game.link,
+          `${game.awayTeam.shortDisplayName} @ ${game.homeTeam.shortDisplayName}`,
+          "sports",
+          game
+        );
+      }
+    },
+    [webModal]
+  );
+
+  const handleSelectInstagramEvent = useCallback(
+    (event: InstagramEvent) => {
+      // For Instagram events, navigate to a detail screen or open in web modal
+      navigation.navigate("Event", { event, eventType: "instagram" });
+    },
+    [navigation]
+  );
+
+  const renderEvent = useCallback(
+    ({ item }: { item: SharedEvent }) => {
+      // Add eventType to the event object for EventRenderer
+      const eventWithType = { ...item.event, eventType: item.eventType };
       return (
-        <TouchableOpacity
-          key={index}
-          onPress={() => handleEventPress(sharedEvent)}
-        >
-          <EventCard
-            event={sharedEvent.event as DAEvent}
-            options={{ showBookmark: true, showDate: true, showImage: true }}
-          />
-        </TouchableOpacity>
+        <EventRenderer
+          item={eventWithType}
+          onSelectDAEvent={handleSelectDAEvent}
+          onSelectLumaEvent={handleSelectLumaEvent}
+          onSelectRAEvent={handleSelectRAEvent}
+          onSelectMeetupEvent={handleSelectMeetupEvent}
+          onSelectSportsEvent={handleSelectSportsEvent}
+          onSelectInstagramEvent={handleSelectInstagramEvent}
+          containerStyle={styles.eventContainer}
+          eventCardOptions={{
+            showVenue: true,
+            showImage: true,
+            showBookmark: true,
+          }}
+        />
       );
-    }
+    },
+    [
+      handleSelectDAEvent,
+      handleSelectLumaEvent,
+      handleSelectRAEvent,
+      handleSelectMeetupEvent,
+      handleSelectSportsEvent,
+      handleSelectInstagramEvent,
+    ]
+  );
 
-    // For non-DA events, render a simple card
-    const event = sharedEvent.event;
-    const title =
-      "title" in event
-        ? event.title
-        : "name" in event
-        ? event.name
-        : "Unknown Event";
+  const keyExtractor = useCallback(
+    (item: SharedEvent, index: number) => `${item.eventType}-${index}`,
+    []
+  );
+
+  const ListHeader = () => {
+    const imageUrl = otherUser.username
+      ? getUserProfileImageUrl(otherUser.username)
+      : otherUser.pfpUrl;
+
+    const sharedCount = sharedEvents.length;
 
     return (
-      <TouchableOpacity
-        key={index}
-        style={styles.eventCard}
-        onPress={() => handleEventPress(sharedEvent)}
-      >
-        <View style={styles.eventContent}>
-          <Text style={styles.eventTitle}>{title}</Text>
-          <Text style={styles.eventType}>{sharedEvent.eventType.toUpperCase()}</Text>
-        </View>
-        <Icon
-          type={IconTypes.Ionicons}
-          name="chevron-forward"
-          size={20}
-          color={theme.textSecondary}
-        />
-      </TouchableOpacity>
-    );
-  };
-
-  return (
-    <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.userInfo}>
-          {otherUser.pfpUrl ? (
-            <Image source={{ uri: otherUser.pfpUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Icon
-                type={IconTypes.Ionicons}
-                name="person"
-                size={24}
-                color={theme.textSecondary}
-              />
-            </View>
-          )}
-          <View style={styles.userText}>
+        {/* Instagram-style profile header */}
+        <View style={styles.profileRow}>
+          {/* Avatar */}
+          <View style={styles.avatarContainer}>
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Icon
+                  type={IconTypes.Ionicons}
+                  name="person"
+                  size={40}
+                  color={theme.textSecondary}
+                />
+              </View>
+            )}
+          </View>
+
+          {/* Name and Button - Instagram style */}
+          <View style={styles.infoContainer}>
+            {/* Display name */}
             <Text style={styles.userName}>
               {otherUser.displayName || otherUser.username || "Unknown User"}
             </Text>
-            {otherUser.username && (
-              <Text style={styles.userUsername}>@{otherUser.username}</Text>
-            )}
+
+            {/* Connection button */}
+            <View style={styles.connectionButton}>
+              <Icon
+                type={IconTypes.Ionicons}
+                name="checkmark-circle"
+                size={14}
+                color="#fff"
+              />
+              <Text style={styles.connectionButtonText}>Connected</Text>
+            </View>
           </View>
         </View>
-        <Text style={styles.subtitle}>
-          Events you both have bookmarked or marked as going
-        </Text>
-      </View>
 
+        {/* Section divider with bookmark and count */}
+        <View style={styles.sectionDivider}>
+          <View style={styles.sectionTab}>
+            <Icon
+              type={IconTypes.Ionicons}
+              name="bookmark"
+              size={22}
+              color={theme.text}
+            />
+            <Text style={styles.sectionCount}>{sharedCount}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const ListEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <Icon
+        type={IconTypes.Ionicons}
+        name="calendar-outline"
+        size={64}
+        color={theme.textTertiary}
+      />
+      <Text style={styles.emptyTitle}>No Shared Events</Text>
+      <Text style={styles.emptyText}>
+        You don't have any events in common yet
+      </Text>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
       {loading ? (
         <View style={styles.loadingContainer}>
+          <ListHeader />
           <Text style={styles.loadingText}>Loading shared events...</Text>
         </View>
-      ) : sharedEvents.length === 0 ? (
-        <ScrollView
-          contentContainerStyle={styles.emptyContainer}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          <Icon
-            type={IconTypes.Ionicons}
-            name="calendar-outline"
-            size={64}
-            color={theme.textTertiary}
-          />
-          <Text style={styles.emptyTitle}>No Shared Events</Text>
-          <Text style={styles.emptyText}>
-            You don't have any events in common yet
-          </Text>
-        </ScrollView>
       ) : (
-        <ScrollView
-          style={styles.list}
+        <FlatList
+          data={sharedEvents}
+          renderItem={renderEvent}
+          keyExtractor={keyExtractor}
+          ListHeaderComponent={ListHeader}
+          ListEmptyComponent={ListEmpty}
+          contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-        >
-          {sharedEvents.map((event, index) => renderEvent(event, index))}
-        </ScrollView>
+        />
       )}
+
+      {/* Web Modal for non-DA events */}
+      <EventWebModal
+        isVisible={webModal.webModalVisible}
+        url={webModal.webModalUrl}
+        title={webModal.webModalTitle}
+        onClose={webModal.closeWebModal}
+        eventType={webModal.webModalEventType}
+        eventData={webModal.webModalEventData}
+      />
     </View>
   );
 };
@@ -192,88 +284,97 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: theme.surface,
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
+    paddingTop: 16,
   },
-  userInfo: {
+  profileRow: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 16,
     marginBottom: 12,
   },
+  avatarContainer: {
+    marginRight: 20,
+  },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
+    width: 86,
+    height: 86,
+    borderRadius: 43,
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 86,
+    height: 86,
+    borderRadius: 43,
     backgroundColor: theme.inputBackground,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
   },
-  userText: {
+  infoContainer: {
     flex: 1,
+    paddingLeft: 0,
+    justifyContent: "center",
   },
   userName: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "600",
     color: theme.text,
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  userUsername: {
-    fontSize: 14,
-    color: theme.textSecondary,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.textSecondary,
-    marginTop: 8,
-  },
-  list: {
-    flex: 1,
-  },
-  eventCard: {
-    backgroundColor: theme.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
-    padding: 16,
+  connectionButton: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    alignSelf: "flex-start",
+    backgroundColor: "#22C55E",
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 8,
+    gap: 5,
   },
-  eventContent: {
-    flex: 1,
+  connectionButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#fff",
   },
-  eventTitle: {
-    fontSize: 16,
+  sectionDivider: {
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  sectionTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.text,
+    marginTop: -1,
+    gap: 6,
+  },
+  sectionCount: {
+    fontSize: 14,
     fontWeight: "600",
     color: theme.text,
-    marginBottom: 4,
   },
-  eventType: {
-    fontSize: 12,
-    color: theme.textTertiary,
-    textTransform: "uppercase",
+  listContent: {
+    paddingBottom: 16,
+  },
+  eventContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   loadingText: {
     fontSize: 14,
     color: theme.textSecondary,
+    textAlign: "center",
+    marginTop: 32,
   },
   emptyContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
+    marginTop: 16,
   },
   emptyTitle: {
     fontSize: 20,

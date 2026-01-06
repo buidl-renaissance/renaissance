@@ -3,6 +3,19 @@ import { getWallet } from "../utils/wallet";
 const API_BASE_URL = "https://people.builddetroit.xyz/api";
 
 /**
+ * Get the profile image URL for a user by their username
+ * Returns the API endpoint URL which will redirect (302) to the actual profile image
+ * @param username Username of the user
+ * @returns Profile image URL endpoint
+ */
+export function getUserProfileImageUrl(username: string | null | undefined): string | null {
+  if (!username) {
+    return null;
+  }
+  return `${API_BASE_URL}/users/image/${encodeURIComponent(username)}`;
+}
+
+/**
  * Construct the message that needs to be signed for account updates
  * This matches the backend's constructUpdateMessage function
  */

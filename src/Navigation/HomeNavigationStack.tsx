@@ -36,11 +36,15 @@ import MiniAppScreen from "../Screens/MiniAppScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
+import GamesScreen from "../Screens/GamesScreen";
+import FitnessScreen from "../Screens/FitnessScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 import CalendarViewScreen from "../Screens/CalendarViewScreen";
 import WalletScreen from "../Screens/WalletScreen";
 import ConnectionsScreen from "../Screens/ConnectionsScreen";
 import SharedEventsScreen from "../Screens/SharedEventsScreen";
+import QRCodeScreen from "../Screens/QRCodeScreen";
+import SharedURLScreen from "../Screens/SharedURLScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -68,6 +72,8 @@ type HomeNavigationStackParamList = {
   EventEdit: undefined;
   Files: undefined;
   FarcasterProfile: undefined;
+  Fitness: undefined;
+  Games: undefined;
   GetStarted: undefined;
   CreateGrant: undefined;
   Home: undefined;
@@ -86,6 +92,8 @@ type HomeNavigationStackParamList = {
   Wallet: undefined;
   Connections: undefined;
   SharedEvents: { connection: any; otherUser: any };
+  QRCode: { initialTab?: "share" | "scan" } | undefined;
+  SharedURL: { url?: string } | undefined;
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -443,6 +451,28 @@ const HomeNavigationStack = () => {
         }}
       />
       <Stack.Screen
+        component={GamesScreen}
+        name="Games"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Games",
+        }}
+      />
+      <Stack.Screen
+        component={FitnessScreen}
+        name="Fitness"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Fitness",
+        }}
+      />
+      <Stack.Screen
         component={ConnectionsScreen}
         name="Connections"
         options={{
@@ -462,6 +492,28 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Shared Events",
+        }}
+      />
+      <Stack.Screen
+        component={QRCodeScreen}
+        name="QRCode"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Connect",
+        }}
+      />
+      <Stack.Screen
+        component={SharedURLScreen}
+        name="SharedURL"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Shared Link",
         }}
       />
     </Stack.Navigator>

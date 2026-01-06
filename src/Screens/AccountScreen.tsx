@@ -8,6 +8,8 @@ import { skillsList } from "../mocks/skills";
 import { Contact, createUser, getContact, saveContact } from "../dpop";
 import { useAuth } from "../context/Auth";
 import { theme } from "../colors";
+import { ConnectionsModal } from "../Components/ConnectionsModal";
+import { Connection } from "../utils/connections";
 
 // const artistAttributes = [
 //   { id: 1, name: 'Username', value: 'username' },
@@ -36,6 +38,8 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
   });
 
   const { state: authState, signOut } = useAuth();
+  
+  const [connectionsModalVisible, setConnectionsModalVisible] = useState(false);
   
   const [name, setName] = useState("");
   const [publicName, setPublicName] = useState("");
@@ -321,7 +325,7 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
           <Text style={styles.sectionTitle}>Connections</Text>
           <TouchableOpacity
             style={styles.connectionsButton}
-            onPress={() => navigation.navigate("Connections")}
+            onPress={() => setConnectionsModalVisible(true)}
           >
             <Ionicons name="people-outline" size={18} color={theme.primary} />
             <Text style={styles.connectionsButtonText}>View Connections</Text>
@@ -332,6 +336,14 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
           </Text>
         </View>
       )}
+
+      <ConnectionsModal
+        isVisible={connectionsModalVisible}
+        onClose={() => setConnectionsModalVisible(false)}
+        onViewSharedEvents={(connection, otherUser) => {
+          navigation.navigate("SharedEvents", { connection, otherUser });
+        }}
+      />
 
       {/* Sign Out Button */}
       {authState.isAuthenticated && (

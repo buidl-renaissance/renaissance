@@ -1,5 +1,6 @@
 import React from "react";
 import { LumaEvent } from "../interfaces";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 export interface LumaEventsQuery {
   city?: string;
@@ -18,6 +19,13 @@ export const useLumaEvents = (query?: LumaEventsQuery) => {
     try {
       setLoading(true);
       const city = cityRef.current;
+      const cacheKey = `luma_events_${city}`;
+      
+      // Load cached data first
+      const cached = await getCachedData<LumaEvent[]>(cacheKey);
+      if (cached) {
+        setEvents(cached);
+      }
       
       const eventsRes = await fetch(
         `https://luma-events-inky.vercel.app/api/events/${city}`
@@ -28,18 +36,17 @@ export const useLumaEvents = (query?: LumaEventsQuery) => {
       }
 
       const data = await eventsRes.json();
+      const eventsData = data.success && data.events ? data.events : [];
       
-      if (data.success && data.events) {
-        setEvents(data.events);
-      } else {
-        setEvents([]);
-      }
-      
+      setEvents(eventsData);
+      await setCachedData(cacheKey, eventsData);
       setError(null);
     } catch (err) {
       console.error("Error fetching Luma events:", err);
-      setError(err as Error);
-      setEvents([]);
+      // Only set error if we don't have any events (cached or otherwise)
+      if (events.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Image,
+  ImageSourcePropType,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DismissibleScrollModal } from "./DismissibleScrollModal";
@@ -16,8 +18,9 @@ interface MiniApp {
   name: string;
   description: string;
   url: string;
-  icon: string;
+  icon?: string;
   color: string;
+  image?: ImageSourcePropType;
 }
 
 const MINI_APPS: MiniApp[] = [
@@ -46,14 +49,6 @@ const MINI_APPS: MiniApp[] = [
     color: "#8B5CF6",
   },
   {
-    id: "quests",
-    name: "Quests",
-    description: "Collect NFTs, complete quests, and earn rewards. Explore the world of digital collectibles and blockchain gaming.",
-    url: "https://collectorquest.ai",
-    icon: "🏆",
-    color: "#3B82F6",
-  },
-  {
     id: "restaurants",
     name: "Restaurants",
     description: "Discover and explore Detroit's dining scene. Find great restaurants and read reviews.",
@@ -70,36 +65,44 @@ const MINI_APPS: MiniApp[] = [
     color: "#6366F1",
   },
   {
-    id: "mystic-island",
-    name: "Mystic Island",
-    description: "Build. Connect. Grow. Communities forge realms, realms forge totems, totems forge worlds.",
-    url: "https://mystic-island.yourland.network/",
-    icon: "🏝️",
-    color: "#14B8A6",
+    id: "games",
+    name: "Games",
+    description: "Explore gaming and entertainment experiences in Detroit, from virtual worlds to arcade bars.",
+    url: "native://Games",
+    icon: "🎮",
+    color: "#059669",
   },
   {
-    id: "dyno-detroit",
-    name: "Dyno Detroit",
-    description: "Explore climbing and fitness experiences in Detroit.",
-    url: "https://dynodetroit.com",
-    icon: "🧗",
+    id: "fitness",
+    name: "Fitness",
+    description: "Discover climbing, yoga, and wellness experiences to stay active and healthy.",
+    url: "native://Fitness",
+    icon: "💪",
     color: "#DC2626",
   },
   {
-    id: "hot-bones",
-    name: "Hot Bones",
-    description: "Discover wellness and relaxation experiences.",
-    url: "https://hotbones.com",
-    icon: "🧘",
-    color: "#F97316",
+    id: "vibe-code-detroit",
+    name: "Vibe Code",
+    description: "Join the Vibe Code Detroit community of tech enthusiasts building meaningful solutions through collaborative coding.",
+    url: "https://vibe.builddetroit.xyz/",
+    color: "#7C3AED",
+    image: require("../../assets/vibe-code-detroit.png"),
   },
   {
-    id: "beacon-hq",
-    name: "Beacon HQ",
-    description: "Explore gaming and entertainment experiences.",
-    url: "https://www.thebeaconhq.com/",
-    icon: "🎮",
-    color: "#059669",
+    id: "d-newtech",
+    name: "D-NewTech",
+    description: "Connecting Detroit's startup community since 2010. Monthly meetups, powerful connections, and real stories from entrepreneurs.",
+    url: "https://dnewtech.builddetroit.xyz/",
+    color: "#0EA5E9",
+    image: require("../../assets/d-new-tech.png"),
+  },
+  {
+    id: "art-night-detroit",
+    name: "Art Night",
+    description: "Explore Detroit's vibrant art scene during Art Night Detroit, a celebration of galleries, studios, and creative spaces.",
+    url: "https://artnightdetroit.com",
+    color: "#4338CA",
+    image: require("../../assets/art-night-detroit.png"),
   },
 ];
 
@@ -186,7 +189,11 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
               activeOpacity={0.7}
             >
               <View style={[styles.appIconContainer, { backgroundColor: item.color }]}>
-                <Text style={styles.appIcon}>{item.icon}</Text>
+                {item.image ? (
+                  <Image source={item.image} style={styles.appImage} />
+                ) : (
+                  <Text style={styles.appIcon}>{item.icon}</Text>
+                )}
               </View>
               <View style={styles.appInfo}>
                 <Text style={styles.appName}>{item.name}</Text>
@@ -262,9 +269,16 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   appIcon: {
     fontSize: 28,
+  },
+  appImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    resizeMode: "cover",
   },
   appInfo: {
     flex: 1,

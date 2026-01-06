@@ -4,7 +4,6 @@ import * as Linking from "expo-linking";
 
 import {
   BottomSheetModal,
-  BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 
 import { Button } from "../Components/Button";
@@ -51,29 +50,27 @@ const EventPopup = ({ event, onClose }: EventPopupProps) => {
   }, [event]);
 
   return (
-    <BottomSheetModalProvider>
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-      >
-        <ScrollView>
-          <EventCard event={event} />
-          {event.content && (
-            <RenderHTML
-              html={event.content}
-              style={{ paddingHorizontal: 16 }}
-            />
-          )}
-        </ScrollView>
-        {event.url?.match("http") && (
-          <View style={styles.buttonContainer}>
-            <Button title="View Details" variant="solid" onPress={handleRSVP} />
-          </View>
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      index={1}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+    >
+      <ScrollView>
+        <EventCard event={event} />
+        {event.content && (
+          <RenderHTML
+            html={event.content}
+            style={{ paddingHorizontal: 16 }}
+          />
         )}
-      </BottomSheetModal>
-    </BottomSheetModalProvider>
+      </ScrollView>
+      {event.url?.match("http") && (
+        <View style={styles.buttonContainer}>
+          <Button title="View Details" variant="solid" onPress={handleRSVP} />
+        </View>
+      )}
+    </BottomSheetModal>
   );
 };
 

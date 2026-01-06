@@ -1,5 +1,6 @@
 import React from "react";
 import { InstagramEvent } from "../interfaces";
+import { getCachedData, setCachedData } from "../utils/eventCache";
 
 export interface InstagramEventsQuery {
   // Future query parameters can be added here
@@ -14,6 +15,13 @@ export const useInstagramEvents = (query?: InstagramEventsQuery) => {
   const updateEvents = React.useCallback(async () => {
     try {
       setLoading(true);
+      const cacheKey = 'instagram_events';
+      
+      // Load cached data first
+      const cached = await getCachedData<InstagramEvent[]>(cacheKey);
+      if (cached) {
+        setEvents(cached);
+      }
       
       const eventsRes = await fetch(
         `https://instagram.builddetroit.xyz/api/events/upcoming`
@@ -24,18 +32,17 @@ export const useInstagramEvents = (query?: InstagramEventsQuery) => {
       }
 
       const data = await eventsRes.json();
+      const eventsData = data.success && data.data ? data.data : [];
       
-      if (data.success && data.data) {
-        setEvents(data.data);
-      } else {
-        setEvents([]);
-      }
-      
+      setEvents(eventsData);
+      await setCachedData(cacheKey, eventsData);
       setError(null);
     } catch (err) {
       console.error("Error fetching Instagram events:", err);
-      setError(err as Error);
-      setEvents([]);
+      // Only set error if we don't have any events (cached or otherwise)
+      if (events.length === 0) {
+        setError(err as Error);
+      }
     } finally {
       setLoading(false);
     }
