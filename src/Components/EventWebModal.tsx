@@ -319,11 +319,8 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
               bounces={true}
               showsVerticalScrollIndicator={true}
               showsHorizontalScrollIndicator={false}
-              decelerationRate="normal"
               nestedScrollEnabled={true}
-              overScrollMode="always"
               cacheEnabled={false} // Disable cache to prevent accumulation
-              cacheMode="LOAD_NO_CACHE"
               onMessage={handleWebViewMessage}
               injectedJavaScript={`
                 (function() {

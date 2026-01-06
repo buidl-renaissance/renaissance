@@ -511,7 +511,6 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
                 // Performance optimizations
                 startInLoadingState={true}
                 cacheEnabled={false}
-                cacheMode="LOAD_NO_CACHE"
                 // Start loading immediately
                 onShouldStartLoadWithRequest={() => true}
                 // Safari-like scrolling
@@ -519,9 +518,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
                 bounces={true}
                 showsVerticalScrollIndicator={true}
                 showsHorizontalScrollIndicator={false}
-                decelerationRate="normal"
                 nestedScrollEnabled={true}
-                overScrollMode="always"
                 // Inject script to set up Farcaster Frame SDK communication
                 injectedJavaScriptBeforeContentLoaded={`
             (function() {

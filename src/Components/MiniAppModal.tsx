@@ -564,12 +564,9 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
                     bounces={true}
                     showsVerticalScrollIndicator={true}
                     showsHorizontalScrollIndicator={false}
-                    decelerationRate="normal"
                     nestedScrollEnabled={true}
-                    overScrollMode="always"
                     startInLoadingState={true}
                     cacheEnabled={false}
-                    cacheMode="LOAD_NO_CACHE"
                     renderLoading={() => (
                       <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color={theme.accentPurple} />
