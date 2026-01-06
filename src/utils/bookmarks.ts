@@ -24,14 +24,8 @@ const AUTH_STORAGE_KEY = "AUTH_USER";
 async function getStoredBackendUserId(): Promise<number | undefined> {
   try {
     const savedAuth = await SecureStore.getItemAsync(AUTH_STORAGE_KEY);
-    console.log("[Bookmarks] Raw auth from SecureStore:", savedAuth ? "found" : "not found");
     if (savedAuth) {
       const user = JSON.parse(savedAuth);
-      console.log("[Bookmarks] Parsed user:", {
-        type: user?.type,
-        hasLocal: !!user?.local,
-        backendUserId: user?.local?.backendUserId,
-      });
       return user?.local?.backendUserId;
     }
   } catch (error) {
@@ -49,11 +43,7 @@ function syncBookmarkToBackendAsync(
   eventId: string,
   source: BookmarkSource
 ): void {
-  console.log(`[Bookmarks] Starting backend sync: userId=${backendUserId}, source=${source}, eventId=${eventId}`);
   createBookmarkOnBackend(backendUserId, eventId, source)
-    .then((result) => {
-      console.log(`[Bookmarks] SUCCESS synced to backend: ${source}/${eventId}`, result);
-    })
     .catch((error) => {
       console.error(`[Bookmarks] FAILED to sync to backend: ${source}/${eventId}`, error);
     });
@@ -68,11 +58,7 @@ function deleteBookmarkFromBackendAsync(
   source: BookmarkSource,
   eventId: string
 ): void {
-  console.log(`[Bookmarks] Starting backend delete: userId=${backendUserId}, source=${source}, eventId=${eventId}`);
   deleteBookmarkByEvent(backendUserId, source, eventId)
-    .then(() => {
-      console.log(`[Bookmarks] SUCCESS deleted from backend: ${source}/${eventId}`);
-    })
     .catch((error) => {
       console.error(`[Bookmarks] FAILED to delete from backend: ${source}/${eventId}`, error);
     });
@@ -167,17 +153,13 @@ export const toggleBookmark = async (event: DAEvent) => {
     }
     
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for DA event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, 'custom', eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, 'custom');
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
 };
@@ -187,53 +169,27 @@ export const getBookmarkStatusForWebEvent = async (
   event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent,
   eventType: LocalEventType
 ): Promise<boolean> => {
-  console.log(`[Bookmarks] getBookmarkStatusForWebEvent called: eventType=${eventType}`);
-  
   if (eventType === 'da' && 'id' in event) {
-    // Use existing DA event bookmark system
-    const key = `Bookmark-${event.id}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-${event.id}`);
+    return result ? true : false;
   } else if (eventType === 'luma' && 'apiId' in event) {
-    // Check Luma event bookmarks
-    const key = `Bookmark-luma-${event.apiId}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-luma-${event.apiId}`);
+    return result ? true : false;
   } else if (eventType === 'ra' && 'id' in event) {
-    // Check RA event bookmarks
-    const key = `Bookmark-ra-${event.id}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-ra-${event.id}`);
+    return result ? true : false;
   } else if (eventType === 'meetup' && 'eventId' in event) {
-    // Check Meetup event bookmarks
     const meetupEvent = event as MeetupEvent;
-    const key = `Bookmark-meetup-${meetupEvent.eventId}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-meetup-${meetupEvent.eventId}`);
+    return result ? true : false;
   } else if (eventType === 'sports' && 'id' in event) {
-    // Check Sports game bookmarks
     const sportsGame = event as SportsGame;
-    const key = `Bookmark-sports-${sportsGame.id}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-sports-${sportsGame.id}`);
+    return result ? true : false;
   } else if (eventType === 'instagram' && 'id' in event) {
-    // Check Instagram event bookmarks
     const instagramEvent = event as InstagramEvent;
-    const key = `Bookmark-instagram-${instagramEvent.id}`;
-    const result = await AsyncStorage.getItem(key);
-    const status = result ? true : false;
-    console.log(`[Bookmarks] getBookmarkStatus: key=${key}, result=${result}, returning=${status}`);
-    return status;
+    const result = await AsyncStorage.getItem(`Bookmark-instagram-${instagramEvent.id}`);
+    return result ? true : false;
   }
   return false;
 };
@@ -248,62 +204,40 @@ export const toggleBookmarkForWebEvent = async (
   event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent,
   eventType: LocalEventType
 ): Promise<boolean> => {
-  console.log(`[Bookmarks] toggleBookmarkForWebEvent called: eventType=${eventType}`);
-  
   const isBookmarked = await getBookmarkStatusForWebEvent(event, eventType);
   const eventIdString = getEventIdString(event, eventType);
   const backendSource = mapEventTypeToSource(eventType);
-  
-  console.log(`[Bookmarks] Current state: isBookmarked=${isBookmarked}, eventId=${eventIdString}, backendSource=${backendSource}`);
 
   if (eventType === 'da' && 'id' in event && 'title' in event) {
-    // Use existing DA event bookmark system
     const daEvent = event as DAEvent;
     await toggleBookmark(daEvent);
-    const newStatus = !isBookmarked;
-    console.log(`[Bookmarks] DA toggle complete. Returning newStatus=${newStatus}`);
-    return newStatus;
+    return !isBookmarked;
   } else if (eventType === 'luma' && 'apiId' in event) {
-    // Handle Luma events - store full event data
     const lumaEvent = event as LumaEvent;
     const bookmarksData = await AsyncStorage.getItem('BookmarkedLumaEvents');
     let bookmarkedLumaEvents: LumaEvent[] = bookmarksData ? JSON.parse(bookmarksData) : [];
 
     if (isBookmarked) {
-      // Remove bookmark locally (immediate)
-      console.log(`[Bookmarks] REMOVING luma bookmark for ${lumaEvent.apiId}`);
       bookmarkedLumaEvents = bookmarkedLumaEvents.filter((e: LumaEvent) => e.apiId !== lumaEvent.apiId);
       await AsyncStorage.removeItem(`Bookmark-luma-${lumaEvent.apiId}`);
     } else {
-      // Add bookmark locally (immediate)
-      console.log(`[Bookmarks] ADDING luma bookmark for ${lumaEvent.apiId}`);
       bookmarkedLumaEvents.push(lumaEvent);
       await AsyncStorage.setItem(`Bookmark-luma-${lumaEvent.apiId}`, "1");
     }
     await AsyncStorage.setItem('BookmarkedLumaEvents', JSON.stringify(bookmarkedLumaEvents));
     
-    // Verify the storage was updated
-    const verifyFlag = await AsyncStorage.getItem(`Bookmark-luma-${lumaEvent.apiId}`);
-    console.log(`[Bookmarks] Verify flag after update: Bookmark-luma-${lumaEvent.apiId} = ${verifyFlag}`);
-    
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for luma event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
     
-    const newStatus = !isBookmarked;
-    console.log(`[Bookmarks] Luma toggle complete. wasBookmarked=${isBookmarked}, returning newStatus=${newStatus}`);
-    return newStatus;
+    return !isBookmarked;
   } else if (eventType === 'ra' && 'id' in event) {
     // Handle RA events - store full event data
     const raEvent = event as RAEvent;
@@ -342,17 +276,13 @@ export const toggleBookmarkForWebEvent = async (
     await AsyncStorage.setItem('BookmarkedRAEvents', JSON.stringify(bookmarkedRAEvents));
     
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for ra event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
     
@@ -395,17 +325,13 @@ export const toggleBookmarkForWebEvent = async (
     await AsyncStorage.setItem('BookmarkedMeetupEvents', JSON.stringify(bookmarkedMeetupEvents));
     
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for meetup event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
     
@@ -448,17 +374,13 @@ export const toggleBookmarkForWebEvent = async (
     await AsyncStorage.setItem('BookmarkedSportsGames', JSON.stringify(bookmarkedSportsGames));
     
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for sports event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
     
@@ -501,17 +423,13 @@ export const toggleBookmarkForWebEvent = async (
     await AsyncStorage.setItem('BookmarkedInstagramEvents', JSON.stringify(bookmarkedInstagramEvents));
     
     // Sync to backend in background (non-blocking)
-    console.log("[Bookmarks] Triggering backend sync for instagram event...");
     getStoredBackendUserId().then((backendUserId) => {
-      console.log(`[Bookmarks] Got backendUserId: ${backendUserId}`);
       if (backendUserId) {
         if (isBookmarked) {
           deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
         } else {
           syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
         }
-      } else {
-        console.log("[Bookmarks] No backendUserId found, skipping backend sync");
       }
     });
     
