@@ -33,6 +33,13 @@ const FitnessScreen: React.FC<FitnessScreenProps> = ({ navigation }) => {
   // Fitness mini apps configuration
   const miniApps: MiniApp[] = React.useMemo(() => [
     {
+      name: "citizen-yoga",
+      title: "Citizen Yoga",
+      url: "https://citizenyogastudio.com",
+      emoji: "🧘",
+      backgroundColor: "#7C3AED",
+    },
+    {
       name: "dyno-detroit",
       title: "Dyno Detroit",
       url: "https://dynodetroit.com",
@@ -45,6 +52,41 @@ const FitnessScreen: React.FC<FitnessScreenProps> = ({ navigation }) => {
       url: "https://hotbones.com",
       emoji: "🧘",
       backgroundColor: "#F97316",
+    },
+    {
+      name: "detroit-yoga-lab",
+      title: "Detroit Yoga Lab",
+      url: "https://www.detroityogalab.com",
+      emoji: "🪷",
+      backgroundColor: "#14B8A6",
+    },
+    {
+      name: "detroit-body-garage",
+      title: "Detroit Body Garage",
+      url: "https://www.detroitbodygarage.com",
+      emoji: "💪",
+      backgroundColor: "#EF4444",
+    },
+    {
+      name: "313-bjj",
+      title: "313 BJJ",
+      url: "https://313bjj.com",
+      emoji: "🥋",
+      backgroundColor: "#1F2937",
+    },
+    {
+      name: "hustle-flow-lab",
+      title: "Hustle Flow Lab",
+      url: "https://www.hustleflowlab.com",
+      emoji: "💃",
+      backgroundColor: "#8B5CF6",
+    },
+    {
+      name: "foundry-13",
+      title: "Foundry 13",
+      url: "https://foundry13detroit.com",
+      emoji: "🏋️",
+      backgroundColor: "#059669",
     },
   ], []);
 

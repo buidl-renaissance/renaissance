@@ -931,7 +931,7 @@ const CalendarScreen = ({ navigation }) => {
         )} */}
 
         {/* Mini Apps Section */}
-        {/* <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} /> */}
+        <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}

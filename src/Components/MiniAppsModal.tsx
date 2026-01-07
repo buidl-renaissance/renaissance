@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
+  SectionList,
   Image,
   ImageSourcePropType,
 } from "react-native";
@@ -23,86 +23,305 @@ interface MiniApp {
   image?: ImageSourcePropType;
 }
 
-const MINI_APPS: MiniApp[] = [
+interface MiniAppSection {
+  title: string;
+  data: MiniApp[];
+}
+
+const MINI_APP_SECTIONS: MiniAppSection[] = [
   {
-    id: "art",
-    name: "Art",
-    description: "Discover Detroit's vibrant art scene. Explore featured pieces and support local artists.",
-    url: "native://Art",
-    icon: "🎨",
-    color: "#EC4899",
+    title: "Featured",
+    data: [
+      {
+        id: "art",
+        name: "Art",
+        description: "Discover Detroit's vibrant art scene. Explore featured pieces and support local artists.",
+        url: "native://Art",
+        icon: "🎨",
+        color: "#EC4899",
+      },
+      {
+        id: "restaurants",
+        name: "Restaurants",
+        description: "Discover and explore Detroit's dining scene. Find great restaurants and read reviews.",
+        url: "native://Restaurants",
+        icon: "🍽️",
+        color: "#F59E0B",
+      },
+      {
+        id: "games",
+        name: "Games",
+        description: "Explore gaming and entertainment experiences in Detroit, from virtual worlds to arcade bars.",
+        url: "native://Games",
+        icon: "🎮",
+        color: "#059669",
+      },
+      {
+        id: "fitness",
+        name: "Fitness",
+        description: "Discover climbing, yoga, and wellness experiences to stay active and healthy.",
+        url: "native://Fitness",
+        icon: "💪",
+        color: "#DC2626",
+      },
+    ],
   },
   {
-    id: "parking",
-    name: "Parking",
-    description: "Find and reserve parking spots in Detroit. Quick and easy parking solutions for events and daily needs.",
-    url: "https://buymyspot.com/detroit",
-    icon: "🅿️",
-    color: "#10B981",
+    title: "Community & Tech",
+    data: [
+      {
+        id: "vibe-code-detroit",
+        name: "Vibe Code",
+        description: "Join the Vibe Code Detroit community of tech enthusiasts building meaningful solutions through collaborative coding.",
+        url: "https://vibe.builddetroit.xyz/",
+        color: "#7C3AED",
+        image: require("../../assets/vibe-code-detroit.png"),
+      },
+      {
+        id: "d-newtech",
+        name: "D-NewTech",
+        description: "Connecting Detroit's startup community since 2010. Monthly meetups, powerful connections, and real stories from entrepreneurs.",
+        url: "https://dnewtech.builddetroit.xyz/",
+        color: "#0EA5E9",
+        image: require("../../assets/d-new-tech.png"),
+      },
+      {
+        id: "colab",
+        name: "Co.Lab",
+        description: "Turn conversations into collaborations with voice-first project planning for creative teams.",
+        url: "https://co.lab.builddetroit.xyz/",
+        icon: "🤝",
+        color: "#8B5CF6",
+      },
+      {
+        id: "gloabi",
+        name: "Gloabi",
+        description: "Connect and chat with the community. Join conversations and stay connected.",
+        url: "https://gloabi-chat.vercel.app/",
+        icon: "💬",
+        color: "#6366F1",
+      },
+    ],
   },
   {
-    id: "colab",
-    name: "Co.Lab",
-    description: "Turn conversations into collaborations with voice-first project planning for creative teams.",
-    url: "https://co.lab.builddetroit.xyz/",
-    icon: "🤝",
-    color: "#8B5CF6",
+    title: "Arts & Culture",
+    data: [
+      {
+        id: "art-night-detroit",
+        name: "Art Night",
+        description: "Explore Detroit's vibrant art scene during Art Night Detroit, a celebration of galleries, studios, and creative spaces.",
+        url: "https://artnightdetroit.com",
+        color: "#4338CA",
+        image: require("../../assets/art-night-detroit.png"),
+      },
+      {
+        id: "art-detroit-now",
+        name: "Art Detroit Now",
+        description: "Discover contemporary art events and exhibitions happening across Detroit.",
+        url: "https://www.artdetroitnow.com/",
+        color: "#EC4899",
+        image: require("../../assets/art-detroit-now.png"),
+      },
+      {
+        id: "artclvb",
+        name: "ArtClvb",
+        description: "A creative community platform connecting artists and art lovers in Detroit.",
+        url: "https://www.artclvb.xyz/",
+        color: "#10B981",
+        image: require("../../assets/artclvb.jpg"),
+      },
+      {
+        id: "be-the-light",
+        name: "Be The Light",
+        description: "A transformative art experience bringing light installations to Detroit.",
+        url: "https://bethelight222.com/",
+        color: "#14B8A6",
+        image: require("../../assets/be-the-light.webp"),
+      },
+      {
+        id: "heidelberg",
+        name: "Heidelberg Project",
+        description: "An outdoor art environment in Detroit's east side, transforming a neighborhood through art.",
+        url: "https://www.heidelberg.org/",
+        color: "#10B981",
+        image: require("../../assets/heidelberg.png"),
+      },
+      {
+        id: "art-park",
+        name: "Make Art Work",
+        description: "Detroit's creative workspace and art park supporting local artists.",
+        url: "https://www.makeartworkdetroit.com/",
+        color: "#14B8A6",
+        image: require("../../assets/make-art-work.png"),
+      },
+      {
+        id: "dia",
+        name: "Detroit Institute of Arts",
+        description: "One of the largest and most significant art collections in the United States.",
+        url: "https://dia.org/",
+        icon: "🏛️",
+        color: "#3B82F6",
+      },
+      {
+        id: "dam",
+        name: "Detroit Artists Market",
+        description: "A nonprofit gallery supporting Michigan artists since 1932.",
+        url: "https://detroitartistsmarket.org/",
+        icon: "🎨",
+        color: "#EC4899",
+      },
+      {
+        id: "scarab-club",
+        name: "Scarab Club",
+        description: "A historic artists' club fostering creativity since 1907.",
+        url: "https://scarabclub.org/",
+        icon: "🦋",
+        color: "#10B981",
+      },
+      {
+        id: "cranbrook",
+        name: "Cranbrook Art Museum",
+        description: "A contemporary art museum showcasing innovative design and art.",
+        url: "https://cranbrookartmuseum.org/",
+        icon: "🏛️",
+        color: "#14B8A6",
+      },
+      {
+        id: "barbed-magazine",
+        name: "Barbed Magazine",
+        description: "An arts and culture publication covering Detroit's creative scene.",
+        url: "https://barbedmagazine.com/",
+        icon: "🖼️",
+        color: "#8B5CF6",
+      },
+      {
+        id: "runner-magazine",
+        name: "Runner Magazine",
+        description: "Detroit art and culture publication featuring local artists.",
+        url: "https://www.runnerdetroit.run/runnerart.html",
+        icon: "📰",
+        color: "#F59E0B",
+      },
+      {
+        id: "feedspot-blogs",
+        name: "Detroit Art Blogs",
+        description: "Curated collection of Detroit art blogs and creative writing.",
+        url: "https://blog.feedspot.com/detroit_art_blogs/",
+        icon: "📚",
+        color: "#EF4444",
+      },
+    ],
   },
   {
-    id: "restaurants",
-    name: "Restaurants",
-    description: "Discover and explore Detroit's dining scene. Find great restaurants and read reviews.",
-    url: "native://Restaurants",
-    icon: "🍽️",
-    color: "#F59E0B",
+    title: "Gaming & Entertainment",
+    data: [
+      {
+        id: "mystic-island",
+        name: "Mystic Island",
+        description: "Explore a virtual world adventure set in a mystical island environment.",
+        url: "https://mystic-island.yourland.network/",
+        icon: "🏝️",
+        color: "#14B8A6",
+      },
+      {
+        id: "beacon-hq",
+        name: "Beacon HQ",
+        description: "Detroit's premier gaming and esports venue.",
+        url: "https://www.thebeaconhq.com/",
+        icon: "🎮",
+        color: "#059669",
+      },
+      {
+        id: "collector-quest",
+        name: "Collector Quest",
+        description: "An AI-powered collectibles discovery and trading experience.",
+        url: "https://collectorquest.ai",
+        icon: "🏆",
+        color: "#3B82F6",
+      },
+    ],
   },
   {
-    id: "gloabi",
-    name: "Gloabi",
-    description: "Connect and chat with the community. Join conversations and stay connected.",
-    url: "https://gloabi-chat.vercel.app/",
-    icon: "💬",
-    color: "#6366F1",
+    title: "Fitness & Wellness",
+    data: [
+      {
+        id: "citizen-yoga",
+        name: "Citizen Yoga",
+        description: "Alignment-based yoga classes including Vinyasa, Slow Burn, and Restore. Multiple Detroit-area locations.",
+        url: "https://citizenyogastudio.com",
+        icon: "🧘",
+        color: "#7C3AED",
+      },
+      {
+        id: "dyno-detroit",
+        name: "Dyno Detroit",
+        description: "Detroit's premier rock climbing gym for all skill levels.",
+        url: "https://dynodetroit.com",
+        icon: "🧗",
+        color: "#DC2626",
+      },
+      {
+        id: "hot-bones",
+        name: "Hot Bones",
+        description: "Hot yoga and wellness studio in Detroit.",
+        url: "https://hotbones.com",
+        icon: "🧘",
+        color: "#F97316",
+      },
+      {
+        id: "detroit-yoga-lab",
+        name: "Detroit Yoga Lab",
+        description: "Vinyasa, Yin, and Restorative yoga classes in Midtown Detroit for all skill levels.",
+        url: "https://www.detroityogalab.com",
+        icon: "🪷",
+        color: "#14B8A6",
+      },
+      {
+        id: "detroit-body-garage",
+        name: "Detroit Body Garage",
+        description: "Strength training, circuit workouts, and personal training in a community-focused environment.",
+        url: "https://www.detroitbodygarage.com",
+        icon: "💪",
+        color: "#EF4444",
+      },
+      {
+        id: "313-bjj",
+        name: "313 Brazilian Jiu-Jitsu",
+        description: "Brazilian Jiu-Jitsu training for all skill levels on Grand River Ave in Detroit.",
+        url: "https://313bjj.com",
+        icon: "🥋",
+        color: "#1F2937",
+      },
+      {
+        id: "hustle-flow-lab",
+        name: "Hustle Flow Lab",
+        description: "Dance cardio, HIIT, sculpt, and yoga in Midtown promoting body positivity and creative movement.",
+        url: "https://www.hustleflowlab.com",
+        icon: "💃",
+        color: "#8B5CF6",
+      },
+      {
+        id: "foundry-13",
+        name: "Foundry 13 Detroit",
+        description: "World-class strength and conditioning, personal training, and group fitness classes.",
+        url: "https://foundry13detroit.com",
+        icon: "🏋️",
+        color: "#059669",
+      },
+    ],
   },
   {
-    id: "games",
-    name: "Games",
-    description: "Explore gaming and entertainment experiences in Detroit, from virtual worlds to arcade bars.",
-    url: "native://Games",
-    icon: "🎮",
-    color: "#059669",
-  },
-  {
-    id: "fitness",
-    name: "Fitness",
-    description: "Discover climbing, yoga, and wellness experiences to stay active and healthy.",
-    url: "native://Fitness",
-    icon: "💪",
-    color: "#DC2626",
-  },
-  {
-    id: "vibe-code-detroit",
-    name: "Vibe Code",
-    description: "Join the Vibe Code Detroit community of tech enthusiasts building meaningful solutions through collaborative coding.",
-    url: "https://vibe.builddetroit.xyz/",
-    color: "#7C3AED",
-    image: require("../../assets/vibe-code-detroit.png"),
-  },
-  {
-    id: "d-newtech",
-    name: "D-NewTech",
-    description: "Connecting Detroit's startup community since 2010. Monthly meetups, powerful connections, and real stories from entrepreneurs.",
-    url: "https://dnewtech.builddetroit.xyz/",
-    color: "#0EA5E9",
-    image: require("../../assets/d-new-tech.png"),
-  },
-  {
-    id: "art-night-detroit",
-    name: "Art Night",
-    description: "Explore Detroit's vibrant art scene during Art Night Detroit, a celebration of galleries, studios, and creative spaces.",
-    url: "https://artnightdetroit.com",
-    color: "#4338CA",
-    image: require("../../assets/art-night-detroit.png"),
+    title: "Utilities",
+    data: [
+      {
+        id: "parking",
+        name: "Parking",
+        description: "Find and reserve parking spots in Detroit. Quick and easy parking solutions for events and daily needs.",
+        url: "https://buymyspot.com/detroit",
+        icon: "🅿️",
+        color: "#10B981",
+      },
+    ],
   },
 ];
 
@@ -144,6 +363,34 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
     );
   };
 
+  const renderSectionHeader = ({ section }: { section: MiniAppSection }) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{section.title}</Text>
+    </View>
+  );
+
+  const renderItem = ({ item }: { item: MiniApp }) => (
+    <TouchableOpacity
+      style={styles.appCard}
+      onPress={() => onOpenApp(item)}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.appIconContainer, { backgroundColor: item.color }]}>
+        {item.image ? (
+          <Image source={item.image} style={styles.appImage} />
+        ) : (
+          <Text style={styles.appIcon}>{item.icon}</Text>
+        )}
+      </View>
+      <View style={styles.appInfo}>
+        <Text style={styles.appName}>{item.name}</Text>
+        <Text style={styles.appDescription} numberOfLines={2}>
+          {item.description}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <DismissibleScrollModal
       isVisible={isVisible}
@@ -152,12 +399,13 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
       headerRight={renderHeaderRight()}
     >
       {({ onScroll, scrollEnabled }) => (
-        <FlatList
-          data={MINI_APPS}
+        <SectionList
+          sections={MINI_APP_SECTIONS}
           onScroll={onScroll}
           scrollEnabled={scrollEnabled}
           scrollEventThrottle={16}
           contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <TouchableOpacity
               style={[
@@ -182,27 +430,8 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
               <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
             </TouchableOpacity>
           }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.appCard}
-              onPress={() => onOpenApp(item)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.appIconContainer, { backgroundColor: item.color }]}>
-                {item.image ? (
-                  <Image source={item.image} style={styles.appImage} />
-                ) : (
-                  <Text style={styles.appIcon}>{item.icon}</Text>
-                )}
-              </View>
-              <View style={styles.appInfo}>
-                <Text style={styles.appName}>{item.name}</Text>
-                <Text style={styles.appDescription} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
+          renderSectionHeader={renderSectionHeader}
+          renderItem={renderItem}
           keyExtractor={(item) => item.id}
         />
       )}
@@ -217,7 +446,18 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 16,
+    paddingBottom: 32,
+  },
+  sectionHeader: {
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   authBanner: {
     flexDirection: "row",
