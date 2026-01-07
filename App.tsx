@@ -66,9 +66,15 @@ export default function App() {
     console.log("[AppReview] _handleAppStateChange", nextAppState, appState);
     if (appState?.match(/inactive|background/) && nextAppState === "active") {
       console.log("App has come to the foreground!");
-      checkForUpdates();
+      // Auto-reload with latest update when coming back to foreground
+      checkForUpdates({ autoReload: true });
     }
   };
+
+  // Check for updates on initial app load and auto-reload if available
+  React.useEffect(() => {
+    checkForUpdates({ autoReload: true });
+  }, []);
 
   React.useEffect(() => {
     registerForPushNotificationsAsync().then((token) =>
