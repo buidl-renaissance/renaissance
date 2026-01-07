@@ -24,7 +24,12 @@
     },
     "production": {
       "channel": "production",
-      "node": "22.9.0"
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
+      }
     }
   },
   "submit": {
