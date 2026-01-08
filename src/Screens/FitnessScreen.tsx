@@ -107,10 +107,10 @@ const FitnessScreen: React.FC<FitnessScreenProps> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Mini Apps Section */}
-        <View style={styles.miniAppsSection}>
+        {/* Mini Apps Section - Hidden for now */}
+        {/* <View style={styles.miniAppsSection}>
           <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
-        </View>
+        </View> */}
 
         {/* Additional content section */}
         <View style={styles.infoSection}>

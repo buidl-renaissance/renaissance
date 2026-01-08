@@ -930,8 +930,8 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )} */}
 
-        {/* Mini Apps Section */}
-        <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
+        {/* Mini Apps Section - Hidden for now */}
+        {/* <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} /> */}
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
@@ -1112,7 +1112,8 @@ const CalendarScreen = ({ navigation }) => {
         onQRCodePress={authState.isAuthenticated ? handleQRCodePress : undefined}
         // Wallet functionality hidden for now
         // onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
-        onAppsPress={handleMiniAppsPress}
+        // Mini apps functionality hidden for now
+        // onAppsPress={handleMiniAppsPress}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
         // walletBalance={walletBalance}
@@ -1172,7 +1173,8 @@ const CalendarScreen = ({ navigation }) => {
           navigation.navigate("SharedEvents", { connection, otherUser });
         }}
       />
-      <MiniAppsModal
+      {/* Mini Apps Modal - Hidden for now */}
+      {/* <MiniAppsModal
         isVisible={miniAppsModalVisible}
         onClose={() => setMiniAppsModalVisible(false)}
         onOpenApp={handleOpenMiniApp}
@@ -1180,7 +1182,7 @@ const CalendarScreen = ({ navigation }) => {
           setMiniAppsModalVisible(false);
           navigation.push("AccountManagement");
         }}
-      />
+      /> */}
     </View>
   );
 };
