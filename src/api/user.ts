@@ -95,6 +95,33 @@ export async function getUserById(userId: number): Promise<any> {
 }
 
 /**
+ * Get user by username
+ */
+export async function getUserByUsername(username: string): Promise<any> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/users/username/${encodeURIComponent(username)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("User not found");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching user by username:", error);
+    throw error;
+  }
+}
+
+/**
  * Update user profile (profilePicture and/or farcasterId)
  * Requires signature verification for these fields
  */

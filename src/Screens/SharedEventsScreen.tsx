@@ -57,11 +57,16 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
   const loadSharedEvents = async () => {
     setLoading(true);
     try {
+      console.log("[SharedEventsScreen] Loading shared events for user:", {
+        backendUserId: otherUser.backendUserId,
+        username: otherUser.username,
+      });
       // Pass the other user's backend ID to fetch their bookmarks from the API
       const events = await getSharedEvents(otherUser.backendUserId);
+      console.log("[SharedEventsScreen] Loaded events:", events.length);
       setSharedEvents(events);
     } catch (error) {
-      console.error("Error loading shared events:", error);
+      console.error("[SharedEventsScreen] Error loading shared events:", error);
     } finally {
       setLoading(false);
     }
@@ -128,6 +133,18 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
     [navigation]
   );
 
+  const handleSelectFlyerEvent = useCallback(
+    (event: any) => {
+      // Flyer events are DA events with additional flyer data
+      if (event.event) {
+        navigation.navigate("Event", { event: event.event });
+      } else {
+        navigation.navigate("Event", { event });
+      }
+    },
+    [navigation]
+  );
+
   const renderEvent = useCallback(
     ({ item }: { item: SharedEvent }) => {
       // Add eventType to the event object for EventRenderer
@@ -141,6 +158,7 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
           onSelectMeetupEvent={handleSelectMeetupEvent}
           onSelectSportsEvent={handleSelectSportsEvent}
           onSelectInstagramEvent={handleSelectInstagramEvent}
+          onSelectFlyerEvent={handleSelectFlyerEvent}
           containerStyle={styles.eventContainer}
           eventCardOptions={{
             showVenue: true,
@@ -158,6 +176,7 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
       handleSelectMeetupEvent,
       handleSelectSportsEvent,
       handleSelectInstagramEvent,
+      handleSelectFlyerEvent,
     ]
   );
 
@@ -237,9 +256,9 @@ const SharedEventsScreen: React.FC<SharedEventsScreenProps> = ({
         size={64}
         color={theme.textTertiary}
       />
-      <Text style={styles.emptyTitle}>No Shared Events</Text>
+      <Text style={styles.emptyTitle}>No Bookmarked Events</Text>
       <Text style={styles.emptyText}>
-        You don't have any events in common yet
+        This user hasn't bookmarked any events yet
       </Text>
     </View>
   );

@@ -23,7 +23,7 @@ import {
   Connection,
 } from "../utils/connections";
 import moment from "moment";
-import { getUserProfileImageUrl, getUserByWalletAddress } from "../api/user";
+import { getUserProfileImageUrl, getUserByWalletAddress, getUserByUsername } from "../api/user";
 
 export interface ConnectionsContentProps {
   /** Called when user wants to view shared events with a connection */
@@ -155,18 +155,37 @@ export const ConnectionsContent: React.FC<ConnectionsContentProps> = ({
       currentUsername
     );
     
-    // Try to get the other user's backend ID from their wallet address
+    // Try to get the other user's backend ID from their wallet address or username
     let backendUserId: number | undefined;
+    
+    // First, try wallet address lookup
     if (otherUser.walletAddress) {
       try {
-        console.log("[ConnectionsContent] Looking up backend user ID for:", otherUser.walletAddress);
+        console.log("[ConnectionsContent] Looking up backend user ID by wallet:", otherUser.walletAddress);
         const userData = await getUserByWalletAddress(otherUser.walletAddress);
         const user = Array.isArray(userData) ? userData[0] : userData;
         backendUserId = user?.id;
-        console.log("[ConnectionsContent] Found backend user ID:", backendUserId);
+        console.log("[ConnectionsContent] Found backend user ID by wallet:", backendUserId);
       } catch (error) {
-        console.error("[ConnectionsContent] Error looking up backend user ID:", error);
+        console.log("[ConnectionsContent] Wallet lookup failed, trying username...");
       }
+    }
+    
+    // If wallet lookup failed, try username lookup
+    if (!backendUserId && otherUser.username) {
+      try {
+        console.log("[ConnectionsContent] Looking up backend user ID by username:", otherUser.username);
+        const userData = await getUserByUsername(otherUser.username);
+        const user = Array.isArray(userData) ? userData[0] : userData;
+        backendUserId = user?.id;
+        console.log("[ConnectionsContent] Found backend user ID by username:", backendUserId);
+      } catch (error) {
+        console.error("[ConnectionsContent] Username lookup also failed:", error);
+      }
+    }
+    
+    if (!backendUserId) {
+      console.warn("[ConnectionsContent] Could not find backend user ID for connection");
     }
     
     if (onViewSharedEvents) {
