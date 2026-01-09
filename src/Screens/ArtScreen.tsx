@@ -163,10 +163,10 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
           </View>
         ) : artworks && Array.isArray(artworks) && artworks.length > 0 ? (
           <>
-            {/* Mini Apps Section - Hidden for now */}
-            {/* <View style={styles.miniAppsSection}>
+            {/* Mini Apps Section */}
+            <View style={styles.miniAppsSection}>
               <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
-            </View> */}
+            </View>
 
             <View style={styles.section}>
               <SectionTitle>FEATURED ARTWORK</SectionTitle>
