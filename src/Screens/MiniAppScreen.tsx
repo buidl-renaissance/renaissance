@@ -284,10 +284,20 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
     // Send initial context to mini app when page loads
     // The mini app can also call sdk.context or sdk.signIn() via RPC
     if (emitRef.current && sdk && webViewRef.current) {
-      const isAuthenticated = !!sdk.context?.user?.fid && sdk.context.user.fid > 0;
+      // Check if user is authenticated - supports both Farcaster (positive fid) and Renaissance-only accounts
+      // Renaissance-only accounts have negative fids but may have renaissanceUserId or username
+      const user = sdk.context?.user;
+      const isAuthenticated = !!user && (
+        (typeof user.fid === 'number' && user.fid !== 0) || // Has any non-zero fid (positive for Farcaster, negative for Renaissance)
+        !!user.renaissanceUserId || // Has Renaissance backend user ID
+        !!user.username // Has a username
+      );
       console.log("[MiniAppScreen] Page loaded, context available:", {
         user: sdk.context?.user,
         isAuthenticated,
+        fidType: typeof user?.fid,
+        fid: user?.fid,
+        renaissanceUserId: user?.renaissanceUserId,
       });
       
       // If user is authenticated, send context to WebView immediately
@@ -569,10 +579,17 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
               // Mini apps should primarily use window.farcaster.signIn() or window.farcaster.context
               if (window.farcaster && window.farcaster.context) {
                 const context = window.farcaster.context;
-                if (context.user && context.user.fid > 0) {
+                // Check for any authenticated user - positive fid (Farcaster), negative fid (Renaissance-only), or has username/renaissanceUserId
+                const isAuthenticated = context.user && (
+                  (typeof context.user.fid === 'number' && context.user.fid !== 0) ||
+                  context.user.renaissanceUserId ||
+                  context.user.username
+                );
+                if (isAuthenticated) {
                   console.log('[MiniApp] Authenticated context available via RPC:', {
                     fid: context.user.fid,
-                    username: context.user.username
+                    username: context.user.username,
+                    renaissanceUserId: context.user.renaissanceUserId
                   });
                   // Store and dispatch for apps that listen to events
                   window.__renaissanceAuthContext = context;

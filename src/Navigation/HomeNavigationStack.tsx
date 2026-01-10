@@ -38,6 +38,7 @@ import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
 import GamesScreen from "../Screens/GamesScreen";
 import FitnessScreen from "../Screens/FitnessScreen";
+import TechScreen from "../Screens/TechScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 import CalendarViewScreen from "../Screens/CalendarViewScreen";
 import WalletScreen from "../Screens/WalletScreen";
@@ -74,6 +75,7 @@ type HomeNavigationStackParamList = {
   FarcasterProfile: undefined;
   Fitness: undefined;
   Games: undefined;
+  Tech: undefined;
   GetStarted: undefined;
   CreateGrant: undefined;
   Home: undefined;
@@ -470,6 +472,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Fitness",
+        }}
+      />
+      <Stack.Screen
+        component={TechScreen}
+        name="Tech"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Tech",
         }}
       />
       <Stack.Screen

@@ -56,6 +56,13 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
       image: require("../../assets/art-detroit-now.png"),
     },
     {
+      name: "art-night-detroit",
+      title: "Art Night Detroit",
+      url: "https://www.artnightdetroit.com/",
+      backgroundColor: "#6366F1",
+      image: require("../../assets/art-night-detroit.png"),
+    },
+    {
       name: "artclvb",
       title: "ArtClvb",
       url: "https://www.artclvb.xyz/",
@@ -133,6 +140,14 @@ const ArtScreen: React.FC<ArtScreenProps> = ({ navigation }) => {
       url: "https://cranbrookartmuseum.org/",
       backgroundColor: "#14B8A6",
       emoji: "🏛️",
+    },
+    // Local Artists
+    {
+      name: "andrea-burg",
+      title: "Andrea Burg",
+      url: "http://burg-ink.vercel.app/",
+      backgroundColor: "#7C3AED",
+      image: require("../../assets/andrea-burg.jpg"),
     },
   ], []);
 

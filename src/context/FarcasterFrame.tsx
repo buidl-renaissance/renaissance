@@ -33,6 +33,7 @@ interface MiniAppContext {
     username?: string;
     displayName?: string;
     pfpUrl?: string;
+    renaissanceUserId?: number; // Backend user ID from people.builddetroit.xyz
   };
   features: {
     haptics: boolean;
@@ -212,6 +213,7 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
               username: currentUser.username,
               displayName: currentUser.displayName,
               pfpUrl: currentUser.pfpUrl,
+              renaissanceUserId: currentUser.local?.backendUserId,
             }
           : {
               fid: 0,
