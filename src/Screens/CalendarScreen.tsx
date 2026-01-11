@@ -805,20 +805,6 @@ const CalendarScreen = ({ navigation }) => {
   // Memoize mini apps configuration
   const miniApps: MiniApp[] = React.useMemo(() => [
     {
-      name: "art",
-      title: "Art",
-      url: "native://Art",
-      emoji: "🎨",
-      backgroundColor: "#EC4899",
-    },
-    {
-      name: "parking",
-      title: "Parking",
-      url: "https://buymyspot.com/detroit",
-      emoji: "🅿️",
-      backgroundColor: "#10B981",
-    },
-    {
       name: "colab",
       title: "Co.Lab",
       url: "https://co.lab.builddetroit.xyz/",
@@ -826,32 +812,11 @@ const CalendarScreen = ({ navigation }) => {
       backgroundColor: "#8B5CF6",
     },
     {
-      name: "restaurants",
-      title: "Restaurants",
-      url: "native://Restaurants",
-      emoji: "🍽️",
-      backgroundColor: "#F59E0B",
-    },
-    {
-      name: "template",
-      title: "Template",
-      url: "https://template.builddetroit.xyz/",
-      emoji: "📋",
+      name: "game-night",
+      title: "Game Night",
+      url: "https://games.builddetroit.xyz/",
+      emoji: "🃏",
       backgroundColor: "#6366F1",
-    },
-    {
-      name: "games",
-      title: "Games",
-      url: "native://Games",
-      emoji: "🎮",
-      backgroundColor: "#059669",
-    },
-    {
-      name: "fitness",
-      title: "Fitness",
-      url: "native://Fitness",
-      emoji: "💪",
-      backgroundColor: "#DC2626",
     },
     {
       name: "tech",
@@ -954,7 +919,7 @@ const CalendarScreen = ({ navigation }) => {
         */}
 
 
-        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16, marginTop: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 8, marginTop: 8 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
             UPCOMING EVENTS
           </Text>

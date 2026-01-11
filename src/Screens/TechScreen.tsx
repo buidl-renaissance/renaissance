@@ -95,6 +95,20 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
       emoji: "🔧",
       backgroundColor: "#EA580C",
     },
+    {
+      name: "localhost-3005",
+      title: "Local :3005",
+      url: "http://localhost:3005",
+      emoji: "🔧",
+      backgroundColor: "#14B8A6",
+    },
+    {
+      name: "template",
+      title: "Template",
+      url: "https://template.builddetroit.xyz/",
+      emoji: "📋",
+      backgroundColor: "#6366F1",
+    },
   ], []);
 
   return (
