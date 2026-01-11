@@ -833,10 +833,10 @@ const CalendarScreen = ({ navigation }) => {
       backgroundColor: "#F59E0B",
     },
     {
-      name: "gloabi",
-      title: "Gloabi",
-      url: "https://gloabi-chat.vercel.app/",
-      emoji: "💬",
+      name: "template",
+      title: "Template",
+      url: "https://template.builddetroit.xyz/",
+      emoji: "📋",
       backgroundColor: "#6366F1",
     },
     {
@@ -869,7 +869,7 @@ const CalendarScreen = ({ navigation }) => {
     },
     {
       name: "void",
-      title: "Void",
+      title: "Into the Void",
       url: "https://void.builddetroit.xyz/",
       backgroundColor: "#18181B",
       emoji: "🕳️",

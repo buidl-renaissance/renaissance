@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -140,31 +141,38 @@ export const EventCheckInButton: React.FC<EventCheckInButtonProps> = ({
   };
 
   const handleManualCheckIn = () => {
+    // On Android, hide QR Code option due to camera bug
+    const isAndroid = Platform.OS === 'android';
+    const alertOptions = [
+      // Only show QR Code option on non-Android platforms
+      ...(!isAndroid ? [{
+        text: 'QR Code',
+        onPress: () => {
+          if (!permission?.granted) {
+            requestPermission();
+          } else {
+            setShowQRScanner(true);
+          }
+        },
+      }] : []),
+      {
+        text: 'Location',
+        onPress: () => handleCheckIn(false),
+      },
+      {
+        text: 'Skip Verification',
+        onPress: () => handleCheckIn(true),
+        style: 'destructive' as const,
+      },
+      { text: 'Cancel', style: 'cancel' as const },
+    ];
+
     Alert.alert(
       'Check In',
-      'Would you like to check in using QR code or location?',
-      [
-        {
-          text: 'QR Code',
-          onPress: () => {
-            if (!permission?.granted) {
-              requestPermission();
-            } else {
-              setShowQRScanner(true);
-            }
-          },
-        },
-        {
-          text: 'Location',
-          onPress: () => handleCheckIn(false),
-        },
-        {
-          text: 'Skip Verification',
-          onPress: () => handleCheckIn(true),
-          style: 'destructive',
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
+      isAndroid 
+        ? 'Would you like to check in using location?'
+        : 'Would you like to check in using QR code or location?',
+      alertOptions
     );
   };
 

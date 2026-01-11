@@ -45,7 +45,10 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
   showTabs = true,
 }) => {
   const { state: authState } = useAuth();
-  const [activeTab, setActiveTab] = useState<"share" | "scan">(initialTab);
+  // On Android, always use "share" tab due to camera bug
+  const isAndroid = Platform.OS === "android";
+  const effectiveInitialTab = isAndroid ? "share" : initialTab;
+  const [activeTab, setActiveTab] = useState<"share" | "scan">(effectiveInitialTab);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [isGeneratingConnection, setIsGeneratingConnection] = useState(false);
@@ -301,8 +304,8 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {/* Tabs */}
-      {showTabs && (
+      {/* Tabs - Hide Scan tab on Android due to camera bug */}
+      {showTabs && !isAndroid && (
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === "share" && styles.activeTab]}

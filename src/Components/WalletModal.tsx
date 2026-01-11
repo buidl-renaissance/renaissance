@@ -13,6 +13,7 @@ import {
   TextInput,
   ActivityIndicator,
   Clipboard,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "react-native-modal";
@@ -482,7 +483,10 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
               style={styles.actionButton}
               onPress={() => {
                 setShowSendModal(true);
-                setShowQRScanner(true); // Start with QR scanner
+                // On Android, skip QR scanner due to camera bug
+                if (Platform.OS !== "android") {
+                  setShowQRScanner(true); // Start with QR scanner on iOS
+                }
               }}
             >
               <Ionicons name="arrow-up" size={20} color="#fff" />
@@ -544,15 +548,18 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isVisible, onClose }) 
                       autoCapitalize="none"
                       autoCorrect={false}
                     />
-                    <TouchableOpacity
-                      style={styles.qrButton}
-                      onPress={() => {
-                        setShowQRScanner(true);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="qr-code-outline" size={20} color="#fff" />
-                    </TouchableOpacity>
+                    {/* Hide QR scanner button on Android due to camera bug */}
+                    {Platform.OS !== "android" && (
+                      <TouchableOpacity
+                        style={styles.qrButton}
+                        onPress={() => {
+                          setShowQRScanner(true);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="qr-code-outline" size={20} color="#fff" />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
 

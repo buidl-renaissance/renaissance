@@ -36,6 +36,7 @@ import MiniAppScreen from "../Screens/MiniAppScreen";
 import AccountManagementScreen from "../Screens/AccountManagementScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import RestaurantsScreen from "../Screens/RestaurantsScreen";
+import BestOfScreen from "../Screens/BestOfScreen";
 import GamesScreen from "../Screens/GamesScreen";
 import FitnessScreen from "../Screens/FitnessScreen";
 import TechScreen from "../Screens/TechScreen";
@@ -87,6 +88,7 @@ type HomeNavigationStackParamList = {
   ProposalDetail: undefined;
   ReviewEvents: undefined;
   Restaurants: undefined;
+  BestOf: undefined;
   Search: undefined;
   Share: undefined;
   Splash: undefined;
@@ -450,6 +452,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Restaurants",
+        }}
+      />
+      <Stack.Screen
+        component={BestOfScreen}
+        name="BestOf"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Best Of",
         }}
       />
       <Stack.Screen
