@@ -53,6 +53,48 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
       backgroundColor: "#0D0D12",
       image: require("../../assets/djq-icon-texture.png"),
     },
+    {
+      name: "sponsorships",
+      title: "Sponsorships",
+      url: "https://sponsorships.builddetroit.xyz/",
+      emoji: "💎",
+      backgroundColor: "#8B5CF6",
+    },
+    {
+      name: "localhost-3000",
+      title: "Local :3000",
+      url: "http://localhost:3000",
+      emoji: "🔧",
+      backgroundColor: "#059669",
+    },
+    {
+      name: "localhost-3001",
+      title: "Local :3001",
+      url: "http://localhost:3001",
+      emoji: "🔧",
+      backgroundColor: "#0891B2",
+    },
+    {
+      name: "localhost-3002",
+      title: "Local :3002",
+      url: "http://localhost:3002",
+      emoji: "🔧",
+      backgroundColor: "#7C3AED",
+    },
+    {
+      name: "localhost-3003",
+      title: "Local :3003",
+      url: "http://localhost:3003",
+      emoji: "🔧",
+      backgroundColor: "#DB2777",
+    },
+    {
+      name: "localhost-3004",
+      title: "Local :3004",
+      url: "http://localhost:3004",
+      emoji: "🔧",
+      backgroundColor: "#EA580C",
+    },
   ], []);
 
   return (
