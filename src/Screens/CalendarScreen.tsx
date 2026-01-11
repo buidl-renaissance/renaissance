@@ -872,7 +872,7 @@ const CalendarScreen = ({ navigation }) => {
       title: "Into the Void",
       url: "https://void.builddetroit.xyz/",
       backgroundColor: "#18181B",
-      emoji: "🕳️",
+      image: require("../../assets/into-the-void.png"),
     },
   ], []);
 
