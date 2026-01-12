@@ -796,8 +796,42 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 </View>
 
                 <ScrollView contentContainerStyle={styles.modalScrollContent}>
+                  {/* Profile Picture */}
+                  <View style={styles.modalProfilePictureContainer}>
+                    <TouchableOpacity
+                      style={styles.modalProfilePictureButton}
+                      onPress={handlePickUpdateImage}
+                      disabled={isProcessingUpdateImage || isUpdatingProfile}
+                    >
+                      {updateProfileImagePreviewUri ? (
+                        <Image
+                          source={{ uri: updateProfileImagePreviewUri }}
+                          style={styles.modalProfilePicture}
+                        />
+                      ) : state.user.pfpUrl ? (
+                        <Image
+                          key={state.user.pfpUrl}
+                          source={{ uri: state.user.pfpUrl }}
+                          style={styles.modalProfilePicture}
+                        />
+                      ) : (
+                        <View style={styles.modalProfilePicturePlaceholder}>
+                          <Ionicons name="camera-outline" size={40} color="#6366F1" />
+                        </View>
+                      )}
+                      {isProcessingUpdateImage && (
+                        <View style={styles.modalProfilePictureOverlay}>
+                          <ActivityIndicator size="large" color="#6366F1" />
+                        </View>
+                      )}
+                      <View style={styles.modalProfilePictureEditBadge}>
+                        <Ionicons name="camera" size={16} color="#fff" />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+
                   {/* Display Name */}
-                  <View style={styles.updateItem}>
+                  <View style={[styles.updateItem, styles.updateItemLast]}>
                     <Text style={styles.updateLabel}>Name</Text>
                     <Text style={styles.updateHelperText}>
                       Your display name shown to others
@@ -824,85 +858,6 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                         </Text>
                       )}
                     </TouchableOpacity>
-                  </View>
-
-                  {/* Profile Picture */}
-                  <View style={styles.updateItem}>
-                    <Text style={styles.updateLabel}>Profile Picture</Text>
-                    <Text style={styles.updateHelperText}>
-                      Tap the image to change your profile picture
-                    </Text>
-                    <View style={styles.modalProfilePictureContainer}>
-                      <TouchableOpacity
-                        style={styles.modalProfilePictureButton}
-                        onPress={handlePickUpdateImage}
-                        disabled={isProcessingUpdateImage || isUpdatingProfile}
-                      >
-                        {updateProfileImagePreviewUri ? (
-                          <Image
-                            source={{ uri: updateProfileImagePreviewUri }}
-                            style={styles.modalProfilePicture}
-                          />
-                        ) : state.user.pfpUrl ? (
-                          <Image
-                            key={state.user.pfpUrl}
-                            source={{ uri: state.user.pfpUrl }}
-                            style={styles.modalProfilePicture}
-                          />
-                        ) : (
-                          <View style={styles.modalProfilePicturePlaceholder}>
-                            <Ionicons name="camera-outline" size={40} color="#6366F1" />
-                          </View>
-                        )}
-                        {isProcessingUpdateImage && (
-                          <View style={styles.modalProfilePictureOverlay}>
-                            <ActivityIndicator size="large" color="#6366F1" />
-                          </View>
-                        )}
-                        <View style={styles.modalProfilePictureEditBadge}>
-                          <Ionicons name="camera" size={16} color="#fff" />
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {/* Farcaster Connection */}
-                  <View style={[styles.updateItem, styles.updateItemLast]}>
-                    <Text style={styles.updateLabel}>Farcaster Account</Text>
-                    <Text style={styles.updateHelperText}>
-                      Connect your Farcaster account to link it with your Renaissance profile
-                    </Text>
-                    {connectedFarcasterId ? (
-                      <View style={styles.farcasterConnected}>
-                        <View style={styles.farcasterConnectedInfo}>
-                          <View>
-                            <Text style={styles.farcasterConnectedUsername}>
-                              Farcaster ID: {connectedFarcasterId}
-                            </Text>
-                            <Text style={styles.farcasterConnectedFid}>
-                              Connected
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    ) : (
-                      <TouchableOpacity
-                        style={[styles.updateButton, styles.updateButtonPrimary, styles.updateButtonFull]}
-                        onPress={handleConnectFarcaster}
-                        disabled={isUpdatingProfile}
-                      >
-                        {isUpdatingProfile ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <>
-                            <Ionicons name="logo-react" size={18} color="#fff" />
-                            <Text style={[styles.updateButtonText, styles.updateButtonTextPrimary]}>
-                              Connect Farcaster
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    )}
                   </View>
                 </ScrollView>
               </KeyboardAvoidingView>
@@ -1003,23 +958,6 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             <Ionicons name="chevron-forward" size={20} color="#fff" />
           </TouchableOpacity>
 
-          {/* Farcaster Login */}
-          <TouchableOpacity
-            style={[styles.optionButton, styles.farcasterButton]}
-            onPress={handleFarcasterLogin}
-            disabled={isLoading}
-          >
-            <View style={styles.optionIconContainer}>
-              <Ionicons name="logo-react" size={28} color="#fff" />
-            </View>
-            <View style={styles.optionTextContainer}>
-              <Text style={styles.optionTitle}>Sign in with Warpcast</Text>
-              <Text style={[styles.optionSubtitle, styles.farcasterSubtitle]}>
-                Use your Farcaster account
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#fff" />
-          </TouchableOpacity>
         </View>
 
         {isLoading && (
@@ -1032,8 +970,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
         <View style={styles.infoBox}>
           <Ionicons name="information-circle-outline" size={20} color="#666" />
           <Text style={styles.infoText}>
-            Your account is used to authenticate with mini apps. Farcaster users
-            get full functionality, while Renaissance accounts can still use most features.
+            Your account is used to authenticate with mini apps and access your profile.
           </Text>
         </View>
       </ScrollView>

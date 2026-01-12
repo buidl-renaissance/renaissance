@@ -819,13 +819,6 @@ const CalendarScreen = ({ navigation }) => {
       image: require("../../assets/game-night.png"),
     },
     {
-      name: "tech",
-      title: "Tech",
-      url: "native://Tech",
-      emoji: "💻",
-      backgroundColor: "#7C3AED",
-    },
-    {
       name: "djq",
       title: "DJQ",
       url: "https://djq.builddetroit.xyz/dashboard",
@@ -838,6 +831,13 @@ const CalendarScreen = ({ navigation }) => {
       url: "https://void.builddetroit.xyz/",
       backgroundColor: "#18181B",
       image: require("../../assets/into-the-void.png"),
+    },
+    {
+      name: "template",
+      title: "Template",
+      url: "https://template.builddetroit.xyz/",
+      emoji: "📋",
+      backgroundColor: "#6366F1",
     },
   ], []);
 
