@@ -833,11 +833,11 @@ const CalendarScreen = ({ navigation }) => {
       image: require("../../assets/into-the-void.png"),
     },
     {
-      name: "template",
-      title: "Template",
+      name: "create-app-block",
+      title: "Create App Block",
       url: "https://template.builddetroit.xyz/",
-      emoji: "📋",
-      backgroundColor: "#6366F1",
+      backgroundColor: "#0D0D12",
+      image: require("../../assets/create-app-block.png"),
     },
   ], []);
 

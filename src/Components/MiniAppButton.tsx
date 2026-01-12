@@ -60,14 +60,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "#8B5CF6",
+    overflow: "hidden",
   },
   emoji: {
     fontSize: 30,
   },
   iconImage: {
-    width: 66,
-    height: 66,
-    borderRadius: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
   },
   labelContainer: {
     width: 66,
