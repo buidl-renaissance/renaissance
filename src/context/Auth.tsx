@@ -111,11 +111,87 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (savedAuth) {
         const user = JSON.parse(savedAuth) as AuthUser;
+        console.log("[Auth] Loaded saved auth:", {
+          type: user.type,
+          username: user.username,
+          hasPfpUrl: !!user.pfpUrl,
+          pfpUrl: user.pfpUrl ? `${user.pfpUrl.substring(0, 50)}...` : null,
+        });
+        
         setState({
           user,
           isLoading: false,
           isAuthenticated: true,
         });
+        
+        // Automatically refresh profile from backend for local_wallet users
+        // This ensures pfpUrl is up-to-date, especially after OTA updates
+        if (user.type === "local_wallet") {
+          console.log("[Auth] Auto-refreshing profile from backend...");
+          try {
+            let userData = null;
+            let backendUserId = user.local?.backendUserId;
+            
+            // Try to fetch by backendUserId first
+            if (backendUserId) {
+              userData = await getUserById(backendUserId);
+            } 
+            // Fallback: fetch by wallet address if no backendUserId
+            else if (user.local?.walletAddress) {
+              console.log("[Auth] No backendUserId, fetching by wallet address...");
+              const { getUserByWalletAddress } = await import("../api/user");
+              try {
+                const walletUserData = await getUserByWalletAddress(user.local.walletAddress);
+                userData = Array.isArray(walletUserData) ? walletUserData[0] : walletUserData;
+                if (userData?.id) {
+                  backendUserId = userData.id;
+                }
+              } catch (walletError) {
+                console.log("[Auth] No backend user found for wallet address");
+              }
+            }
+            
+            if (userData) {
+              console.log("[Auth] Backend profile data:", {
+                profilePicture: userData.profilePicture ? `${userData.profilePicture.substring(0, 50)}...` : null,
+                username: userData.username,
+              });
+              
+              if (userData.profilePicture || userData.username || userData.displayName) {
+                // Add cache-busting parameter to profile picture URL
+                let profilePictureUrl = userData.profilePicture || user.pfpUrl;
+                if (profilePictureUrl) {
+                  const separator = profilePictureUrl.includes('?') ? '&' : '?';
+                  profilePictureUrl = `${profilePictureUrl}${separator}v=${Date.now()}`;
+                }
+                
+                const updatedUser: AuthUser = {
+                  ...user,
+                  pfpUrl: profilePictureUrl,
+                  username: userData.username || user.username,
+                  displayName: userData.displayName || userData.username || user.displayName,
+                  local: {
+                    ...user.local,
+                    backendUserId: backendUserId || user.local?.backendUserId,
+                    username: userData.username || user.local?.username,
+                    displayName: userData.displayName || userData.username || user.local?.displayName,
+                  },
+                };
+                
+                console.log("[Auth] Updated user with fresh backend data, pfpUrl:", updatedUser.pfpUrl ? "yes" : "no");
+                await SecureStore.setItemAsync(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
+                setState({
+                  user: updatedUser,
+                  isLoading: false,
+                  isAuthenticated: true,
+                });
+              }
+            }
+          } catch (refreshError) {
+            console.error("[Auth] Error auto-refreshing profile:", refreshError);
+            // Continue with saved auth if refresh fails
+          }
+        }
       } else {
         setState((prev) => ({ ...prev, isLoading: false }));
       }
