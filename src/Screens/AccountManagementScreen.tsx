@@ -42,6 +42,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [showRenaissanceModal, setShowRenaissanceModal] = useState(false);
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [profileImageBase64, setProfileImageBase64] = useState<string | null>(null);
   const [profileImagePreviewUri, setProfileImagePreviewUri] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -57,6 +58,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [connectedFarcasterId, setConnectedFarcasterId] = useState<string | null>(null);
   const [displayUserId, setDisplayUserId] = useState<number | null>(null);
   const isProcessingUpdateImageRef = React.useRef(false);
+  const [editDisplayName, setEditDisplayName] = useState("");
   
   // Existing account state
   const [existingAccount, setExistingAccount] = useState<any | null>(null);
@@ -201,6 +203,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
     setShowRenaissanceModal(false);
     setUsername("");
     setUsernameError("");
+    setDisplayName("");
     setProfileImageBase64(null);
     setProfileImagePreviewUri(null);
     setLastProcessedImageUri(null);
@@ -386,7 +389,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
       }
 
       // No existing account found, create new one
-      console.log("Creating new account with:", { publicAddress, username, profilePictureLength: profileImageBase64?.length });
+      console.log("Creating new account with:", { publicAddress, username, displayName, profilePictureLength: profileImageBase64?.length });
 
       // Create user account on backend
       const response = await fetch("https://people.builddetroit.xyz/api/users", {
@@ -397,6 +400,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
         body: JSON.stringify({
           publicAddress,
           username,
+          displayName: displayName || null,
           profilePicture: profileImageBase64,
           farcasterId: null,
         }),
@@ -431,6 +435,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
       
       await signInWithWallet({ 
         username, 
+        displayName: displayName || undefined,
         pfpUrl: userData.profilePicture,
         backendUserId: userData.id
       });
@@ -613,7 +618,42 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
     setShowEditProfileModal(false);
     setUpdateProfileImageBase64(null);
     setUpdateProfileImagePreviewUri(null);
+    setEditDisplayName("");
     // Don't clear lastProcessedUpdateImageUri here - it should persist to prevent re-triggering
+  };
+
+  const openEditProfileModal = () => {
+    // Initialize edit form with current values
+    setEditDisplayName(state.user?.displayName || state.user?.username || "");
+    setShowEditProfileModal(true);
+  };
+
+  const handleUpdateDisplayName = async () => {
+    const userId = await getBackendUserId();
+    if (!userId) {
+      Alert.alert("Error", "Unable to find your account. Please try again.");
+      return;
+    }
+
+    try {
+      setIsUpdatingProfile(true);
+      
+      await updateUserProfile({
+        userId: userId,
+        displayName: editDisplayName || null,
+      });
+
+      // Refresh user data from backend
+      await refreshUser();
+      
+      Alert.alert("Success", "Name updated successfully");
+    } catch (error) {
+      console.error("Error updating display name:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to update name";
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setIsUpdatingProfile(false);
+    }
   };
 
   // Render authenticated state
@@ -625,7 +665,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
             {state.user.type === "local_wallet" && (
               <TouchableOpacity
                 style={styles.editProfileButtonTopRight}
-                onPress={() => setShowEditProfileModal(true)}
+                onPress={openEditProfileModal}
               >
                 <Ionicons name="pencil" size={18} color="#6B7280" />
               </TouchableOpacity>
@@ -756,6 +796,36 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 </View>
 
                 <ScrollView contentContainerStyle={styles.modalScrollContent}>
+                  {/* Display Name */}
+                  <View style={styles.updateItem}>
+                    <Text style={styles.updateLabel}>Name</Text>
+                    <Text style={styles.updateHelperText}>
+                      Your display name shown to others
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your name"
+                      value={editDisplayName}
+                      onChangeText={setEditDisplayName}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      maxLength={50}
+                    />
+                    <TouchableOpacity
+                      style={[styles.updateButton, styles.updateButtonPrimary, styles.updateButtonFull, { marginTop: 12 }]}
+                      onPress={handleUpdateDisplayName}
+                      disabled={isUpdatingProfile}
+                    >
+                      {isUpdatingProfile ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text style={[styles.updateButtonText, styles.updateButtonTextPrimary]}>
+                          Save Name
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+
                   {/* Profile Picture */}
                   <View style={styles.updateItem}>
                     <Text style={styles.updateLabel}>Profile Picture</Text>
@@ -1031,6 +1101,23 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                     </View>
                   )}
                 </TouchableOpacity>
+              </View>
+
+              {/* Display Name Input */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Your display name (optional)"
+                  value={displayName}
+                  onChangeText={setDisplayName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  maxLength={50}
+                />
+                <Text style={styles.helperText}>
+                  This is the name that will be shown to others
+                </Text>
               </View>
 
               {/* Username Input */}
@@ -1558,6 +1645,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   // Renaissance signup styles
+  inputSection: {
+    marginBottom: 16,
+  },
   profilePictureSection: {
     marginBottom: 20,
   },

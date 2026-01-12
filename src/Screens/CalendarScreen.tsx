@@ -815,8 +815,8 @@ const CalendarScreen = ({ navigation }) => {
       name: "game-night",
       title: "Game Night",
       url: "https://games.builddetroit.xyz/play",
-      emoji: "🃏",
       backgroundColor: "#6366F1",
+      image: require("../../assets/game-night.png"),
     },
     {
       name: "tech",

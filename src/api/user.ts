@@ -122,21 +122,25 @@ export async function getUserByUsername(username: string): Promise<any> {
 }
 
 /**
- * Update user profile (profilePicture and/or farcasterId)
- * Requires signature verification for these fields
+ * Update user profile (profilePicture, farcasterId, displayName)
+ * Requires signature verification for profilePicture and farcasterId fields
  */
 export async function updateUserProfile(params: {
   userId: number;
   farcasterId?: string | null;
   profilePicture?: string | null; // base64 encoded image data
   username?: string;
+  displayName?: string | null;
 }): Promise<any> {
-  const { userId, farcasterId, profilePicture, username } = params;
+  const { userId, farcasterId, profilePicture, username, displayName } = params;
 
   // Build update data
   const updateData: any = {};
   if (username !== undefined) {
     updateData.username = username;
+  }
+  if (displayName !== undefined) {
+    updateData.displayName = displayName;
   }
   if (farcasterId !== undefined) {
     updateData.farcasterId = farcasterId;

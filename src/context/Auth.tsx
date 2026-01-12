@@ -55,7 +55,7 @@ interface AuthState {
 interface AuthContextValue {
   state: AuthState;
   signInWithFarcaster: () => Promise<void>;
-  signInWithWallet: (params?: { username?: string; pfpUrl?: string; backendUserId?: number }) => Promise<AuthUser>;
+  signInWithWallet: (params?: { username?: string; displayName?: string; pfpUrl?: string; backendUserId?: number }) => Promise<AuthUser>;
   signInWithEmail: (email: string, password: string) => Promise<AuthUser>;
   registerWithEmail: (params: {
     email: string;
@@ -223,7 +223,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [handleFarcasterCallback]);
 
   // Sign in with local wallet (anonymous or Renaissance account)
-  const signInWithWallet = useCallback(async (params?: { username?: string; pfpUrl?: string; backendUserId?: number }): Promise<AuthUser> => {
+  const signInWithWallet = useCallback(async (params?: { username?: string; displayName?: string; pfpUrl?: string; backendUserId?: number }): Promise<AuthUser> => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
       const wallet = await getWallet();
@@ -232,7 +232,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Use provided username or generate one from wallet address
       const shortAddress = `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}`;
       const username = params?.username || `anon_${shortAddress}`;
-      const displayName = params?.username || `Anonymous User`;
+      const displayName = params?.displayName || params?.username || `Anonymous User`;
 
       const user: AuthUser = {
         type: "local_wallet",
@@ -447,12 +447,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             ...state.user,
             pfpUrl: profilePictureUrl,
             username: userData.username || state.user.username,
-            displayName: userData.username || state.user.displayName,
+            displayName: userData.displayName || userData.username || state.user.displayName,
             local: {
               ...state.user.local,
               backendUserId: backendUserId,
               username: userData.username || state.user.local.username,
-              displayName: userData.username || state.user.local.displayName,
+              displayName: userData.displayName || userData.username || state.user.local.displayName,
             },
           };
 
