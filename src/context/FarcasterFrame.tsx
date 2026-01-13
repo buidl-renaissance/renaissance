@@ -34,6 +34,7 @@ interface MiniAppContext {
     displayName?: string;
     pfpUrl?: string;
     renaissanceUserId?: number; // Backend user ID from people.builddetroit.xyz
+    publicAddress?: string; // User's wallet address
   };
   features: {
     haptics: boolean;
@@ -214,6 +215,7 @@ export const FarcasterFrameProvider: React.FC<FarcasterFrameProviderProps> = ({
               displayName: currentUser.displayName,
               pfpUrl: currentUser.pfpUrl,
               renaissanceUserId: currentUser.local?.backendUserId,
+              publicAddress: currentUser.local?.walletAddress,
             }
           : {
               fid: 0,

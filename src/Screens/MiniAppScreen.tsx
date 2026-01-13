@@ -9,7 +9,9 @@ import {
   InteractionManager,
   Animated,
   Image,
+  Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { useWebViewRpcAdapter } from "@farcaster/frame-host-react-native";
 import { useFarcasterFrame } from "../context/FarcasterFrame";
@@ -21,6 +23,10 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
   const webViewRef = useRef<WebView>(null);
   const { state, createSdk, setIsLoading, setFrameUrl, setPrimaryButtonClickHandler, onPrimaryButtonClick } = useFarcasterFrame();
   const { state: authState } = useAuth();
+  const insets = useSafeAreaInsets();
+  
+  // Calculate bottom padding for Android navigation bar
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === "android" ? 16 : 0);
   
   const frameUrl = route.params?.url || state.currentFrameUrl;
   const title = route.params?.title || "Mini App";
@@ -614,7 +620,7 @@ const MiniAppScreen = ({ navigation, route }: { navigation: any; route: any }) =
 
       {/* Primary Button */}
       {!state.primaryButton.hidden && (
-        <View style={styles.primaryButtonContainer}>
+        <View style={[styles.primaryButtonContainer, { paddingBottom: 16 + bottomPadding }]}>
           <TouchableOpacity
             style={[
               styles.primaryButton,

@@ -1,5 +1,6 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon, { IconTypes } from "./Icon";
 import { theme } from "../colors";
 
@@ -30,6 +31,11 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
   showAdmin = false,
   walletBalance,
 }) => {
+  const insets = useSafeAreaInsets();
+  
+  // Calculate bottom padding accounting for Android navigation bar
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === "android" ? 16 : 20);
+  
   // Filter to show main buttons: map, bookmark, connections, chat, mini apps (search moved to far right)
   const mainButtons = [
     onMapPress && { onPress: onMapPress, icon: "map-outline", type: IconTypes.Ionicons },
@@ -71,7 +77,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
       )}
       
       {/* Bottom navigation bar */}
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingBottom: bottomPadding }]}>
         <View style={styles.navigationBar}>
           {mainButtons.map((button, index) => (
             <TouchableOpacity

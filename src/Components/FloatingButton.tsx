@@ -1,5 +1,6 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon, { IconTypes } from "./Icon";
 
 interface FloatingButtonProps {
@@ -9,8 +10,11 @@ interface FloatingButtonProps {
 }
 
 export const FloatingButton = ({ icon = "add", type = IconTypes.Ionicons, onPress }: FloatingButtonProps) => {
+  const insets = useSafeAreaInsets();
+  const bottomOffset = Math.max(insets.bottom, Platform.OS === "android" ? 16 : 0) + 30;
+  
   return (
-    <TouchableOpacity onPress={onPress} style={styles.button}>
+    <TouchableOpacity onPress={onPress} style={[styles.button, { bottom: bottomOffset }]}>
       <Icon
         type={type}
         size={36}
@@ -34,7 +38,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     alignItems: "center",
     padding: 10,
-    bottom: 30,
     right: 120,
   },
 });
