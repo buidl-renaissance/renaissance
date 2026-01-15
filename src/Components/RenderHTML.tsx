@@ -1,7 +1,27 @@
 import { Dimensions } from 'react-native';
+import * as Linking from 'expo-linking';
 
 import HTML from 'react-native-render-html';
 import { theme } from '../colors';
+
+// Custom anchor renderer that preserves default rendering but adds click handler
+const createAnchorRenderer = () => ({
+    a: ({ TDefaultRenderer, tnode, ...props }: any) => {
+        const href = tnode?.attributes?.href;
+        
+        return (
+            <TDefaultRenderer
+                {...props}
+                tnode={tnode}
+                onPress={() => {
+                    if (href) {
+                        Linking.openURL(href);
+                    }
+                }}
+            />
+        );
+    },
+});
 
 export const RenderHTML = ({
     html,
@@ -13,10 +33,7 @@ export const RenderHTML = ({
             source={{ html: `<div>${html}</div>` }}
             ignoredStyles={['height', 'width']}
             contentWidth={Dimensions.get('window').width - 32}
-            // renderersProps={renderersProps}
-            // renderers={renderers}
-            // customHTMLElementModels={customHTMLElementModels}
-            // domVisitors={domVisitors}
+            renderers={createAnchorRenderer()}
             tagsStyles={{
                 html: {
                     color: theme.text,

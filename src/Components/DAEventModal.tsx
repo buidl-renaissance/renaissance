@@ -25,15 +25,23 @@ import HTML from "react-native-render-html";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Custom renderer for links to ensure color is always applied
+// Custom renderer for links to ensure color is always applied and links are clickable
 const createLinkRenderer = () => ({
   a: (props: any) => {
-    const { TDefaultRenderer, ...otherProps } = props;
+    const { TDefaultRenderer, tnode, ...otherProps } = props;
+    const href = tnode?.attributes?.href;
+    
     return (
       <TDefaultRenderer
         {...otherProps}
+        tnode={tnode}
         textProps={{
           style: { color: theme.primary, textDecorationLine: 'underline' },
+        }}
+        onPress={() => {
+          if (href) {
+            Linking.openURL(href);
+          }
         }}
       />
     );
@@ -445,6 +453,7 @@ export const DAEventModal: React.FC<DAEventModalProps> = ({
                   <RenderHtml
                     contentWidth={SCREEN_WIDTH - 64}
                     source={{ html: displayEvent.excerpt }}
+                    renderers={createLinkRenderer()}
                     tagsStyles={{
                       a: { color: theme.primary, textDecorationLine: 'underline' },
                       html: { color: theme.text },
