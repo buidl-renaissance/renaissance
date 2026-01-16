@@ -1,7 +1,10 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import { MiniAppButton } from "./MiniAppButton";
 import { MiniApp } from "../interfaces";
+
+const ITEM_WIDTH = 66; // Width of each MiniAppButton
+const screenWidth = Dimensions.get("window").width;
 
 interface MiniAppsGridProps {
   apps: MiniApp[];
@@ -16,6 +19,12 @@ export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
   itemsPerRow = 5,
   rowPaddingVertical = 12,
 }) => {
+  // Calculate gap so that items are evenly spaced with equal gaps on edges
+  // Total gaps = itemsPerRow + 1 (gaps between items + left edge + right edge)
+  const totalItemsWidth = ITEM_WIDTH * itemsPerRow;
+  const remainingSpace = screenWidth - totalItemsWidth;
+  const gap = remainingSpace / (itemsPerRow + 1);
+
   // Split apps into rows
   const rows: MiniApp[][] = [];
   for (let i = 0; i < apps.length; i += itemsPerRow) {
@@ -31,6 +40,8 @@ export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
             styles.row,
             {
               paddingVertical: rowIndex === 0 ? rowPaddingVertical : rowPaddingVertical / 2,
+              paddingHorizontal: gap,
+              gap: gap,
             },
           ]}
         >
@@ -53,6 +64,6 @@ export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "flex-start",
   },
 });
