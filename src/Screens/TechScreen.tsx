@@ -31,85 +31,88 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
   }, [navigation]);
 
   // Tech mini apps configuration
-  const miniApps: MiniApp[] = React.useMemo(() => [
-    {
-      name: "vibe-code-detroit",
-      title: "Vibe Code",
-      url: "https://vibe.builddetroit.xyz/",
-      backgroundColor: "#7C3AED",
-      image: require("../../assets/vibe-code-detroit.png"),
-    },
-    {
-      name: "d-newtech",
-      title: "D-NewTech",
-      url: "https://dnewtech.builddetroit.xyz/",
-      backgroundColor: "#0EA5E9",
-      image: require("../../assets/d-new-tech.png"),
-    },
-    {
-      name: "djq",
-      title: "DJQ",
-      url: "https://djq.builddetroit.xyz/dashboard",
-      backgroundColor: "#0D0D12",
-      image: require("../../assets/djq-icon-texture.png"),
-    },
-    {
-      name: "sponsorships",
-      title: "Sponsorships",
-      url: "https://sponsorships.builddetroit.xyz/",
-      emoji: "💎",
-      backgroundColor: "#8B5CF6",
-    },
-    {
-      name: "localhost-3000",
-      title: "Local :3000",
-      url: "http://localhost:3000",
-      emoji: "🔧",
-      backgroundColor: "#059669",
-    },
-    {
-      name: "localhost-3001",
-      title: "Local :3001",
-      url: "http://localhost:3001",
-      emoji: "🔧",
-      backgroundColor: "#0891B2",
-    },
-    {
-      name: "localhost-3002",
-      title: "Local :3002",
-      url: "http://localhost:3002",
-      emoji: "🔧",
-      backgroundColor: "#7C3AED",
-    },
-    {
-      name: "localhost-3003",
-      title: "Local :3003",
-      url: "http://localhost:3003",
-      emoji: "🔧",
-      backgroundColor: "#DB2777",
-    },
-    {
-      name: "localhost-3004",
-      title: "Local :3004",
-      url: "http://localhost:3004",
-      emoji: "🔧",
-      backgroundColor: "#EA580C",
-    },
-    {
-      name: "localhost-3005",
-      title: "Local :3005",
-      url: "http://localhost:3005",
-      emoji: "🔧",
-      backgroundColor: "#14B8A6",
-    },
-    {
-      name: "template",
-      title: "Template",
-      url: "https://template.builddetroit.xyz/",
-      emoji: "📋",
-      backgroundColor: "#6366F1",
-    },
-  ], []);
+  const miniApps: MiniApp[] = React.useMemo(() => {
+    const apps: MiniApp[] = [
+      {
+        name: "vibe-code-detroit",
+        title: "Vibe Code",
+        url: "https://vibe.builddetroit.xyz/",
+        backgroundColor: "#7C3AED",
+        image: require("../../assets/vibe-code-detroit.png"),
+      },
+      {
+        name: "d-newtech",
+        title: "D-NewTech",
+        url: "https://dnewtech.builddetroit.xyz/",
+        backgroundColor: "#0EA5E9",
+        image: require("../../assets/d-new-tech.png"),
+      },
+      {
+        name: "djq",
+        title: "DJQ",
+        url: "https://djq.builddetroit.xyz/dashboard",
+        backgroundColor: "#0D0D12",
+        image: require("../../assets/djq-icon-texture.png"),
+      },
+      {
+        name: "sponsorships",
+        title: "Sponsorships",
+        url: "https://sponsorships.builddetroit.xyz/",
+        emoji: "💎",
+        backgroundColor: "#8B5CF6",
+      },
+      {
+        name: "create-app-block",
+        title: "Create App Block",
+        url: "https://template.builddetroit.xyz/",
+        backgroundColor: "#0D0D12",
+        image: require("../../assets/create-app-block.png"),
+      },
+    ];
+
+    // Only show localhost apps in development environment
+    if (__DEV__) {
+      apps.push(
+        {
+          name: "localhost-3000",
+          title: "Local :3000",
+          url: "http://localhost:3000",
+          emoji: "🔧",
+          backgroundColor: "#059669",
+        },
+        {
+          name: "localhost-3001",
+          title: "Local :3001",
+          url: "http://localhost:3001",
+          emoji: "🔧",
+          backgroundColor: "#0891B2",
+        },
+        {
+          name: "localhost-3002",
+          title: "Local :3002",
+          url: "http://localhost:3002",
+          emoji: "🔧",
+          backgroundColor: "#7C3AED",
+        },
+        {
+          name: "localhost-3003",
+          title: "Local :3003",
+          url: "http://localhost:3003",
+          emoji: "🔧",
+          backgroundColor: "#DB2777",
+        },
+        {
+          name: "localhost-3004",
+          title: "Local :3004",
+          url: "http://localhost:3004",
+          emoji: "🔧",
+          backgroundColor: "#EA580C",
+        },
+      );
+    }
+
+    return apps;
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>

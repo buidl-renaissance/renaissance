@@ -122,7 +122,7 @@ export async function getUserByUsername(username: string): Promise<any> {
 }
 
 /**
- * Update user profile (profilePicture, farcasterId, displayName)
+ * Update user profile (profilePicture, farcasterId, displayName, email, phone)
  * Requires signature verification for profilePicture and farcasterId fields
  */
 export async function updateUserProfile(params: {
@@ -131,8 +131,10 @@ export async function updateUserProfile(params: {
   profilePicture?: string | null; // base64 encoded image data
   username?: string;
   displayName?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }): Promise<any> {
-  const { userId, farcasterId, profilePicture, username, displayName } = params;
+  const { userId, farcasterId, profilePicture, username, displayName, email, phone } = params;
 
   // Build update data
   const updateData: any = {};
@@ -141,6 +143,12 @@ export async function updateUserProfile(params: {
   }
   if (displayName !== undefined) {
     updateData.displayName = displayName;
+  }
+  if (email !== undefined) {
+    updateData.email = email;
+  }
+  if (phone !== undefined) {
+    updateData.phone = phone;
   }
   if (farcasterId !== undefined) {
     updateData.farcasterId = farcasterId;

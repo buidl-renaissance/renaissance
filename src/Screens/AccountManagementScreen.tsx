@@ -43,6 +43,8 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPhone, setSignupPhone] = useState("");
   const [profileImageBase64, setProfileImageBase64] = useState<string | null>(null);
   const [profileImagePreviewUri, setProfileImagePreviewUri] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -59,6 +61,8 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
   const [displayUserId, setDisplayUserId] = useState<number | null>(null);
   const isProcessingUpdateImageRef = React.useRef(false);
   const [editDisplayName, setEditDisplayName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   
   // Existing account state
   const [existingAccount, setExistingAccount] = useState<any | null>(null);
@@ -204,6 +208,8 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
     setUsername("");
     setUsernameError("");
     setDisplayName("");
+    setSignupEmail("");
+    setSignupPhone("");
     setProfileImageBase64(null);
     setProfileImagePreviewUri(null);
     setLastProcessedImageUri(null);
@@ -401,6 +407,8 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
           publicAddress,
           username,
           displayName: displayName || null,
+          email: signupEmail || null,
+          phone: signupPhone || null,
           profilePicture: profileImageBase64,
           farcasterId: null,
         }),
@@ -619,16 +627,30 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
     setUpdateProfileImageBase64(null);
     setUpdateProfileImagePreviewUri(null);
     setEditDisplayName("");
+    setEditEmail("");
+    setEditPhone("");
     // Don't clear lastProcessedUpdateImageUri here - it should persist to prevent re-triggering
   };
 
-  const openEditProfileModal = () => {
+  const openEditProfileModal = async () => {
     // Initialize edit form with current values
     setEditDisplayName(state.user?.displayName || state.user?.username || "");
     setShowEditProfileModal(true);
+    
+    // Fetch current email and phone from backend
+    const userId = await getBackendUserId();
+    if (userId) {
+      try {
+        const userData = await getUserById(userId);
+        setEditEmail(userData.email || "");
+        setEditPhone(userData.phone || "");
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
   };
 
-  const handleUpdateDisplayName = async () => {
+  const handleUpdateProfile = async () => {
     const userId = await getBackendUserId();
     if (!userId) {
       Alert.alert("Error", "Unable to find your account. Please try again.");
@@ -641,15 +663,17 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
       await updateUserProfile({
         userId: userId,
         displayName: editDisplayName || null,
+        email: editEmail || null,
+        phone: editPhone || null,
       });
 
       // Refresh user data from backend
       await refreshUser();
       
-      Alert.alert("Success", "Name updated successfully");
+      Alert.alert("Success", "Profile updated successfully");
     } catch (error) {
-      console.error("Error updating display name:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to update name";
+      console.error("Error updating profile:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile";
       Alert.alert("Error", errorMessage);
     } finally {
       setIsUpdatingProfile(false);
@@ -831,7 +855,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                   </View>
 
                   {/* Display Name */}
-                  <View style={[styles.updateItem, styles.updateItemLast]}>
+                  <View style={styles.updateItem}>
                     <Text style={styles.updateLabel}>Name</Text>
                     <Text style={styles.updateHelperText}>
                       Your display name shown to others
@@ -839,22 +863,59 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                     <TextInput
                       style={styles.input}
                       placeholder="Enter your name"
+                      placeholderTextColor="#9CA3AF"
                       value={editDisplayName}
                       onChangeText={setEditDisplayName}
                       autoCapitalize="words"
                       autoCorrect={false}
                       maxLength={50}
                     />
+                  </View>
+
+                  {/* Email */}
+                  <View style={styles.updateItem}>
+                    <Text style={styles.updateLabel}>Email</Text>
+                    <Text style={styles.updateHelperText}>
+                      Your email address (optional)
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor="#9CA3AF"
+                      value={editEmail}
+                      onChangeText={setEditEmail}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="email-address"
+                      textContentType="emailAddress"
+                    />
+                  </View>
+
+                  {/* Phone */}
+                  <View style={[styles.updateItem, styles.updateItemLast]}>
+                    <Text style={styles.updateLabel}>Phone</Text>
+                    <Text style={styles.updateHelperText}>
+                      Your phone number (optional)
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your phone number"
+                      placeholderTextColor="#9CA3AF"
+                      value={editPhone}
+                      onChangeText={setEditPhone}
+                      keyboardType="phone-pad"
+                      textContentType="telephoneNumber"
+                    />
                     <TouchableOpacity
                       style={[styles.updateButton, styles.updateButtonPrimary, styles.updateButtonFull, { marginTop: 12 }]}
-                      onPress={handleUpdateDisplayName}
+                      onPress={handleUpdateProfile}
                       disabled={isUpdatingProfile}
                     >
                       {isUpdatingProfile ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
                         <Text style={[styles.updateButtonText, styles.updateButtonTextPrimary]}>
-                          Save Name
+                          Save Profile
                         </Text>
                       )}
                     </TouchableOpacity>
@@ -1046,6 +1107,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="Your display name (optional)"
+                  placeholderTextColor="#9CA3AF"
                   value={displayName}
                   onChangeText={setDisplayName}
                   autoCapitalize="words"
@@ -1057,6 +1119,36 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 </Text>
               </View>
 
+              {/* Email Input */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Your email address (optional)"
+                  placeholderTextColor="#9CA3AF"
+                  value={signupEmail}
+                  onChangeText={setSignupEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                />
+              </View>
+
+              {/* Phone Input */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>Phone</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Your phone number (optional)"
+                  placeholderTextColor="#9CA3AF"
+                  value={signupPhone}
+                  onChangeText={setSignupPhone}
+                  keyboardType="phone-pad"
+                  textContentType="telephoneNumber"
+                />
+              </View>
+
               {/* Username Input */}
               <View>
                 <Text style={styles.sectionLabel}>Username *</Text>
@@ -1066,6 +1158,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                     usernameError ? styles.inputError : null,
                   ]}
                   placeholder="Choose a username"
+                  placeholderTextColor="#9CA3AF"
                   value={username}
                   onChangeText={handleUsernameChange}
                   autoCapitalize="none"
@@ -1076,7 +1169,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                   <Text style={styles.errorText}>{usernameError}</Text>
                 ) : (
                   <Text style={styles.helperText}>
-                    3-20 characters, letters, numbers, and underscores only
+                    Your username is permanent and cannot be changed
                   </Text>
                 )}
               </View>
