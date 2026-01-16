@@ -8,9 +8,7 @@ import {
   Image,
   ImageSourcePropType,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { DismissibleScrollModal } from "./DismissibleScrollModal";
-import { useAuth } from "../context/Auth";
 import { theme } from "../colors";
 
 interface MiniApp {
@@ -345,40 +343,13 @@ interface MiniAppsModalProps {
   isVisible: boolean;
   onClose: () => void;
   onOpenApp: (app: MiniApp) => void;
-  onNavigateToAccount?: () => void;
 }
 
 export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
   isVisible,
   onClose,
   onOpenApp,
-  onNavigateToAccount,
 }) => {
-  const { state: authState } = useAuth();
-
-  const getAuthStatusLabel = () => {
-    if (!authState.isAuthenticated) return "Not signed in";
-    if (authState.user?.type === "farcaster") return `@${authState.user.username || "user"}`;
-    if (authState.user?.type === "local_email") return authState.user.local?.email || "Email user";
-    return "Guest";
-  };
-
-  const renderHeaderRight = () => {
-    if (!onNavigateToAccount) return null;
-    return (
-      <TouchableOpacity
-        style={styles.headerAccountButton}
-        onPress={onNavigateToAccount}
-      >
-        <Ionicons
-          name={authState.isAuthenticated ? "person-circle" : "person-circle-outline"}
-          size={24}
-          color={authState.isAuthenticated ? "#6366F1" : theme.textSecondary}
-        />
-      </TouchableOpacity>
-    );
-  };
-
   const renderSectionHeader = ({ section }: { section: MiniAppSection }) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -411,8 +382,7 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
     <DismissibleScrollModal
       isVisible={isVisible}
       onClose={onClose}
-      title="Mini Apps"
-      headerRight={renderHeaderRight()}
+      title="App Blocks"
     >
       {({ onScroll, scrollEnabled }) => (
         <SectionList
@@ -422,30 +392,6 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
           scrollEventThrottle={16}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={false}
-          ListHeaderComponent={
-            <TouchableOpacity
-              style={[
-                styles.authBanner,
-                authState.isAuthenticated && styles.authBannerAuthenticated,
-              ]}
-              onPress={onNavigateToAccount}
-            >
-              <View style={styles.authBannerContent}>
-                <Ionicons
-                  name={authState.isAuthenticated ? "checkmark-circle" : "alert-circle-outline"}
-                  size={20}
-                  color={authState.isAuthenticated ? "#10B981" : "#F59E0B"}
-                />
-                <View style={styles.authBannerText}>
-                  <Text style={styles.authBannerTitle}>
-                    {authState.isAuthenticated ? "Signed In" : "Sign in for full access"}
-                  </Text>
-                  <Text style={styles.authBannerSubtitle}>{getAuthStatusLabel()}</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-            </TouchableOpacity>
-          }
           renderSectionHeader={renderSectionHeader}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
@@ -456,9 +402,6 @@ export const MiniAppsModal: React.FC<MiniAppsModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-  headerAccountButton: {
-    padding: 4,
-  },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -474,37 +417,6 @@ const styles = StyleSheet.create({
     color: theme.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-  },
-  authBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: theme.warningBackground || theme.surfaceElevated,
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 12,
-  },
-  authBannerAuthenticated: {
-    backgroundColor: theme.successBackground || theme.surface,
-  },
-  authBannerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  authBannerText: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  authBannerTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.text,
-  },
-  authBannerSubtitle: {
-    fontSize: 12,
-    color: theme.textSecondary,
-    marginTop: 2,
   },
   appCard: {
     backgroundColor: theme.background,

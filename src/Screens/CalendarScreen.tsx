@@ -18,6 +18,7 @@ import { HeroBanner } from "../Components/HeroBanner";
 import { getProvider } from "../utils/web3";
 
 import Icon, { IconTypes } from "../Components/Icon";
+import { Ionicons } from "@expo/vector-icons";
 import { HeaderTitleImage } from "../Components/HeaderTitleImage";
 import { SuggestedActivities } from "../Components/SuggestedActivities";
 import { theme } from "../colors";
@@ -298,6 +299,10 @@ const CalendarScreen = ({ navigation }) => {
   const handleShowAccount = React.useCallback(() => {
     navigation.push("Account");
   }, []);
+
+  const handleCreateAccount = React.useCallback(() => {
+    navigation.push("AccountManagement");
+  }, [navigation]);
 
   const handleCreateFlyer = React.useCallback(() => {
     setCreateFlyerModalVisible(true);
@@ -805,11 +810,18 @@ const CalendarScreen = ({ navigation }) => {
   // Memoize mini apps configuration
   const miniApps: MiniApp[] = React.useMemo(() => [
     {
-      name: "colab",
-      title: "Co.Lab",
-      url: "https://co.lab.builddetroit.xyz/",
-      emoji: "🤝",
-      backgroundColor: "#8B5CF6",
+      name: "void",
+      title: "Into the Void",
+      url: "https://void.builddetroit.xyz/",
+      backgroundColor: "#18181B",
+      image: require("../../assets/into-the-void.png"),
+    },
+    {
+      name: "people",
+      title: "People",
+      url: "https://people.builddetroit.xyz/",
+      backgroundColor: "#6366F1",
+      image: require("../../assets/renaissance-people-3.png"),
     },
     {
       name: "game-night",
@@ -824,13 +836,6 @@ const CalendarScreen = ({ navigation }) => {
       url: "https://djq.builddetroit.xyz/dashboard",
       backgroundColor: "#0D0D12",
       image: require("../../assets/djq-icon-texture.png"),
-    },
-    {
-      name: "void",
-      title: "Into the Void",
-      url: "https://void.builddetroit.xyz/",
-      backgroundColor: "#18181B",
-      image: require("../../assets/into-the-void.png"),
     },
     {
       name: "create-app-block",
@@ -895,8 +900,33 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )} */}
 
-        {/* Mini Apps Section */}
-        <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
+        {/* Create Account Prompt - shown when user is not authenticated */}
+        {!authState.isAuthenticated && (
+          <View style={styles.createAccountCard}>
+            <View style={styles.createAccountIconContainer}>
+              <Ionicons name="apps" size={32} color="#8B5CF6" />
+            </View>
+            <View style={styles.createAccountContent}>
+              <Text style={styles.createAccountTitle}>Unlock App Blocks</Text>
+              <Text style={styles.createAccountDescription}>
+                Create an account to access App Blocks — collaborative tools, games, and experiences built by the Detroit community.
+              </Text>
+              <TouchableOpacity
+                style={styles.createAccountButton}
+                onPress={handleCreateAccount}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.createAccountButtonText}>Get Started</Text>
+                <Ionicons name="arrow-forward" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* App Blocks Section - only shown when authenticated */}
+        {authState.isAuthenticated && (
+          <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
+        )}
 
         {/* Plan Your NYE - Featured RA events on New Year's Eve - HIDDEN */}
         {/* NYE events section has been hidden. The event display layout has been extracted to HorizontalRAEventList component for reuse. */}
@@ -947,7 +977,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isAuthenticated, handleCreateAccount]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1077,7 +1107,7 @@ const CalendarScreen = ({ navigation }) => {
         onQRCodePress={authState.isAuthenticated ? handleQRCodePress : undefined}
         // Wallet functionality hidden for now
         // onWalletPress={authState.isAuthenticated ? handleWalletPress : undefined}
-        onAppsPress={handleMiniAppsPress}
+        onAppsPress={authState.isAuthenticated ? handleMiniAppsPress : undefined}
         onAdminPress={handleAdminPress}
         showAdmin={contact?.id === 1}
         // walletBalance={walletBalance}
@@ -1141,10 +1171,6 @@ const CalendarScreen = ({ navigation }) => {
         isVisible={miniAppsModalVisible}
         onClose={() => setMiniAppsModalVisible(false)}
         onOpenApp={handleOpenMiniApp}
-        onNavigateToAccount={() => {
-          setMiniAppsModalVisible(false);
-          navigation.push("AccountManagement");
-        }}
       />
     </View>
   );
@@ -1222,6 +1248,56 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: theme.textSecondary,
+  },
+  createAccountCard: {
+    backgroundColor: theme.surfaceElevated,
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  createAccountIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(139, 92, 246, 0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  createAccountContent: {
+    flex: 1,
+  },
+  createAccountTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: theme.text,
+    marginBottom: 6,
+  },
+  createAccountDescription: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  createAccountButton: {
+    backgroundColor: "#8B5CF6",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+  },
+  createAccountButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
 
