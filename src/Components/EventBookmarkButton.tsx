@@ -20,6 +20,7 @@ export const EventBookmarkButton = ({
 }: EventBookmarkButtonProps) => {
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(initialBookmarkStatus ?? false);
 
+  // Listen for bookmark events from other components
   React.useEffect(() => {
     const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
       if (event.id === data.event?.id) {
@@ -31,27 +32,31 @@ export const EventBookmarkButton = ({
       if (typeof listener === "string")
         EventRegister.removeEventListener(listener);
     };
-  });
+  }, [event.id]);
 
   // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {
     if (initialBookmarkStatus !== undefined) return;
     (async () => {
-      const isBookmarked = await getBookmarkStatus(event);
-      setIsBookmarked(isBookmarked);
+      const bookmarked = await getBookmarkStatus(event);
+      setIsBookmarked(bookmarked);
     })();
-  }, [initialBookmarkStatus]);
+  }, [initialBookmarkStatus, event.id]);
 
   const handleBookmarkPress = React.useCallback(() => {
-    (async () => {
-      await toggleBookmark(event);
-      EventRegister.emitEvent("BookmarkEvent", {
-        event,
-        isBookmarked: !isBookmarked,
-      });
-    })();
-    setIsBookmarked(!isBookmarked);
-  }, [isBookmarked]);
+    setIsBookmarked(prev => {
+      const newValue = !prev;
+      // Perform async operations with the new value
+      (async () => {
+        await toggleBookmark(event);
+        EventRegister.emitEvent("BookmarkEvent", {
+          event,
+          isBookmarked: newValue,
+        });
+      })();
+      return newValue;
+    });
+  }, [event]);
 
   return (
     <TouchableOpacity
