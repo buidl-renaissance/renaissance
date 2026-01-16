@@ -900,8 +900,21 @@ const CalendarScreen = ({ navigation }) => {
           </View>
         )} */}
 
+        {/* Auth Section - show skeleton while loading */}
+        {authState.isLoading && (
+          <View style={styles.authSkeleton}>
+            <View style={styles.skeletonCircle} />
+            <View style={styles.skeletonContent}>
+              <View style={styles.skeletonTitle} />
+              <View style={styles.skeletonText} />
+              <View style={styles.skeletonTextShort} />
+              <View style={styles.skeletonButton} />
+            </View>
+          </View>
+        )}
+
         {/* Create Account Prompt - shown when user is not authenticated */}
-        {!authState.isAuthenticated && (
+        {!authState.isLoading && !authState.isAuthenticated && (
           <View style={styles.createAccountCard}>
             <View style={styles.createAccountIconContainer}>
               <Ionicons name="apps" size={32} color="#8B5CF6" />
@@ -924,7 +937,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
 
         {/* App Blocks Section - only shown when authenticated */}
-        {authState.isAuthenticated && (
+        {!authState.isLoading && authState.isAuthenticated && (
           <MiniAppsGrid apps={miniApps} onPress={handleMiniAppPress} />
         )}
 
@@ -977,7 +990,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isAuthenticated, handleCreateAccount]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1298,6 +1311,55 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "600",
+  },
+  // Skeleton styles for auth loading state
+  authSkeleton: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: theme.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.border,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  skeletonCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.border,
+    marginRight: 16,
+  },
+  skeletonContent: {
+    flex: 1,
+  },
+  skeletonTitle: {
+    width: "60%",
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: theme.border,
+    marginBottom: 10,
+  },
+  skeletonText: {
+    width: "90%",
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: theme.border,
+    marginBottom: 6,
+  },
+  skeletonTextShort: {
+    width: "70%",
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: theme.border,
+    marginBottom: 14,
+  },
+  skeletonButton: {
+    width: 100,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: theme.border,
   },
 });
 
