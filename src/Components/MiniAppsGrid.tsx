@@ -53,8 +53,6 @@ export const MiniAppsGrid: React.FC<MiniAppsGridProps> = ({
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    paddingHorizontal: 12,
-    gap: 10,
-    justifyContent: "flex-start",
+    justifyContent: "space-evenly",
   },
 });
