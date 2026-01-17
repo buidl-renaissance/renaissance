@@ -20,7 +20,7 @@ import { lightGreen, theme } from "../colors";
 import { useImagePicker } from "../hooks/useImagePicker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { getWallet } from "../utils/wallet";
-import { updateUserProfile, getUserById, getUserByWalletAddress } from "../api/user";
+import { updateUserProfile, getUserById, getUserByWalletAddress, createUserAccount } from "../api/user";
 
 interface AccountManagementScreenProps {
   navigation: any;
@@ -394,43 +394,21 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
         console.log("No existing account found, proceeding with account creation");
       }
 
-      // No existing account found, create new one
+      // No existing account found, create new one with signed request
       console.log("Creating new account with:", { publicAddress, username, displayName, profilePictureLength: profileImageBase64?.length });
 
-      // Create user account on backend
-      const response = await fetch("https://people.builddetroit.xyz/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publicAddress,
-          username,
-          displayName: displayName || null,
-          email: signupEmail || null,
-          phone: signupPhone || null,
-          profilePicture: profileImageBase64,
-          farcasterId: null,
-        }),
+      // Create user account on backend with signature verification
+      const userData = await createUserAccount({
+        publicAddress,
+        username,
+        name: displayName || null,
+        displayName: displayName || null,
+        email: signupEmail || null,
+        phone: signupPhone || null,
+        profilePicture: profileImageBase64,
+        farcasterId: null,
       });
 
-      if (!response.ok) {
-        let errorMessage = "Failed to create account";
-        const responseText = await response.text();
-        console.error("Response status:", response.status, response.statusText);
-        console.error("Response body:", responseText);
-        
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.error || errorMessage;
-          console.error("Backend error response:", errorData);
-        } catch (parseError) {
-          errorMessage = responseText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const userData = await response.json();
       console.log("User created successfully:", userData);
       console.log("Backend user ID:", userData.id);
 

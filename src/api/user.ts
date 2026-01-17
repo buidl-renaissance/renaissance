@@ -16,13 +16,35 @@ export function getUserProfileImageUrl(username: string | null | undefined): str
 }
 
 /**
+ * Construct the message that needs to be signed for account creation
+ * This matches the backend's constructCreateMessage function
+ */
+export function constructCreateMessage(
+  publicAddress: string,
+  username: string,
+  name: string | null | undefined
+): string {
+  const parts = [
+    `Create Renaissance account`,
+    `Address: ${publicAddress}`,
+    `Username: ${username}`,
+    name ? `Name: ${name}` : null,
+  ].filter((part) => part !== null) as string[];
+
+  return parts.join("\n");
+}
+
+/**
  * Construct the message that needs to be signed for account updates
  * This matches the backend's constructUpdateMessage function
  */
 export function constructUpdateMessage(
   userId: number,
   farcasterId: string | null | undefined,
-  profilePicture: string | null | undefined
+  profilePicture: string | null | undefined,
+  name: string | null | undefined,
+  email: string | null | undefined,
+  phone: string | null | undefined
 ): string {
   const parts = [
     `Update account for user ID: ${userId}`,
@@ -32,18 +54,34 @@ export function constructUpdateMessage(
     profilePicture !== undefined
       ? `Profile Picture: ${profilePicture ? "updated" : "null"}`
       : null,
+    name !== undefined
+      ? `Name: ${name ?? "null"}`
+      : null,
+    email !== undefined
+      ? `Email: ${email ?? "null"}`
+      : null,
+    phone !== undefined
+      ? `Phone: ${phone ?? "null"}`
+      : null,
   ].filter((part) => part !== null) as string[];
 
   return parts.join("\n");
 }
 
 /**
- * Sign an update message with the wallet
+ * Sign a message with the wallet
  */
-export async function signUpdateMessage(message: string): Promise<string> {
+export async function signMessage(message: string): Promise<string> {
   const wallet = await getWallet();
   const signature = await wallet.signMessage(message);
   return signature;
+}
+
+/**
+ * Sign an update message with the wallet (alias for signMessage for backwards compatibility)
+ */
+export async function signUpdateMessage(message: string): Promise<string> {
+  return signMessage(message);
 }
 
 /**
@@ -122,8 +160,107 @@ export async function getUserByUsername(username: string): Promise<any> {
 }
 
 /**
+ * Create a new user account with signature verification
+ * Requires signature to prove ownership of the publicAddress
+ */
+export async function createUserAccount(params: {
+  publicAddress: string;
+  username: string;
+  name?: string | null;
+  displayName?: string | null;
+  profilePicture?: string | null; // base64 encoded image data
+  email?: string | null;
+  phone?: string | null;
+  farcasterId?: string | null;
+}): Promise<any> {
+  const { publicAddress, username, name, displayName, profilePicture, email, phone, farcasterId } = params;
+
+  // Construct the message that needs to be signed
+  const message = constructCreateMessage(publicAddress, username, name || displayName);
+  console.log("[createUserAccount] Message to sign:", message);
+  
+  // Sign the message to prove ownership of the wallet
+  const signature = await signMessage(message);
+  console.log("[createUserAccount] Signature:", signature);
+
+  // Build request data
+  const requestData: any = {
+    publicAddress,
+    username,
+    signature,
+  };
+  
+  if (name !== undefined) {
+    requestData.name = name;
+  }
+  if (displayName !== undefined) {
+    requestData.displayName = displayName;
+  }
+  if (profilePicture !== undefined) {
+    requestData.profilePicture = profilePicture;
+  }
+  if (email !== undefined) {
+    requestData.email = email;
+  }
+  if (phone !== undefined) {
+    requestData.phone = phone;
+  }
+  if (farcasterId !== undefined) {
+    requestData.farcasterId = farcasterId;
+  }
+
+  const url = `${API_BASE_URL}/users`;
+  const requestBody = JSON.stringify(requestData);
+  
+  console.log("[createUserAccount] Request URL:", url);
+  console.log("[createUserAccount] Request method: POST");
+  console.log("[createUserAccount] Request body:", {
+    ...requestData,
+    profilePicture: profilePicture ? `${profilePicture.substring(0, 50)}... (${profilePicture.length} chars)` : profilePicture,
+    signature: `${signature.substring(0, 20)}...`,
+  });
+  console.log("[createUserAccount] Full request body length:", requestBody.length, "bytes");
+
+  let response: Response;
+  try {
+    console.log("[createUserAccount] Sending fetch request...");
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
+    console.log("[createUserAccount] Fetch completed, response received");
+    console.log("[createUserAccount] Response status:", response.status, response.statusText);
+    console.log("[createUserAccount] Response ok:", response.ok);
+  } catch (error) {
+    console.error("[createUserAccount] Network error:", error);
+    throw new Error(`Network error: ${error instanceof Error ? error.message : "Failed to send request"}`);
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.log("[createUserAccount] Error response text:", errorText);
+    let errorMessage = "Failed to create account";
+    try {
+      const errorData = JSON.parse(errorText);
+      errorMessage = errorData.error || errorMessage;
+      console.log("[createUserAccount] Error response data:", errorData);
+    } catch (e) {
+      errorMessage = errorText || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  const responseData = await response.json();
+  console.log("[createUserAccount] Success response:", responseData);
+  return responseData;
+}
+
+/**
  * Update user profile (profilePicture, farcasterId, displayName, email, phone)
- * Requires signature verification for profilePicture and farcasterId fields
+ * Requires signature verification for all protected fields
  */
 export async function updateUserProfile(params: {
   userId: number;
@@ -157,14 +294,20 @@ export async function updateUserProfile(params: {
     updateData.profilePicture = profilePicture;
   }
 
-  // If updating farcasterId or profilePicture, we need a signature
-  if (farcasterId !== undefined || profilePicture !== undefined) {
-    const message = constructUpdateMessage(userId, farcasterId, profilePicture);
-    console.log("[updateUserProfile] Message to sign:", message);
-    const signature = await signUpdateMessage(message);
-    console.log("[updateUserProfile] Signature:", signature);
-    updateData.signature = signature;
-  }
+  // All profile updates now require signature verification
+  // Construct message with all fields that are being updated
+  const message = constructUpdateMessage(
+    userId,
+    farcasterId,
+    profilePicture,
+    displayName,
+    email,
+    phone
+  );
+  console.log("[updateUserProfile] Message to sign:", message);
+  const signature = await signMessage(message);
+  console.log("[updateUserProfile] Signature:", signature);
+  updateData.signature = signature;
 
   const url = `${API_BASE_URL}/users/${userId}`;
   const requestBody = JSON.stringify(updateData);
