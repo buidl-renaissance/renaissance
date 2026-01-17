@@ -31,6 +31,14 @@ const MINI_APP_SECTIONS: MiniAppSection[] = [
     title: "Featured",
     data: [
       {
+        id: "events",
+        name: "Events",
+        description: "Discover what's happening in Detroit. Browse upcoming events, concerts, and community gatherings.",
+        url: "https://events.builddetroit.xyz/",
+        color: "#6366F1",
+        image: require("../../assets/renaissance-events.png"),
+      },
+      {
         id: "art",
         name: "Art",
         description: "Discover Detroit's vibrant art scene. Explore featured pieces and support local artists.",
