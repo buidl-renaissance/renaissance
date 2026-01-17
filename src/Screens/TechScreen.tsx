@@ -64,7 +64,7 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
       {
         name: "create-app-block",
         title: "Create App Block",
-        url: "https://template.builddetroit.xyz/",
+        url: "https://create-app-block.builddetroit.xyz/",
         backgroundColor: "#0D0D12",
         image: require("../../assets/create-app-block.png"),
       },
