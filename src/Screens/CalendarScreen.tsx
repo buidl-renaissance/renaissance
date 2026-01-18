@@ -811,13 +811,6 @@ const CalendarScreen = ({ navigation }) => {
   const miniApps: MiniApp[] = React.useMemo(() => {
     const apps: MiniApp[] = [
       {
-        name: "linked",
-        title: "Linked",
-        url: "https://linked.builddetroit.xyz/",
-        backgroundColor: "#0A66C2",
-        image: require("../../assets/linked.png"),
-      },
-      {
         name: "people",
         title: "People",
         url: "https://people.builddetroit.xyz/",
@@ -837,6 +830,13 @@ const CalendarScreen = ({ navigation }) => {
         url: "https://djq.builddetroit.xyz/dashboard",
         backgroundColor: "#0D0D12",
         image: require("../../assets/djq-icon-texture.png"),
+      },
+      {
+        name: "linked",
+        title: "Linked",
+        url: "https://linked.builddetroit.xyz/",
+        backgroundColor: "#0A66C2",
+        image: require("../../assets/linked.png"),
       },
       {
         name: "create-app-block",
