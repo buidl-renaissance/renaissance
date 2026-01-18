@@ -811,11 +811,11 @@ const CalendarScreen = ({ navigation }) => {
   const miniApps: MiniApp[] = React.useMemo(() => {
     const apps: MiniApp[] = [
       {
-        name: "void",
-        title: "Into the Void",
-        url: "https://void.builddetroit.xyz/",
-        backgroundColor: "#18181B",
-        image: require("../../assets/into-the-void.png"),
+        name: "linked",
+        title: "Linked",
+        url: "https://linked.builddetroit.xyz/",
+        backgroundColor: "#0A66C2",
+        image: require("../../assets/linked.png"),
       },
       {
         name: "people",
