@@ -1079,6 +1079,31 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                 </TouchableOpacity>
               </View>
 
+              {/* Username Input */}
+              <View style={styles.inputSection}>
+                <Text style={styles.sectionLabel}>Username *</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    usernameError ? styles.inputError : null,
+                  ]}
+                  placeholder="Choose a username"
+                  placeholderTextColor="#9CA3AF"
+                  value={username}
+                  onChangeText={handleUsernameChange}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={20}
+                />
+                {usernameError ? (
+                  <Text style={styles.errorText}>{usernameError}</Text>
+                ) : (
+                  <Text style={styles.helperText}>
+                    Your username is permanent and cannot be changed
+                  </Text>
+                )}
+              </View>
+
               {/* Display Name Input */}
               <View style={styles.inputSection}>
                 <Text style={styles.sectionLabel}>Name</Text>
@@ -1114,7 +1139,7 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
               </View>
 
               {/* Phone Input */}
-              <View style={styles.inputSection}>
+              <View>
                 <Text style={styles.sectionLabel}>Phone</Text>
                 <TextInput
                   style={styles.input}
@@ -1125,31 +1150,6 @@ const AccountManagementScreen: React.FC<AccountManagementScreenProps> = ({
                   keyboardType="phone-pad"
                   textContentType="telephoneNumber"
                 />
-              </View>
-
-              {/* Username Input */}
-              <View>
-                <Text style={styles.sectionLabel}>Username *</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    usernameError ? styles.inputError : null,
-                  ]}
-                  placeholder="Choose a username"
-                  placeholderTextColor="#9CA3AF"
-                  value={username}
-                  onChangeText={handleUsernameChange}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  maxLength={20}
-                />
-                {usernameError ? (
-                  <Text style={styles.errorText}>{usernameError}</Text>
-                ) : (
-                  <Text style={styles.helperText}>
-                    Your username is permanent and cannot be changed
-                  </Text>
-                )}
               </View>
 
               <TouchableOpacity
