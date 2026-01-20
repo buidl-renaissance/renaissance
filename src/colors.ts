@@ -72,6 +72,7 @@ export const darkTheme = {
   eventMeetup: '#f97316',
   eventInstagram: '#E4405F',
   eventSports: '#10b981',
+  eventRenaissance: '#8B5CF6',
 };
 
 // Light theme colors
@@ -145,6 +146,7 @@ export const lightTheme = {
   eventMeetup: '#f97316',
   eventInstagram: '#E4405F',
   eventSports: '#10b981',
+  eventRenaissance: '#8B5CF6',
 };
 
 // Using dark theme as default

@@ -5,7 +5,7 @@ const API_BASE_URL = "https://people.builddetroit.xyz/api";
 /**
  * Valid bookmark sources that the backend accepts
  */
-export type BookmarkSource = 'instagram' | 'meetup' | 'eventbrite' | 'luma' | 'custom' | 'sports' | 'ra';
+export type BookmarkSource = 'instagram' | 'meetup' | 'eventbrite' | 'luma' | 'custom' | 'sports' | 'ra' | 'renaissance';
 
 /**
  * Bookmark response type from the backend

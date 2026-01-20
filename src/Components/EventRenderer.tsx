@@ -7,12 +7,14 @@ import { MeetupEventCard } from "./MeetupEventCard";
 import { FlyerEventCard } from "./FlyerEventCard";
 import { SportsGameCard } from "./SportsGameCard";
 import { InstagramEventCard } from "./InstagramEventCard";
+import { RenaissanceEventCard } from "./RenaissanceEventCard";
 import {
   DAEvent,
   LumaEvent,
   RAEvent,
   MeetupEvent,
   InstagramEvent,
+  RenaissanceEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import { ConnectionBookmarkUser, BookmarkSource } from "../api/bookmarks";
@@ -27,6 +29,7 @@ export interface EventRendererProps {
   onSelectMeetupEvent?: (event: MeetupEvent) => void;
   onSelectSportsEvent?: (game: SportsGame) => void;
   onSelectInstagramEvent?: (event: InstagramEvent) => void;
+  onSelectRenaissanceEvent?: (event: RenaissanceEvent) => void;
   onSelectFlyerEvent?: (event: any) => void;
   containerStyle?: any;
   showFeaturedImage?: boolean; // Whether to show featured image for DA events (default: false)
@@ -50,6 +53,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   onSelectMeetupEvent,
   onSelectSportsEvent,
   onSelectInstagramEvent,
+  onSelectRenaissanceEvent,
   onSelectFlyerEvent,
   containerStyle = { paddingHorizontal: 16 },
   showFeaturedImage = false,
@@ -76,6 +80,8 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
       return getConnectionsForEvent(String(item.id), 'sports');
     } else if (eventType === 'instagram' && item.id) {
       return getConnectionsForEvent(String(item.id), 'instagram');
+    } else if (eventType === 'renaissance' && item.id) {
+      return getConnectionsForEvent(String(item.id), 'renaissance');
     } else if (item.id) {
       // DA event
       return getConnectionsForEvent(String(item.id), 'custom');
@@ -212,6 +218,30 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
           onSelectEvent={() => {
             if (onSelectInstagramEvent) {
               onSelectInstagramEvent(instagramEvent);
+            }
+          }}
+        />
+      </View>
+    );
+  }
+
+  // Renaissance event
+  if (eventType === "renaissance") {
+    const renaissanceEvent = item as RenaissanceEvent;
+    return (
+      <View style={containerStyle}>
+        <RenaissanceEventCard
+          event={renaissanceEvent}
+          options={{
+            showVenue: true,
+            showImage: true,
+            showHost: true,
+          }}
+          initialBookmarkStatus={initialBookmarkStatus}
+          connections={connections}
+          onSelectEvent={() => {
+            if (onSelectRenaissanceEvent) {
+              onSelectRenaissanceEvent(renaissanceEvent);
             }
           }}
         />

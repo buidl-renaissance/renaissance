@@ -108,7 +108,9 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 0,
+    marginBottom: -16,
     paddingHorizontal: 12,
     backgroundColor: theme.background,
   },

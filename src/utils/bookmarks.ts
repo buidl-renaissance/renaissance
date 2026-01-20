@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { DAEvent, LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
+import { DAEvent, LumaEvent, RAEvent, MeetupEvent, InstagramEvent, RenaissanceEvent } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
@@ -12,7 +12,7 @@ import {
 } from "../api/bookmarks";
 
 // Local event type used throughout the app
-export type LocalEventType = 'luma' | 'ra' | 'da' | 'meetup' | 'sports' | 'instagram';
+export type LocalEventType = 'luma' | 'ra' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance';
 
 // Auth storage key - must match Auth context
 const AUTH_STORAGE_KEY = "AUTH_USER";
@@ -166,7 +166,7 @@ export const toggleBookmark = async (event: DAEvent) => {
 
 // Bookmark status for web events (Luma/RA/DA/Meetup/Sports/Instagram with URLs)
 export const getBookmarkStatusForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent,
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent | RenaissanceEvent,
   eventType: LocalEventType
 ): Promise<boolean> => {
   if (eventType === 'da' && 'id' in event) {
@@ -201,7 +201,7 @@ export const getBookmarkStatusForWebEvent = async (
  * @param eventType The type of event
  */
 export const toggleBookmarkForWebEvent = async (
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent,
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent | RenaissanceEvent,
   eventType: LocalEventType
 ): Promise<boolean> => {
   const isBookmarked = await getBookmarkStatusForWebEvent(event, eventType);

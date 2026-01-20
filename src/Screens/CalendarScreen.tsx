@@ -36,7 +36,7 @@ import { EventRegister } from "react-native-event-listeners";
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
 
-import { DAArtwork, DAEvent, DAFlyer, Weather } from "../interfaces";
+import { DAArtwork, DAEvent, DAFlyer, Weather, RenaissanceEvent } from "../interfaces";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getWallet } from "../utils/wallet";
 import { Activities } from "../Components/Activities";
@@ -52,6 +52,7 @@ import { useMeetupEvents } from "../hooks/useMeetupEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
 import { useSportsGames } from "../hooks/useSportsGames";
 import { useInstagramEvents } from "../hooks/useInstagramEvents";
+import { useRenaissanceEvents } from "../hooks/useRenaissanceEvents";
 import { useAuth } from "../context/Auth";
 // Wallet functionality hidden for now
 // import { useUSDCBalance } from "../hooks/useUSDCBalance";
@@ -76,6 +77,7 @@ import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
 import { BookmarkSource } from "../api/bookmarks";
+import { RenaissanceEventsSection } from "../Components/RenaissanceEventsSection";
 
 const { height, width } = Dimensions.get("window");
 
@@ -101,9 +103,10 @@ const CalendarScreen = ({ navigation }) => {
   const { events: meetupEvents, loading: meetupLoading } = useMeetupEvents();
   const { games: sportsGames, loading: sportsLoading } = useSportsGames();
   const { events: instagramEvents, loading: instagramLoading } = useInstagramEvents();
+  const { events: renaissanceEvents, loading: renaissanceLoading } = useRenaissanceEvents();
   
   // Combined loading state - true if any events are still loading
-  const isLoadingEvents = eventsLoading || lumaLoading || raLoading || meetupLoading || sportsLoading || instagramLoading;
+  const isLoadingEvents = eventsLoading || lumaLoading || raLoading || meetupLoading || sportsLoading || instagramLoading || renaissanceLoading;
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   // Load connection bookmarks (shared bookmarks from verified connections)
@@ -148,7 +151,7 @@ const CalendarScreen = ({ navigation }) => {
     visible: boolean;
     url: string | null;
     title: string;
-    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | undefined;
+    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | undefined;
     eventData: any;
   }>({
     visible: false,
@@ -483,6 +486,17 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    // Process Renaissance events
+    renaissanceEvents.forEach((event: RenaissanceEvent) => {
+      const start = moment(event.startTime);
+      const end = moment(event.endTime);
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "renaissance" });
+      }
+    });
+
     // Sort events within each group by start time - optimized
     const getEventStartTime = (event: any): number => {
       if (event.eventType === "luma") return moment(event.startAt).valueOf();
@@ -490,6 +504,7 @@ const CalendarScreen = ({ navigation }) => {
       if (event.eventType === "meetup") return moment(event.dateTime).valueOf();
       if (event.eventType === "sports") return moment(event.startTime).valueOf();
       if (event.eventType === "instagram") return moment(event.startDatetime).valueOf();
+      if (event.eventType === "renaissance") return moment(event.startTime).valueOf();
       return moment(event.start_date).valueOf();
     };
     
@@ -507,7 +522,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, isFeatured]);
+  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1007,9 +1022,18 @@ const CalendarScreen = ({ navigation }) => {
         */}
 
 
-        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 8, marginTop: 8 }}>
+        {/* Renaissance Events Horizontal Section */}
+        <RenaissanceEventsSection
+          events={renaissanceEvents}
+          loading={renaissanceLoading}
+          onEventPress={(event: RenaissanceEvent) => {
+            navigation.push("RenaissanceEvent", { event });
+          }}
+        />
+
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16, marginTop: 8 }}>
           <Text style={{ color: "#999", fontSize: 18, fontWeight: "bold", flex: 1 }}>
-            UPCOMING EVENTS
+            MORE NEARBY EVENTS
           </Text>
           {/* <TouchableOpacity onPress={handleCreateFlyer} style={{ padding: 4 }}>
             <Icon
@@ -1035,7 +1059,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount]);
+  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, renaissanceLoading, navigation]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1049,7 +1073,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
   
   // Helper to open modal with batched state update
-  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | undefined, eventData: any) => {
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | undefined, eventData: any) => {
     // Batch all state updates in a single call for immediate modal appearance
     // The key prop on WebView will ensure proper cleanup/remount when URL changes
     setWebModalState({
@@ -1147,6 +1171,9 @@ const CalendarScreen = ({ navigation }) => {
             }
           },
           onSelectInstagramEvent: openInstagramModal,
+          onSelectRenaissanceEvent: (event: RenaissanceEvent) => {
+            navigation.push("RenaissanceEvent", { event });
+          },
           showFeaturedImage: true,
           getConnectionsForEvent: getConnectionsForEvent,
         }}

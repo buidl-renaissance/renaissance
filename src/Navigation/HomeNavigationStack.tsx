@@ -47,6 +47,7 @@ import ConnectionsScreen from "../Screens/ConnectionsScreen";
 import SharedEventsScreen from "../Screens/SharedEventsScreen";
 import QRCodeScreen from "../Screens/QRCodeScreen";
 import SharedURLScreen from "../Screens/SharedURLScreen";
+import RenaissanceEventScreen from "../Screens/RenaissanceEventScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -98,6 +99,7 @@ type HomeNavigationStackParamList = {
   SharedEvents: { connection: any; otherUser: any };
   QRCode: { initialTab?: "share" | "scan" } | undefined;
   SharedURL: { url?: string } | undefined;
+  RenaissanceEvent: { event: any };
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -540,6 +542,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Shared Link",
+        }}
+      />
+      <Stack.Screen
+        component={RenaissanceEventScreen}
+        name="RenaissanceEvent"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Event",
         }}
       />
     </Stack.Navigator>

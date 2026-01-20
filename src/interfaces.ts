@@ -513,3 +513,34 @@ export interface MiniApp {
   image?: any;
   backgroundColor: string;
 }
+
+export interface RenaissanceEventHost {
+  name: string;
+  username: string;
+}
+
+export interface RenaissanceEventMetadata {
+  description?: string;
+  djqEventId?: string;
+  host?: RenaissanceEventHost;
+  bookingType?: string;
+  slotDurationMinutes?: number;
+  allowB2B?: boolean;
+  status?: string;
+}
+
+export interface RenaissanceEvent {
+  id: number;
+  name: string;
+  location: string;
+  startTime: string;
+  endTime: string;
+  flyerImage?: string;
+  metadata?: RenaissanceEventMetadata;
+  tags?: string[];
+  eventType: string;
+  source: string;
+  sourceId: string;
+  createdAt: string;
+  updatedAt: string;
+}
