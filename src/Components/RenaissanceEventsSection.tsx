@@ -80,70 +80,52 @@ const RenaissanceEventCardItem: React.FC<RenaissanceEventCardItemProps> = ({
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
-      activeOpacity={0.9}
+      activeOpacity={0.85}
     >
-      {/* Image Section */}
-      {event.flyerImage && (
-        <View style={styles.imageContainer}>
+      {/* Full Flyer Image - No Overlay */}
+      <View style={styles.imageContainer}>
+        {event.flyerImage && (
           <Image
             source={{ uri: event.flyerImage }}
             style={styles.image}
+            resizeMode="cover"
           />
-          <View style={styles.imageOverlay} />
+        )}
 
-          {/* Bookmark Button */}
-          <TouchableOpacity
-            style={styles.bookmarkButton}
-            onPress={handleBookmarkPress}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Icon
-              type={IconTypes.Ionicons}
-              name={isBookmarked ? "bookmark" : "bookmark-outline"}
-              size={18}
-              color={isBookmarked ? theme.primary : "#fff"}
-            />
-          </TouchableOpacity>
+        {/* Bookmark Button */}
+        <TouchableOpacity
+          style={styles.bookmarkButton}
+          onPress={handleBookmarkPress}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Icon
+            type={IconTypes.Ionicons}
+            name={isBookmarked ? "bookmark" : "bookmark-outline"}
+            size={16}
+            color={isBookmarked ? theme.primary : "#fff"}
+          />
+        </TouchableOpacity>
+      </View>
 
-          {/* Event info on image */}
-          <View style={styles.imageContent}>
-            <Text style={styles.eventName} numberOfLines={2}>
-              {event.name}
-            </Text>
-            <Text style={styles.eventDate}>
-              {formatDate(event.startTime)} • {formatTime(event.startTime)}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Details Section */}
-      <View style={styles.detailsContainer}>
-        <View style={styles.detailRow}>
+      {/* Event Info Below Image */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.eventName} numberOfLines={2}>
+          {event.name}
+        </Text>
+        <Text style={styles.eventDate}>
+          {formatDate(event.startTime)} • {formatTime(event.startTime)}
+        </Text>
+        <View style={styles.locationRow}>
           <Icon
             type={IconTypes.Ionicons}
             name="location-outline"
-            size={12}
-            color={theme.eventRenaissance}
+            size={11}
+            color={theme.textSecondary}
           />
-          <Text style={styles.detailText} numberOfLines={1}>
+          <Text style={styles.locationText} numberOfLines={1}>
             {event.location}
           </Text>
         </View>
-        
-        {event.metadata?.bookingType && (
-          <View style={styles.bookingBadge}>
-            <Icon
-              type={IconTypes.Ionicons}
-              name="musical-notes"
-              size={9}
-              color="#fff"
-            />
-            <Text style={styles.bookingText}>
-              {event.metadata.bookingType.replace(/_/g, " ")}
-            </Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -232,7 +214,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   loadingContainer: {
-    height: 160,
+    height: 200,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -243,117 +225,56 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 8,
-    gap: 10,
+    gap: 12,
   },
   card: {
     width: CARD_WIDTH,
-    backgroundColor: theme.surfaceElevated,
-    borderRadius: 10,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: theme.border,
   },
   imageContainer: {
-    height: 160,
+    height: 200,
     position: "relative",
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: theme.surface,
   },
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
   bookmarkButton: {
     position: "absolute",
     top: 8,
     right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
-  badge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(139, 92, 246, 0.9)",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    gap: 3,
-  },
-  badgeText: {
-    color: "#fff",
-    fontSize: 8,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-  imageContent: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 8,
+  infoContainer: {
+    paddingTop: 8,
+    paddingHorizontal: 2,
   },
   eventName: {
     fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
+    fontWeight: "600",
+    color: theme.text,
     marginBottom: 2,
-    textShadowColor: "rgba(0,0,0,0.5)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   eventDate: {
-    fontSize: 10,
-    color: "rgba(255,255,255,0.9)",
-    fontWeight: "500",
-  },
-  detailsContainer: {
-    padding: 10,
-    gap: 6,
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  detailText: {
     fontSize: 11,
-    color: theme.text,
-    fontWeight: "500",
-    flex: 1,
-  },
-  hostText: {
-    fontSize: 10,
     color: theme.textSecondary,
+    marginBottom: 4,
   },
-  hostName: {
-    color: theme.text,
-    fontWeight: "500",
-  },
-  bookingBadge: {
+  locationRow: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: theme.eventRenaissance,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
     gap: 3,
-    marginTop: 2,
   },
-  bookingText: {
-    color: "#fff",
-    fontSize: 9,
-    fontWeight: "600",
-    textTransform: "capitalize",
+  locationText: {
+    fontSize: 11,
+    color: theme.textSecondary,
+    flex: 1,
   },
 });
