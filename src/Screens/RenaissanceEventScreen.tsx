@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import moment from "moment";
@@ -42,6 +41,24 @@ const RenaissanceEventScreen: React.FC<RenaissanceEventScreenProps> = ({
 }) => {
   const event = route.params?.event;
   const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+  const [imageAspectRatio, setImageAspectRatio] = React.useState<number>(1);
+
+  // Get image dimensions to calculate aspect ratio
+  React.useEffect(() => {
+    if (event?.flyerImage) {
+      Image.getSize(
+        event.flyerImage,
+        (imgWidth, imgHeight) => {
+          if (imgHeight > 0) {
+            setImageAspectRatio(imgWidth / imgHeight);
+          }
+        },
+        (error) => {
+          console.log("Error getting image size:", error);
+        }
+      );
+    }
+  }, [event?.flyerImage]);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -122,169 +139,112 @@ const RenaissanceEventScreen: React.FC<RenaissanceEventScreenProps> = ({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Image */}
+        {/* Hero Image - Full Flyer */}
         {event.flyerImage && (
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: event.flyerImage }}
-              style={styles.heroImage}
-              resizeMode="cover"
+              style={[styles.heroImage, { aspectRatio: imageAspectRatio }]}
+              resizeMode="contain"
             />
-            <View style={styles.imageOverlay} />
           </View>
         )}
 
-        {/* Content */}
+        {/* Content - Compact */}
         <View style={styles.content}>
           {/* Event Name */}
           <Text style={styles.eventName}>{event.name}</Text>
 
-          {/* Date & Time */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <View style={styles.iconContainer}>
-                <Icon
-                  type={IconTypes.Ionicons}
-                  name="calendar-outline"
-                  size={20}
-                  color={theme.eventRenaissance}
-                />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Date</Text>
-                <Text style={styles.infoText}>{formatDate(event.startTime)}</Text>
-              </View>
+          {/* Compact Info Row */}
+          <View style={styles.compactInfo}>
+            <View style={styles.compactRow}>
+              <Icon
+                type={IconTypes.Ionicons}
+                name="calendar-outline"
+                size={16}
+                color={theme.eventRenaissance}
+              />
+              <Text style={styles.compactText}>{formatDate(event.startTime)}</Text>
             </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.iconContainer}>
+            <View style={styles.compactRow}>
+              <Icon
+                type={IconTypes.Ionicons}
+                name="time-outline"
+                size={16}
+                color={theme.eventRenaissance}
+              />
+              <Text style={styles.compactText}>
+                {formatTime(event.startTime)} - {formatTime(event.endTime)}
+              </Text>
+            </View>
+            <View style={styles.compactRow}>
+              <Icon
+                type={IconTypes.Ionicons}
+                name="location-outline"
+                size={16}
+                color={theme.eventRenaissance}
+              />
+              <Text style={styles.compactText}>{event.location}</Text>
+            </View>
+            {hostName && (
+              <View style={styles.compactRow}>
                 <Icon
                   type={IconTypes.Ionicons}
-                  name="time-outline"
-                  size={20}
-                  color={theme.eventRenaissance}
+                  name="person-outline"
+                  size={16}
+                  color={theme.textSecondary}
                 />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Time</Text>
-                <Text style={styles.infoText}>
-                  {formatTime(event.startTime)} - {formatTime(event.endTime)}
+                <Text style={styles.compactText}>
+                  Hosted by <Text style={styles.hostNameInline}>{hostName}</Text>
                 </Text>
               </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.iconContainer}>
-                <Icon
-                  type={IconTypes.Ionicons}
-                  name="location-outline"
-                  size={20}
-                  color={theme.eventRenaissance}
-                />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Location</Text>
-                <Text style={styles.infoText}>{event.location}</Text>
-              </View>
-            </View>
+            )}
           </View>
-
-          {/* Host Info */}
-          {hostName && (
-            <View style={styles.hostCard}>
-              <View style={styles.hostAvatar}>
-                <Icon
-                  type={IconTypes.Ionicons}
-                  name="person"
-                  size={24}
-                  color={theme.eventRenaissance}
-                />
-              </View>
-              <View style={styles.hostInfo}>
-                <Text style={styles.hostLabel}>Hosted by</Text>
-                <Text style={styles.hostName}>{hostName}</Text>
-                {hostUsername && (
-                  <Text style={styles.hostUsername}>@{hostUsername}</Text>
-                )}
-              </View>
-            </View>
-          )}
 
           {/* Description */}
           {description && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About</Text>
-              <Text style={styles.description}>{description}</Text>
-            </View>
+            <Text style={styles.description}>{description}</Text>
           )}
 
-          {/* Event Details */}
-          {(bookingType || slotDuration) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Event Details</Text>
-              <View style={styles.detailsGrid}>
-                {bookingType && (
-                  <View style={styles.detailItem}>
-                    <View style={styles.detailBadge}>
-                      <Icon
-                        type={IconTypes.Ionicons}
-                        name="musical-notes"
-                        size={14}
-                        color="#fff"
-                      />
-                      <Text style={styles.detailBadgeText}>
-                        {bookingType.replace(/_/g, " ")}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                {slotDuration && (
-                  <View style={styles.detailItem}>
-                    <View style={[styles.detailBadge, { backgroundColor: theme.info }]}>
-                      <Icon
-                        type={IconTypes.Ionicons}
-                        name="timer-outline"
-                        size={14}
-                        color="#fff"
-                      />
-                      <Text style={styles.detailBadgeText}>
-                        {slotDuration} min sets
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                {allowB2B && (
-                  <View style={styles.detailItem}>
-                    <View style={[styles.detailBadge, { backgroundColor: theme.success }]}>
-                      <Icon
-                        type={IconTypes.Ionicons}
-                        name="people-outline"
-                        size={14}
-                        color="#fff"
-                      />
-                      <Text style={styles.detailBadgeText}>B2B Allowed</Text>
-                    </View>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* Tags */}
-          {event.tags && event.tags.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Tags</Text>
-              <View style={styles.tagsContainer}>
-                {event.tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
-                    <Text style={styles.tagText}>#{tag}</Text>
-                  </View>
-                ))}
-              </View>
+          {/* Badges Row */}
+          {(bookingType || slotDuration || allowB2B || (event.tags && event.tags.length > 0)) && (
+            <View style={styles.badgesRow}>
+              {bookingType && (
+                <View style={styles.detailBadge}>
+                  <Icon
+                    type={IconTypes.Ionicons}
+                    name="musical-notes"
+                    size={12}
+                    color="#fff"
+                  />
+                  <Text style={styles.detailBadgeText}>
+                    {bookingType.replace(/_/g, " ")}
+                  </Text>
+                </View>
+              )}
+              {slotDuration && (
+                <View style={[styles.detailBadge, { backgroundColor: theme.info }]}>
+                  <Icon
+                    type={IconTypes.Ionicons}
+                    name="timer-outline"
+                    size={12}
+                    color="#fff"
+                  />
+                  <Text style={styles.detailBadgeText}>
+                    {slotDuration} min
+                  </Text>
+                </View>
+              )}
+              {allowB2B && (
+                <View style={[styles.detailBadge, { backgroundColor: theme.success }]}>
+                  <Text style={styles.detailBadgeText}>B2B</Text>
+                </View>
+              )}
+              {event.tags && event.tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text style={styles.tagText}>#{tag}</Text>
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -329,7 +289,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
   emptyContainer: {
     flex: 1,
@@ -342,154 +302,73 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: "100%",
-    height: 280,
-    position: "relative",
+    backgroundColor: theme.surface,
   },
   heroImage: {
     width: "100%",
-    height: "100%",
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.2)",
   },
   content: {
-    padding: 20,
+    padding: 16,
   },
   eventName: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "700",
-    color: theme.text,
-    marginBottom: 20,
-  },
-  infoCard: {
-    backgroundColor: theme.surfaceElevated,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: `${theme.eventRenaissance}20`,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  infoContent: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: theme.textSecondary,
-    marginBottom: 2,
-  },
-  infoText: {
-    fontSize: 15,
-    color: theme.text,
-    fontWeight: "500",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.border,
-    marginVertical: 4,
-  },
-  hostCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.surfaceElevated,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.border,
-  },
-  hostAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: `${theme.eventRenaissance}20`,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  hostInfo: {
-    flex: 1,
-  },
-  hostLabel: {
-    fontSize: 12,
-    color: theme.textSecondary,
-    marginBottom: 2,
-  },
-  hostName: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: theme.text,
-  },
-  hostUsername: {
-    fontSize: 13,
-    color: theme.textSecondary,
-    marginTop: 2,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
     color: theme.text,
     marginBottom: 12,
   },
-  description: {
-    fontSize: 15,
-    color: theme.textSecondary,
-    lineHeight: 22,
-  },
-  detailsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  detailItem: {},
-  detailBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.eventRenaissance,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+  compactInfo: {
+    marginBottom: 12,
     gap: 6,
   },
-  detailBadgeText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "capitalize",
+  compactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  tagsContainer: {
+  compactText: {
+    fontSize: 14,
+    color: theme.text,
+  },
+  hostNameInline: {
+    fontWeight: "600",
+  },
+  description: {
+    fontSize: 14,
+    color: theme.textSecondary,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  badgesRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
+  detailBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: theme.eventRenaissance,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    gap: 4,
+  },
+  detailBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "capitalize",
+  },
   tag: {
     backgroundColor: theme.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: theme.border,
   },
   tagText: {
     color: theme.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "500",
   },
   actionBar: {

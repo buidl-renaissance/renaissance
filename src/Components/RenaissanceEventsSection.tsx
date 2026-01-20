@@ -12,6 +12,8 @@ import moment from "moment";
 import { RenaissanceEvent } from "../interfaces";
 import { theme } from "../colors";
 import Icon, { IconTypes } from "./Icon";
+import { getBookmarkStatusForWebEvent, toggleBookmarkForWebEvent } from "../utils/bookmarks";
+import { EventRegister } from "react-native-event-listeners";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.4;
@@ -28,6 +30,123 @@ const formatTime = (date: string) => {
 
 const formatDate = (date: string) => {
   return moment(date).format("ddd, MMM D");
+};
+
+// Individual card component with bookmark state management
+interface RenaissanceEventCardItemProps {
+  event: RenaissanceEvent;
+  onPress: () => void;
+}
+
+const RenaissanceEventCardItem: React.FC<RenaissanceEventCardItemProps> = ({
+  event,
+  onPress,
+}) => {
+  const [isBookmarked, setIsBookmarked] = React.useState<boolean>(false);
+
+  // Load bookmark status
+  React.useEffect(() => {
+    (async () => {
+      const bookmarked = await getBookmarkStatusForWebEvent(event, 'renaissance');
+      setIsBookmarked(bookmarked);
+    })();
+  }, [event]);
+
+  // Listen for bookmark changes
+  React.useEffect(() => {
+    const listener = EventRegister.addEventListener("BookmarkEvent", (data) => {
+      if (data.event?.id === event.id && data.event?.eventType === 'renaissance') {
+        setIsBookmarked(data.isBookmarked);
+      }
+    });
+    return () => {
+      if (typeof listener === "string") {
+        EventRegister.removeEventListener(listener);
+      }
+    };
+  }, [event.id]);
+
+  const handleBookmarkPress = React.useCallback(async (e: any) => {
+    e.stopPropagation();
+    const newBookmarkStatus = await toggleBookmarkForWebEvent(event, 'renaissance');
+    setIsBookmarked(newBookmarkStatus);
+    EventRegister.emitEvent("BookmarkEvent", {
+      event: { ...event, eventType: 'renaissance' },
+      isBookmarked: newBookmarkStatus,
+    });
+  }, [event]);
+
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.9}
+    >
+      {/* Image Section */}
+      {event.flyerImage && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: event.flyerImage }}
+            style={styles.image}
+          />
+          <View style={styles.imageOverlay} />
+
+          {/* Bookmark Button */}
+          <TouchableOpacity
+            style={styles.bookmarkButton}
+            onPress={handleBookmarkPress}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon
+              type={IconTypes.Ionicons}
+              name={isBookmarked ? "bookmark" : "bookmark-outline"}
+              size={18}
+              color={isBookmarked ? theme.primary : "#fff"}
+            />
+          </TouchableOpacity>
+
+          {/* Event info on image */}
+          <View style={styles.imageContent}>
+            <Text style={styles.eventName} numberOfLines={2}>
+              {event.name}
+            </Text>
+            <Text style={styles.eventDate}>
+              {formatDate(event.startTime)} • {formatTime(event.startTime)}
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Details Section */}
+      <View style={styles.detailsContainer}>
+        <View style={styles.detailRow}>
+          <Icon
+            type={IconTypes.Ionicons}
+            name="location-outline"
+            size={12}
+            color={theme.eventRenaissance}
+          />
+          <Text style={styles.detailText} numberOfLines={1}>
+            {event.location}
+          </Text>
+        </View>
+        
+        {event.metadata?.bookingType && (
+          <View style={styles.bookingBadge}>
+            <Icon
+              type={IconTypes.Ionicons}
+              name="musical-notes"
+              size={9}
+              color="#fff"
+            />
+            <Text style={styles.bookingText}>
+              {event.metadata.bookingType.replace(/_/g, " ")}
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
 };
 
 export const RenaissanceEventsSection: React.FC<RenaissanceEventsSectionProps> = ({
@@ -82,62 +201,11 @@ export const RenaissanceEventsSection: React.FC<RenaissanceEventsSectionProps> =
         snapToAlignment="start"
       >
         {events.map((event) => (
-          <TouchableOpacity
+          <RenaissanceEventCardItem
             key={event.id}
-            style={styles.card}
+            event={event}
             onPress={() => onEventPress(event)}
-            activeOpacity={0.9}
-          >
-            {/* Image Section */}
-            {event.flyerImage && (
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: event.flyerImage }}
-                  style={styles.image}
-                />
-                <View style={styles.imageOverlay} />
-
-                {/* Event info on image */}
-                <View style={styles.imageContent}>
-                  <Text style={styles.eventName} numberOfLines={2}>
-                    {event.name}
-                  </Text>
-                  <Text style={styles.eventDate}>
-                    {formatDate(event.startTime)} • {formatTime(event.startTime)}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Details Section */}
-            <View style={styles.detailsContainer}>
-              <View style={styles.detailRow}>
-                <Icon
-                  type={IconTypes.Ionicons}
-                  name="location-outline"
-                  size={12}
-                  color={theme.eventRenaissance}
-                />
-                <Text style={styles.detailText} numberOfLines={1}>
-                  {event.location}
-                </Text>
-              </View>
-              
-              {event.metadata?.bookingType && (
-                <View style={styles.bookingBadge}>
-                  <Icon
-                    type={IconTypes.Ionicons}
-                    name="musical-notes"
-                    size={9}
-                    color="#fff"
-                  />
-                  <Text style={styles.bookingText}>
-                    {event.metadata.bookingType.replace(/_/g, " ")}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
+          />
         ))}
       </ScrollView>
     </View>
@@ -197,6 +265,17 @@ const styles = StyleSheet.create({
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  bookmarkButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   badge: {
     position: "absolute",
