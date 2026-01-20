@@ -53,10 +53,10 @@ export const useRenaissanceEvents = () => {
     hasFetchedRef.current = true;
     updateEvents();
     
-    // Refresh every 30 minutes
+    // Refresh every 1 minute
     const interval = setInterval(() => {
       updateEvents();
-    }, 30 * 60 * 1000);
+    }, 60 * 1000);
 
     return () => clearInterval(interval);
   }, [updateEvents]);
