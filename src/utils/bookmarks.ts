@@ -94,7 +94,7 @@ export function mapSourceToEventType(source: BookmarkSource): LocalEventType {
  * Get the event ID string for a given event and type
  */
 function getEventIdString(
-  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent,
+  event: LumaEvent | RAEvent | DAEvent | MeetupEvent | SportsGame | InstagramEvent | RenaissanceEvent,
   eventType: LocalEventType
 ): string {
   if (eventType === 'luma' && 'apiId' in event) {
@@ -189,6 +189,10 @@ export const getBookmarkStatusForWebEvent = async (
   } else if (eventType === 'instagram' && 'id' in event) {
     const instagramEvent = event as InstagramEvent;
     const result = await AsyncStorage.getItem(`Bookmark-instagram-${instagramEvent.id}`);
+    return result ? true : false;
+  } else if (eventType === 'renaissance' && 'id' in event) {
+    const renaissanceEvent = event as RenaissanceEvent;
+    const result = await AsyncStorage.getItem(`Bookmark-renaissance-${renaissanceEvent.id}`);
     return result ? true : false;
   }
   return false;
@@ -421,6 +425,55 @@ export const toggleBookmarkForWebEvent = async (
       }
     }
     await AsyncStorage.setItem('BookmarkedInstagramEvents', JSON.stringify(bookmarkedInstagramEvents));
+    
+    // Sync to backend in background (non-blocking)
+    getStoredBackendUserId().then((backendUserId) => {
+      if (backendUserId) {
+        if (isBookmarked) {
+          deleteBookmarkFromBackendAsync(backendUserId, backendSource, eventIdString);
+        } else {
+          syncBookmarkToBackendAsync(backendUserId, eventIdString, backendSource);
+        }
+      }
+    });
+    
+    return !isBookmarked;
+  } else if (eventType === 'renaissance' && 'id' in event) {
+    // Handle Renaissance events - store full event data
+    const renaissanceEvent = event as RenaissanceEvent;
+    const bookmarksData = await AsyncStorage.getItem('BookmarkedRenaissanceEvents');
+    let bookmarkedRenaissanceEvents: RenaissanceEvent[] = bookmarksData ? JSON.parse(bookmarksData) : [];
+
+    if (isBookmarked) {
+      // Remove bookmark locally (immediate)
+      bookmarkedRenaissanceEvents = bookmarkedRenaissanceEvents.filter((e: RenaissanceEvent) => e.id !== renaissanceEvent.id);
+      await AsyncStorage.removeItem(`Bookmark-renaissance-${renaissanceEvent.id}`);
+    } else {
+      // Add bookmark locally (immediate)
+      bookmarkedRenaissanceEvents.push(renaissanceEvent);
+      await AsyncStorage.setItem(`Bookmark-renaissance-${renaissanceEvent.id}`, "1");
+      
+      try {
+        // Schedule notification for Renaissance events
+        const startTime = moment(renaissanceEvent.startTime);
+        await schedulePushNotification({
+          content: {
+            title: "Event Starts in 1 Hour",
+            body: renaissanceEvent.name,
+            data: {
+              event: renaissanceEvent,
+              eventType: 'renaissance',
+            },
+          },
+          trigger: {
+            date: startTime.subtract(1, "hour").toDate(),
+          },
+        });
+      } catch (error) {
+        // Ignore notification errors
+      }
+    }
+    await AsyncStorage.setItem('BookmarkedRenaissanceEvents', JSON.stringify(bookmarkedRenaissanceEvents));
     
     // Sync to backend in background (non-blocking)
     getStoredBackendUserId().then((backendUserId) => {
