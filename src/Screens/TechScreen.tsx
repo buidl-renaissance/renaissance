@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MiniAppsGrid } from "../Components/MiniAppsGrid";
@@ -28,6 +29,10 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
       emoji: app.emoji,
       image: app.image,
     });
+  }, [navigation]);
+
+  const handleViewSubmissions = React.useCallback(() => {
+    navigation.push("BlockSubmissions");
   }, [navigation]);
 
   // Tech mini apps configuration
@@ -146,6 +151,24 @@ const TechScreen: React.FC<TechScreenProps> = ({ navigation }) => {
             innovators and build something great together.
           </Text>
         </View>
+
+        {/* Community Submissions Section */}
+        <TouchableOpacity 
+          style={styles.submissionsButton}
+          onPress={handleViewSubmissions}
+          activeOpacity={0.7}
+        >
+          <View style={styles.submissionsButtonContent}>
+            <Text style={styles.submissionsButtonEmoji}>📦</Text>
+            <View style={styles.submissionsButtonText}>
+              <Text style={styles.submissionsButtonTitle}>Community Submissions</Text>
+              <Text style={styles.submissionsButtonSubtitle}>
+                View app blocks submitted by the community
+              </Text>
+            </View>
+            <Text style={styles.submissionsButtonArrow}>→</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -219,6 +242,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
     lineHeight: 22,
+  },
+  submissionsButton: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: theme.surfaceElevated,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.border,
+    overflow: "hidden",
+  },
+  submissionsButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+  },
+  submissionsButtonEmoji: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  submissionsButtonText: {
+    flex: 1,
+  },
+  submissionsButtonTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: theme.text,
+  },
+  submissionsButtonSubtitle: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    marginTop: 2,
+  },
+  submissionsButtonArrow: {
+    fontSize: 20,
+    color: theme.primary,
+    fontWeight: "600",
   },
 });
 

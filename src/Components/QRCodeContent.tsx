@@ -95,6 +95,99 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
     }
   }, [authState.isAuthenticated, authState.user]);
 
+  // Handle app authentication scan
+  const handleAppAuthScan = useCallback(
+    async (authData: { type: string; token: string; callbackUrl: string; appName?: string }) => {
+      if (!authState.isAuthenticated || !authState.user) {
+        Alert.alert("Error", "Please log in to authenticate with apps");
+        setScanned(false);
+        isProcessingScan.current = false;
+        lastScannedData.current = null;
+        return;
+      }
+
+      const appName = authData.appName || "this app";
+      
+      Alert.alert(
+        "Sign In Request",
+        `${appName} wants to sign you in. Allow?`,
+        [
+          {
+            text: "Cancel",
+            onPress: () => {
+              setScanned(false);
+              isProcessingScan.current = false;
+              lastScannedData.current = null;
+            },
+            style: "cancel",
+          },
+          {
+            text: "Allow",
+            onPress: async () => {
+              try {
+                const wallet = await getWallet();
+                const userId = authState.user?.fid?.toString() || wallet.address;
+                
+                // Sign the message to prove ownership (must match server expectation)
+                const message = `Authenticate session: ${authData.token}`;
+                const signature = await wallet.signMessage(message);
+                
+                // Make API call to authenticate
+                const response = await fetch(authData.callbackUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    token: authData.token,
+                    signature,
+                    publicAddress: wallet.address,
+                    userId,
+                    renaissanceId: authState.user?.fid?.toString(),
+                    username: authState.user?.username,
+                    displayName: authState.user?.displayName,
+                    pfpUrl: authState.user?.pfpUrl,
+                  }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                  Alert.alert(
+                    "Success",
+                    `You are now signed in to ${appName}!`,
+                    [
+                      {
+                        text: "OK",
+                        onPress: () => {
+                          setScanned(false);
+                          isProcessingScan.current = false;
+                          lastScannedData.current = null;
+                        },
+                      },
+                    ]
+                  );
+                } else {
+                  throw new Error(result.error || "Authentication failed");
+                }
+              } catch (error) {
+                console.error("App auth error:", error);
+                Alert.alert(
+                  "Authentication Failed",
+                  error instanceof Error ? error.message : "An error occurred"
+                );
+                setScanned(false);
+                isProcessingScan.current = false;
+                lastScannedData.current = null;
+              }
+            },
+          },
+        ]
+      );
+    },
+    [authState.isAuthenticated, authState.user]
+  );
+
   // Handle connection request scan
   const handleConnectionScan = useCallback(
     async (scannedRequest: ConnectionRequest) => {
@@ -252,6 +345,9 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
         if (parsedData.type === "renaissance_connection") {
           // Handle connection request scan
           handleConnectionScan(parsedData as ConnectionRequest);
+        } else if (parsedData.type === "renaissance_app_auth") {
+          // Handle app authentication scan
+          handleAppAuthScan(parsedData);
         } else {
           // Legacy support - if it's a profile QR, try to convert it
           if (parsedData.type === "renaissance_profile") {
@@ -291,7 +387,7 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
         ]);
       }
     },
-    [handleConnectionScan, onScanResult]
+    [handleConnectionScan, handleAppAuthScan, onScanResult]
   );
 
   const resetScan = useCallback(() => {

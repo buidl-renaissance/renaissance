@@ -40,6 +40,7 @@ import BestOfScreen from "../Screens/BestOfScreen";
 import GamesScreen from "../Screens/GamesScreen";
 import FitnessScreen from "../Screens/FitnessScreen";
 import TechScreen from "../Screens/TechScreen";
+import BlockSubmissionsScreen from "../Screens/BlockSubmissionsScreen";
 import FarcasterProfileScreen from "../Screens/FarcasterProfileScreen";
 import CalendarViewScreen from "../Screens/CalendarViewScreen";
 import WalletScreen from "../Screens/WalletScreen";
@@ -53,6 +54,7 @@ import RenaissanceEventScreen from "../Screens/RenaissanceEventScreen";
 type HomeNavigationStackParamList = {
   Account: undefined;
   AccountManagement: undefined;
+  BlockSubmissions: undefined;
   Activity: undefined;
   Admin: undefined;
   Art: undefined;
@@ -498,6 +500,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Tech",
+        }}
+      />
+      <Stack.Screen
+        component={BlockSubmissionsScreen}
+        name="BlockSubmissions"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Block Submissions",
         }}
       />
       <Stack.Screen
