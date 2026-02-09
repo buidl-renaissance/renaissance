@@ -29,6 +29,12 @@ const QRCodeScreen: React.FC<QRCodeScreenProps> = ({ navigation, route }) => {
     console.log("Scanned data:", data);
   }, []);
 
+  const handleAuthenticationScan = useCallback((token: string) => {
+    // Navigate to Authenticate screen with the token
+    console.log("[QRCodeScreen] Authentication QR scanned, navigating with token:", token);
+    navigation.navigate("Authenticate", { token });
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <QRCodeContent
@@ -36,6 +42,7 @@ const QRCodeScreen: React.FC<QRCodeScreenProps> = ({ navigation, route }) => {
         initialTab={initialTab}
         onConnectionCreated={handleConnectionCreated}
         onScanResult={handleScanResult}
+        onAuthenticationScan={handleAuthenticationScan}
         containerStyle={styles.content}
       />
     </View>

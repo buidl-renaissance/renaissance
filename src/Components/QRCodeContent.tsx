@@ -28,6 +28,8 @@ export interface QRCodeContentProps {
   onScanResult?: (data: string) => void;
   /** Called when a connection is successfully created */
   onConnectionCreated?: () => void;
+  /** Called when an authentication QR code is scanned (token extracted from URL) */
+  onAuthenticationScan?: (token: string) => void;
   /** Initial tab to show */
   initialTab?: "share" | "scan";
   /** Style for the container */
@@ -40,6 +42,7 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
   isVisible = true,
   onScanResult,
   onConnectionCreated,
+  onAuthenticationScan,
   initialTab = "share",
   containerStyle,
   showTabs = true,
@@ -316,6 +319,28 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
     }
   }, [isVisible, activeTab, connectionQrData, authState.isAuthenticated, authState.user, generateConnectionQR]);
 
+  // Helper function to extract token from authentication URL
+  // Supports both deep links (renaissance://authenticate?token=xxx) 
+  // and web URLs (http(s)://*/api/auth/qr-authenticate?token=xxx)
+  const extractAuthToken = useCallback((url: string): string | null => {
+    const isDeepLink = url.startsWith("renaissance://authenticate");
+    const isWebAuthUrl = url.includes("/api/auth/qr-authenticate");
+    
+    if (!isDeepLink && !isWebAuthUrl) {
+      return null;
+    }
+    
+    try {
+      // Parse the URL to extract the token query parameter
+      const urlObj = new URL(url);
+      return urlObj.searchParams.get("token");
+    } catch (e) {
+      // Fallback for URL parsing issues - try regex
+      const match = url.match(/[?&]token=([^&]+)/);
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+  }, []);
+
   const handleBarCodeScanned = useCallback(
     (event: { data: string }) => {
       const data = event.data;
@@ -339,6 +364,36 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
       setScanned(true);
 
       console.log("[QRCodeContent] Processing scan...");
+
+      // Check if this is an authentication QR code (renaissance://authenticate?token=xxx)
+      const authToken = extractAuthToken(data);
+      if (authToken) {
+        console.log("[QRCodeContent] Authentication QR detected, token:", authToken);
+        if (onAuthenticationScan) {
+          onAuthenticationScan(authToken);
+          // Reset scan state after callback
+          setScanned(false);
+          isProcessingScan.current = false;
+          lastScannedData.current = null;
+        } else {
+          // No handler provided, show alert
+          Alert.alert(
+            "Sign In Request",
+            "This is a web sign-in QR code. Use the deep link or tap the button on the website instead.",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  setScanned(false);
+                  isProcessingScan.current = false;
+                  lastScannedData.current = null;
+                },
+              },
+            ]
+          );
+        }
+        return;
+      }
 
       try {
         const parsedData = JSON.parse(data);
@@ -387,7 +442,13 @@ export const QRCodeContent: React.FC<QRCodeContentProps> = ({
         ]);
       }
     },
-    [handleConnectionScan, handleAppAuthScan, onScanResult]
+    [
+      handleConnectionScan,
+      handleAppAuthScan,
+      onScanResult,
+      onAuthenticationScan,
+      extractAuthToken,
+    ]
   );
 
   const resetScan = useCallback(() => {

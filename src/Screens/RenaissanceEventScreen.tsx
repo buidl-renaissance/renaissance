@@ -103,17 +103,52 @@ const RenaissanceEventScreen: React.FC<RenaissanceEventScreenProps> = ({
     });
   }, [event]);
 
-  const handleViewInDJQ = React.useCallback(() => {
-    if (!event) return;
-    const url = event.metadata?.djqEventId
-      ? `https://djq.builddetroit.xyz/events/${event.metadata.djqEventId}`
-      : `https://djq.builddetroit.xyz/dashboard`;
+  // Determine the view destination for the event
+  const viewDestination = React.useMemo(() => {
+    if (!event) return null;
+    
+    const publisher = event.publisher;
+    
+    // Use sourceUrl directly if available
+    if (event.sourceUrl) {
+      return {
+        url: event.sourceUrl,
+        title: publisher?.name || event.source || "Event",
+        emoji: publisher?.emoji || "📅",
+      };
+    }
+    
+    // Use publisher URL if available
+    if (publisher?.url) {
+      return {
+        url: event.sourceId ? `${publisher.url}/events/${event.sourceId}` : publisher.url,
+        title: publisher.name,
+        emoji: publisher.emoji || "📅",
+      };
+    }
+    
+    // Fall back to DJQ if djqEventId exists in metadata
+    if (event.metadata?.djqEventId) {
+      return {
+        url: `https://djq.builddetroit.xyz/events/${event.metadata.djqEventId}`,
+        title: "DJQ",
+        emoji: "🎧",
+      };
+    }
+    
+    // No valid destination
+    return null;
+  }, [event]);
+
+  const handleViewInPublisher = React.useCallback(() => {
+    if (!viewDestination) return;
+    
     navigation.push("MiniApp", {
-      url,
-      title: "DJQ",
-      emoji: "🎧",
+      url: viewDestination.url,
+      title: viewDestination.title,
+      emoji: viewDestination.emoji,
     });
-  }, [event, navigation]);
+  }, [viewDestination, navigation]);
 
   if (!event) {
     return (
@@ -263,18 +298,26 @@ const RenaissanceEventScreen: React.FC<RenaissanceEventScreenProps> = ({
             color={isBookmarked ? theme.primary : theme.text}
           />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={handleViewInDJQ}
-        >
-          <Icon
-            type={IconTypes.Ionicons}
-            name="musical-notes"
-            size={20}
-            color="#fff"
-          />
-          <Text style={styles.primaryButtonText}>View in DJQ</Text>
-        </TouchableOpacity>
+        {viewDestination && (
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleViewInPublisher}
+          >
+            {viewDestination.emoji ? (
+              <Text style={{ fontSize: 18 }}>{viewDestination.emoji}</Text>
+            ) : (
+              <Icon
+                type={IconTypes.Ionicons}
+                name="open-outline"
+                size={20}
+                color="#fff"
+              />
+            )}
+            <Text style={styles.primaryButtonText}>
+              View in {viewDestination.title}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );

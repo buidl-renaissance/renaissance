@@ -343,6 +343,10 @@ const AccountScreen: React.FC<AccountScreenProps> = ({ navigation }) => {
         onViewSharedEvents={(connection, otherUser) => {
           navigation.navigate("SharedEvents", { connection, otherUser });
         }}
+        onAuthenticationScan={(token) => {
+          setConnectionsModalVisible(false);
+          navigation.navigate("Authenticate", { token });
+        }}
       />
 
       {/* Sign Out Button */}

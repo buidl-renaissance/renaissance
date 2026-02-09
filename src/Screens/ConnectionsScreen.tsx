@@ -76,6 +76,9 @@ const ConnectionsScreen: React.FC<ConnectionsScreenProps> = ({ navigation }) => 
           isVisible={isScreenFocused}
           onConnectionCreated={handleConnectionCreated}
           containerStyle={styles.qrContent}
+          onAuthenticationScan={(token) => {
+            navigation.navigate("Authenticate", { token });
+          }}
         />
       )}
     </View>

@@ -49,6 +49,7 @@ import SharedEventsScreen from "../Screens/SharedEventsScreen";
 import QRCodeScreen from "../Screens/QRCodeScreen";
 import SharedURLScreen from "../Screens/SharedURLScreen";
 import RenaissanceEventScreen from "../Screens/RenaissanceEventScreen";
+import AuthenticateScreen from "../Screens/AuthenticateScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -102,6 +103,7 @@ type HomeNavigationStackParamList = {
   QRCode: { initialTab?: "share" | "scan" } | undefined;
   SharedURL: { url?: string } | undefined;
   RenaissanceEvent: { event: any };
+  Authenticate: { token: string };
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -566,6 +568,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Event",
+        }}
+      />
+      <Stack.Screen
+        component={AuthenticateScreen}
+        name="Authenticate"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Authenticate",
         }}
       />
     </Stack.Navigator>

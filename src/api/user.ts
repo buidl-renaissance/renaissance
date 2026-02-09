@@ -359,3 +359,59 @@ export async function updateUserProfile(params: {
   console.log("[updateUserProfile] Success response:", responseData);
   return responseData;
 }
+
+/**
+ * Authenticate a QR session for web login
+ * Signs a message to prove wallet ownership and authenticates the web session
+ * @param token The session token from the QR code
+ * @returns Success status and optional message
+ */
+export async function authenticateQRSession(token: string): Promise<{ 
+  success: boolean; 
+  message?: string;
+  user?: any;
+}> {
+  // Get wallet and sign the authentication message
+  const wallet = await getWallet();
+  const address = wallet.address;
+  const message = `Authenticate session: ${token}`;
+  
+  console.log("[authenticateQRSession] Signing message:", message);
+  const signature = await wallet.signMessage(message);
+  console.log("[authenticateQRSession] Signature:", signature.substring(0, 20) + "...");
+
+  const url = `${API_BASE_URL}/auth/qr-authenticate`;
+  const requestBody = JSON.stringify({ token, publicAddress: address, signature });
+  
+  console.log("[authenticateQRSession] Request URL:", url);
+  console.log("[authenticateQRSession] Request body:", { token, publicAddress: address, signature: signature.substring(0, 20) + "..." });
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
+    console.log("[authenticateQRSession] Response status:", response.status, response.statusText);
+  } catch (error) {
+    console.error("[authenticateQRSession] Network error:", error);
+    throw new Error(`Network error: ${error instanceof Error ? error.message : "Failed to send request"}`);
+  }
+
+  const responseData = await response.json();
+  console.log("[authenticateQRSession] Response data:", responseData);
+
+  if (!response.ok) {
+    const errorMessage = responseData.error || responseData.message || "Authentication failed";
+    throw new Error(errorMessage);
+  }
+
+  return {
+    success: true,
+    message: responseData.message || "Authentication successful",
+    user: responseData.user,
+  };
+}

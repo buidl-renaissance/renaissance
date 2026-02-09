@@ -1027,7 +1027,16 @@ const CalendarScreen = ({ navigation }) => {
           events={renaissanceEvents}
           loading={renaissanceLoading}
           onEventPress={(event: RenaissanceEvent) => {
-            navigation.push("RenaissanceEvent", { event });
+            // If event has sourceUrl, go directly to the app block
+            if (event.sourceUrl) {
+              navigation.push("MiniApp", {
+                url: event.sourceUrl,
+                title: event.publisher?.name || event.source || "Event",
+                emoji: event.publisher?.emoji || "📅",
+              });
+            } else {
+              navigation.push("RenaissanceEvent", { event });
+            }
           }}
         />
 
@@ -1231,6 +1240,10 @@ const CalendarScreen = ({ navigation }) => {
           // Handle scanned QR code data here
           setQrCodeModalVisible(false);
         }}
+        onAuthenticationScan={(token) => {
+          setQrCodeModalVisible(false);
+          navigation.navigate("Authenticate", { token });
+        }}
       />
       {/* Wallet functionality hidden for now */}
       {/* <WalletModal
@@ -1250,6 +1263,10 @@ const CalendarScreen = ({ navigation }) => {
         onClose={() => setConnectionsModalVisible(false)}
         onViewSharedEvents={(connection, otherUser) => {
           navigation.navigate("SharedEvents", { connection, otherUser });
+        }}
+        onAuthenticationScan={(token) => {
+          setConnectionsModalVisible(false);
+          navigation.navigate("Authenticate", { token });
         }}
       />
       <MiniAppsModal

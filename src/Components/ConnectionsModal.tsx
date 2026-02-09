@@ -15,12 +15,14 @@ interface ConnectionsModalProps {
   isVisible: boolean;
   onClose: () => void;
   onViewSharedEvents?: (connection: Connection, otherUser: any) => void;
+  onAuthenticationScan?: (token: string) => void;
 }
 
 export const ConnectionsModal: React.FC<ConnectionsModalProps> = ({
   isVisible,
   onClose,
   onViewSharedEvents,
+  onAuthenticationScan,
 }) => {
   const [activeView, setActiveView] = useState<"connections" | "qr">("connections");
 
@@ -81,6 +83,7 @@ export const ConnectionsModal: React.FC<ConnectionsModalProps> = ({
             <QRCodeContent
               isVisible={isVisible}
               onConnectionCreated={handleConnectionCreated}
+              onAuthenticationScan={onAuthenticationScan}
             />
           )}
         </View>

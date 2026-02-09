@@ -42,8 +42,7 @@ export const HeroBanner = ({ children }) => {
               marginBottom: 8,
             }}
           >
-            Unlock the rich tapestry of food, arts, and culture that Detroit has
-            to offer.
+            Discover and shape Detroit's living culture.
           </Text>
           {children}
         </Animated.View>

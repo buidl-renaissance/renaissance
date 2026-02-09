@@ -519,6 +519,15 @@ export interface RenaissanceEventHost {
   username: string;
 }
 
+export interface RenaissanceEventPublisher {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  url?: string;
+  emoji?: string;
+}
+
 export interface RenaissanceEventMetadata {
   description?: string;
   djqEventId?: string;
@@ -541,6 +550,8 @@ export interface RenaissanceEvent {
   eventType: string;
   source: string;
   sourceId: string;
+  sourceUrl?: string;
+  publisher?: RenaissanceEventPublisher;
   createdAt: string;
   updatedAt: string;
 }

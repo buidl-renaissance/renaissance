@@ -113,11 +113,51 @@ export default function App() {
 
   // Handle deep links for auth callbacks and shared URLs
   React.useEffect(() => {
+    // Helper function to extract token from authenticate deep link
+    const extractAuthToken = (url: string): string | null => {
+      if (!url.startsWith("renaissance://authenticate")) {
+        return null;
+      }
+      try {
+        // Parse the URL to extract the token query parameter
+        const urlObj = new URL(url);
+        return urlObj.searchParams.get("token");
+      } catch (e) {
+        // Fallback for URL parsing issues - try regex
+        const match = url.match(/[?&]token=([^&]+)/);
+        return match ? decodeURIComponent(match[1]) : null;
+      }
+    };
+
+    // Helper function to navigate to Authenticate screen
+    const navigateToAuthenticate = (token: string) => {
+      console.log("[App] Navigating to Authenticate screen with token:", token);
+      if (isReadyRef.current && navigationRef.current) {
+        (navigationRef.current as any).navigate("Authenticate", { token });
+      } else {
+        // If navigation isn't ready yet, wait a bit and try again
+        setTimeout(() => {
+          if (isReadyRef.current && navigationRef.current) {
+            (navigationRef.current as any).navigate("Authenticate", { token });
+          }
+        }, 500);
+      }
+    };
+
     const handleDeepLink = (event: { url: string }) => {
       console.log("[App] Deep link received:", event.url);
       
-      // Check if this is a shared URL (http/https)
       const url = event.url;
+      
+      // Check if this is a QR authentication deep link
+      const authToken = extractAuthToken(url);
+      if (authToken) {
+        console.log("[App] Authentication deep link detected, token:", authToken);
+        navigateToAuthenticate(authToken);
+        return;
+      }
+      
+      // Check if this is a shared URL (http/https)
       if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
         console.log("[App] Shared URL detected, navigating to MiniApp:", url);
         // Wait for navigation to be ready
@@ -150,6 +190,14 @@ export default function App() {
     Linking.getInitialURL().then((url) => {
       if (url) {
         console.log("[App] Initial URL:", url);
+        
+        // Check if this is a QR authentication deep link
+        const authToken = extractAuthToken(url);
+        if (authToken) {
+          console.log("[App] Initial authentication deep link detected, token:", authToken);
+          navigateToAuthenticate(authToken);
+          return;
+        }
         
         // Check if this is a shared URL (http/https)
         if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
