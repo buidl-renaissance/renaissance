@@ -103,7 +103,7 @@ type HomeNavigationStackParamList = {
   QRCode: { initialTab?: "share" | "scan" } | undefined;
   SharedURL: { url?: string } | undefined;
   RenaissanceEvent: { event: any };
-  Authenticate: { token: string };
+  Authenticate: { token: string; callbackUrl?: string; appName?: string };
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();

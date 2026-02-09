@@ -8,7 +8,7 @@ interface QRCodeModalProps {
   isVisible: boolean;
   onClose: () => void;
   onScanResult?: (data: string) => void;
-  onAuthenticationScan?: (token: string) => void;
+  onAuthenticationScan?: (token: string, callbackUrl?: string, appName?: string) => void;
 }
 
 export const QRCodeModal: React.FC<QRCodeModalProps> = ({

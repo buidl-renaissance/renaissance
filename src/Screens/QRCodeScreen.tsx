@@ -29,10 +29,9 @@ const QRCodeScreen: React.FC<QRCodeScreenProps> = ({ navigation, route }) => {
     console.log("Scanned data:", data);
   }, []);
 
-  const handleAuthenticationScan = useCallback((token: string) => {
-    // Navigate to Authenticate screen with the token
-    console.log("[QRCodeScreen] Authentication QR scanned, navigating with token:", token);
-    navigation.navigate("Authenticate", { token });
+  const handleAuthenticationScan = useCallback((token: string, callbackUrl?: string, appName?: string) => {
+    console.log("[QRCodeScreen] Authentication QR scanned, navigating with token:", token, "callbackUrl:", callbackUrl);
+    navigation.navigate("Authenticate", { token, callbackUrl, appName });
   }, [navigation]);
 
   return (

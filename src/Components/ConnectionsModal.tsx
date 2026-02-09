@@ -15,7 +15,7 @@ interface ConnectionsModalProps {
   isVisible: boolean;
   onClose: () => void;
   onViewSharedEvents?: (connection: Connection, otherUser: any) => void;
-  onAuthenticationScan?: (token: string) => void;
+  onAuthenticationScan?: (token: string, callbackUrl?: string, appName?: string) => void;
 }
 
 export const ConnectionsModal: React.FC<ConnectionsModalProps> = ({

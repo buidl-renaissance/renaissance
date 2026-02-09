@@ -11,12 +11,16 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../colors";
 import { authenticateQRSession } from "../api/user";
+import { useAuth } from "../context/Auth";
+import { getWallet } from "../utils/wallet";
 
 interface AuthenticateScreenProps {
   navigation: any;
   route: {
     params: {
       token: string;
+      callbackUrl?: string;
+      appName?: string;
     };
   };
 }
@@ -27,7 +31,8 @@ const AuthenticateScreen: React.FC<AuthenticateScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { token } = route.params;
+  const { token, callbackUrl, appName } = route.params;
+  const { state: authState } = useAuth();
   const [status, setStatus] = useState<AuthStatus>("authenticating");
   const [errorMessage, setErrorMessage] = useState<string>("");
   
@@ -53,7 +58,7 @@ const AuthenticateScreen: React.FC<AuthenticateScreenProps> = ({
     }
 
     performAuthentication();
-  }, [token]);
+  }, [token, callbackUrl]);
 
   // Play success animation when status changes to success
   useEffect(() => {
@@ -86,17 +91,44 @@ const AuthenticateScreen: React.FC<AuthenticateScreenProps> = ({
       setStatus("authenticating");
       setErrorMessage("");
       
-      console.log("[AuthenticateScreen] Starting authentication with token:", token);
-      
-      const result = await authenticateQRSession(token);
-      
-      console.log("[AuthenticateScreen] Authentication result:", result);
-      
-      if (result.success) {
-        setStatus("success");
+      console.log("[AuthenticateScreen] Starting authentication with token:", token, "callbackUrl:", callbackUrl);
+
+      if (callbackUrl) {
+        // POST to the same origin that created the session (same body as handleAppAuthScan)
+        const wallet = await getWallet();
+        const userId = authState.user?.fid?.toString() || wallet.address;
+        const message = `Authenticate session: ${token}`;
+        const signature = await wallet.signMessage(message);
+        const response = await fetch(callbackUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token,
+            signature,
+            publicAddress: wallet.address,
+            userId,
+            renaissanceId: authState.user?.fid?.toString(),
+            username: authState.user?.username,
+            displayName: authState.user?.displayName,
+            pfpUrl: authState.user?.pfpUrl,
+          }),
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setStatus("success");
+        } else {
+          setStatus("error");
+          setErrorMessage(result.error || result.message || "Authentication failed");
+        }
       } else {
-        setStatus("error");
-        setErrorMessage(result.message || "Authentication failed");
+        const result = await authenticateQRSession(token);
+        console.log("[AuthenticateScreen] Authentication result:", result);
+        if (result.success) {
+          setStatus("success");
+        } else {
+          setStatus("error");
+          setErrorMessage(result.message || "Authentication failed");
+        }
       }
     } catch (error) {
       console.error("[AuthenticateScreen] Authentication error:", error);

@@ -113,34 +113,36 @@ export default function App() {
 
   // Handle deep links for auth callbacks and shared URLs
   React.useEffect(() => {
-    // Helper function to extract token from authenticate deep link
-    const extractAuthToken = (url: string): string | null => {
+    // Parse auth params from renaissance://authenticate?token=...&callbackUrl=...&appName=...
+    const parseAuthDeepLink = (url: string): { token: string; callbackUrl?: string; appName?: string } | null => {
       if (!url.startsWith("renaissance://authenticate")) {
         return null;
       }
       try {
-        // Parse the URL to extract the token query parameter
         const urlObj = new URL(url);
-        return urlObj.searchParams.get("token");
+        const token = urlObj.searchParams.get("token");
+        if (!token) return null;
+        const callbackUrl = urlObj.searchParams.get("callbackUrl") ?? undefined;
+        const appName = urlObj.searchParams.get("appName") ?? undefined;
+        return { token, callbackUrl, appName };
       } catch (e) {
-        // Fallback for URL parsing issues - try regex
         const match = url.match(/[?&]token=([^&]+)/);
-        return match ? decodeURIComponent(match[1]) : null;
+        if (!match) return null;
+        return { token: decodeURIComponent(match[1]) };
       }
     };
 
-    // Helper function to navigate to Authenticate screen
-    const navigateToAuthenticate = (token: string) => {
-      console.log("[App] Navigating to Authenticate screen with token:", token);
-      if (isReadyRef.current && navigationRef.current) {
-        (navigationRef.current as any).navigate("Authenticate", { token });
+    const navigateToAuthenticate = (params: { token: string; callbackUrl?: string; appName?: string }) => {
+      console.log("[App] Navigating to Authenticate screen with token:", params.token, "callbackUrl:", params.callbackUrl);
+      const nav = () => {
+        if (navigationRef.current) {
+          (navigationRef.current as any).navigate("Authenticate", params);
+        }
+      };
+      if (isReadyRef.current) {
+        nav();
       } else {
-        // If navigation isn't ready yet, wait a bit and try again
-        setTimeout(() => {
-          if (isReadyRef.current && navigationRef.current) {
-            (navigationRef.current as any).navigate("Authenticate", { token });
-          }
-        }, 500);
+        setTimeout(() => { if (isReadyRef.current) nav(); }, 500);
       }
     };
 
@@ -149,11 +151,10 @@ export default function App() {
       
       const url = event.url;
       
-      // Check if this is a QR authentication deep link
-      const authToken = extractAuthToken(url);
-      if (authToken) {
-        console.log("[App] Authentication deep link detected, token:", authToken);
-        navigateToAuthenticate(authToken);
+      const authParams = parseAuthDeepLink(url);
+      if (authParams) {
+        console.log("[App] Authentication deep link detected, token:", authParams.token);
+        navigateToAuthenticate(authParams);
         return;
       }
       
@@ -191,11 +192,10 @@ export default function App() {
       if (url) {
         console.log("[App] Initial URL:", url);
         
-        // Check if this is a QR authentication deep link
-        const authToken = extractAuthToken(url);
-        if (authToken) {
-          console.log("[App] Initial authentication deep link detected, token:", authToken);
-          navigateToAuthenticate(authToken);
+        const authParams = parseAuthDeepLink(url);
+        if (authParams) {
+          console.log("[App] Initial authentication deep link detected, token:", authParams.token);
+          navigateToAuthenticate(authParams);
           return;
         }
         

@@ -1240,9 +1240,9 @@ const CalendarScreen = ({ navigation }) => {
           // Handle scanned QR code data here
           setQrCodeModalVisible(false);
         }}
-        onAuthenticationScan={(token) => {
+        onAuthenticationScan={(token, callbackUrl, appName) => {
           setQrCodeModalVisible(false);
-          navigation.navigate("Authenticate", { token });
+          navigation.navigate("Authenticate", { token, callbackUrl, appName });
         }}
       />
       {/* Wallet functionality hidden for now */}
@@ -1264,9 +1264,9 @@ const CalendarScreen = ({ navigation }) => {
         onViewSharedEvents={(connection, otherUser) => {
           navigation.navigate("SharedEvents", { connection, otherUser });
         }}
-        onAuthenticationScan={(token) => {
+        onAuthenticationScan={(token, callbackUrl, appName) => {
           setConnectionsModalVisible(false);
-          navigation.navigate("Authenticate", { token });
+          navigation.navigate("Authenticate", { token, callbackUrl, appName });
         }}
       />
       <MiniAppsModal
