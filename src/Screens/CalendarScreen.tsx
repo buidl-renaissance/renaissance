@@ -42,18 +42,14 @@ import { getWallet } from "../utils/wallet";
 import { Activities } from "../Components/Activities";
 import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
-import { useEvents } from "../hooks/useEvents";
+import { useAllEvents } from "../hooks/useAllEvents";
+import { useEthDenverEvents } from "../hooks/useEthDenverEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
-import { useLumaEvents } from "../hooks/useLumaEvents";
-import { useRAEvents } from "../hooks/useRAEvents";
-import { useMeetupEvents } from "../hooks/useMeetupEvents";
 import { useFeaturedRAEvents } from "../hooks/useFeaturedRAEvents";
-import { useSportsGames } from "../hooks/useSportsGames";
-import { useInstagramEvents } from "../hooks/useInstagramEvents";
-import { useRenaissanceEvents } from "../hooks/useRenaissanceEvents";
 import { useAuth } from "../context/Auth";
+import { useTenant } from "../context/TenantContext";
 // Wallet functionality hidden for now
 // import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import { FlyerCard } from "../Components/FlyerCard";
@@ -78,6 +74,8 @@ import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
 import { BookmarkSource } from "../api/bookmarks";
 import { RenaissanceEventsSection } from "../Components/RenaissanceEventsSection";
+import { TenantBadge } from "../Components/TenantBadge";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height, width } = Dimensions.get("window");
 
@@ -89,24 +87,23 @@ const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 
 const CalendarScreen = ({ navigation }) => {
-  const { events, loading: eventsLoading } = useEvents();
+  const insets = useSafeAreaInsets();
+  const { tenantId } = useTenant();
+  const {
+    events,
+    lumaEvents,
+    raEvents,
+    meetupEvents,
+    sportsGames,
+    instagramEvents,
+    renaissanceEvents,
+    loading: isLoadingEvents,
+  } = useAllEvents();
+  const { events: ethDenverEvents, loading: ethDenverLoading } = useEthDenverEvents();
   const { state: authState } = useAuth();
   // Wallet functionality hidden for now
   // const { balance: walletBalance } = useUSDCBalance();
-  
-  // Memoize query objects to prevent unnecessary re-fetches
-  const lumaQuery = React.useMemo(() => ({ city: "detroit" }), []);
-  const { events: lumaEvents, loading: lumaLoading } = useLumaEvents(lumaQuery);
-  const { events: raEvents, loading: raLoading } = useRAEvents();
-  // NYE-specific RA events use the dedicated NYE endpoint.
-  // const { events: nyeRaEvents, loading: nyeLoading } = useRAEvents({ type: "nye" });
-  const { events: meetupEvents, loading: meetupLoading } = useMeetupEvents();
-  const { games: sportsGames, loading: sportsLoading } = useSportsGames();
-  const { events: instagramEvents, loading: instagramLoading } = useInstagramEvents();
-  const { events: renaissanceEvents, loading: renaissanceLoading } = useRenaissanceEvents();
-  
-  // Combined loading state - true if any events are still loading
-  const isLoadingEvents = eventsLoading || lumaLoading || raLoading || meetupLoading || sportsLoading || instagramLoading || renaissanceLoading;
+
   const { isFeatured, toggleFeatured } = useFeaturedRAEvents();
   
   // Load connection bookmarks (shared bookmarks from verified connections)
@@ -388,7 +385,36 @@ const CalendarScreen = ({ navigation }) => {
       }
       return groups[dateKey];
     };
+
+    // ETH Denver tenant: only show events from ETH Denver API
+    if (tenantId === "eth-denver") {
+      ethDenverEvents.forEach((event) => {
+        const eventMoment = moment(event.eventDate, "YYYY-MM-DD");
+        if (!eventMoment.isValid()) return;
+        const dateKey = event.eventDate;
+        const sortDate = eventMoment.valueOf();
+        const group = getOrCreateGroup(dateKey, sortDate);
+        group.data.push({ ...event, eventType: "eth-denver" });
+      });
+      const getEventStartTime = (event: any): number => {
+        if (event.eventType === "eth-denver") {
+          const d = moment(event.eventDate, "YYYY-MM-DD");
+          const t = event.startTime && /^\d{1,2}:\d{2}\s*(am|pm)/i.test(event.startTime)
+            ? moment(`${event.eventDate} ${event.startTime}`, "YYYY-MM-DD h:mm a")
+            : null;
+          return (t && t.isValid() ? t : d).valueOf();
+        }
+        return 0;
+      };
+      Object.values(groups).forEach((group: any) => {
+        group.data.sort((a: any, b: any) => getEventStartTime(a) - getEventStartTime(b));
+      });
+      const groupsArray = Object.values(groups);
+      groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
+      return groupsArray;
+    }
     
+    // Detroit (default): process all event sources
     // Process existing events
     filteredEvents.forEach((event: DAEvent) => {
       const start = moment(event.start_date);
@@ -522,7 +548,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
+  }, [tenantId, ethDenverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -911,7 +937,7 @@ const CalendarScreen = ({ navigation }) => {
     return (
       <View>
         <HeroBanner>
-          {weather?.properties?.periods?.length && (
+          {weather?.properties?.periods?.length && tenantId !== "eth-denver" && (
             <View>
               <Text style={{ color: "white", fontSize: 32 }}>
                 {weather?.properties?.periods[0].temperature} °F
@@ -1025,7 +1051,7 @@ const CalendarScreen = ({ navigation }) => {
         {/* Renaissance Events Horizontal Section */}
         <RenaissanceEventsSection
           events={renaissanceEvents}
-          loading={renaissanceLoading}
+          loading={isLoadingEvents}
           onEventPress={(event: RenaissanceEvent) => {
             // If event has sourceUrl, go directly to the app block
             if (event.sourceUrl) {
@@ -1068,7 +1094,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, renaissanceLoading, navigation]);
+  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1082,7 +1108,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
   
   // Helper to open modal with batched state update
-  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | undefined, eventData: any) => {
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver' | undefined, eventData: any) => {
     // Batch all state updates in a single call for immediate modal appearance
     // The key prop on WebView will ensure proper cleanup/remount when URL changes
     setWebModalState({
@@ -1137,6 +1163,17 @@ const CalendarScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Tenant badge - top left, same height as FloatingProfileButton (top: 60) */}
+      <View
+        style={{
+          position: "absolute",
+          top: 60,
+          left: insets.left + 16,
+          zIndex: 10,
+        }}
+      >
+        <TenantBadge />
+      </View>
       {/* Top gradient overlay - fades from white to transparent, faster fade around buttons */}
       <View style={styles.topGradientContainer} pointerEvents="none">
         <Svg height={120} width={width} style={StyleSheet.absoluteFill}>
@@ -1156,7 +1193,7 @@ const CalendarScreen = ({ navigation }) => {
         ref={sectionListRef}
         eventsGroup={eventsGroup}
         ListHeaderComponent={sectionHeader}
-        loading={isLoadingEvents}
+        loading={tenantId === "eth-denver" ? ethDenverLoading : isLoadingEvents}
         eventRendererProps={{
           containerStyle: { paddingHorizontal: 16 },
           onSelectDAEvent: openDAModal,
@@ -1182,6 +1219,11 @@ const CalendarScreen = ({ navigation }) => {
           onSelectInstagramEvent: openInstagramModal,
           onSelectRenaissanceEvent: (event: RenaissanceEvent) => {
             navigation.push("RenaissanceEvent", { event });
+          },
+          onSelectEthDenverEvent: (event: any) => {
+            if (event.registrationUrl) {
+              openWebModal(event.registrationUrl, event.eventName, 'eth-denver', event);
+            }
           },
           showFeaturedImage: true,
           getConnectionsForEvent: getConnectionsForEvent,

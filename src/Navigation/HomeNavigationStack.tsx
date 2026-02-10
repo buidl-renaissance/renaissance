@@ -1,6 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { theme } from "../colors";
+import { TenantBadge } from "../Components/TenantBadge";
 
 import AccountScreen from "../Screens/AccountScreen";
 import AdminScreen from "../Screens/AdminScreen";
@@ -50,6 +51,7 @@ import QRCodeScreen from "../Screens/QRCodeScreen";
 import SharedURLScreen from "../Screens/SharedURLScreen";
 import RenaissanceEventScreen from "../Screens/RenaissanceEventScreen";
 import AuthenticateScreen from "../Screens/AuthenticateScreen";
+import TenantSelectScreen from "../Screens/TenantSelectScreen";
 // import SplashScreen from '../Screens/SplashScreen';
 
 type HomeNavigationStackParamList = {
@@ -104,6 +106,7 @@ type HomeNavigationStackParamList = {
   SharedURL: { url?: string } | undefined;
   RenaissanceEvent: { event: any };
   Authenticate: { token: string; callbackUrl?: string; appName?: string };
+  TenantSelect: undefined;
 };
 
 const Stack = createStackNavigator<HomeNavigationStackParamList>();
@@ -129,6 +132,7 @@ const HomeNavigationStack = () => {
             backgroundColor: theme.background,
           },
           headerTintColor: theme.text,
+          headerLeft: () => <TenantBadge />,
         }}
       />
       <Stack.Screen
@@ -579,6 +583,17 @@ const HomeNavigationStack = () => {
           },
           headerTintColor: theme.text,
           title: "Authenticate",
+        }}
+      />
+      <Stack.Screen
+        component={TenantSelectScreen}
+        name="TenantSelect"
+        options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          title: "Select location",
         }}
       />
     </Stack.Navigator>

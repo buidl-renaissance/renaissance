@@ -12,7 +12,7 @@ interface EventWebModalProps {
   url: string | null;
   title?: string;
   onClose: () => void;
-  eventType?: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram';
+  eventType?: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver';
   eventData?: any;
 }
 
@@ -120,8 +120,8 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
       translateY.setValue(0);
       // Load bookmark status asynchronously (non-blocking)
       // Show modal immediately, update bookmark status after
-      if (eventData && eventType) {
-        // Use requestIdleCallback or setTimeout to defer bookmark check
+      if (eventData && eventType && eventType !== 'eth-denver') {
+        // Use requestIdleCallback or setTimeout to defer bookmark check (skip for eth-denver)
         const timeoutId = setTimeout(async () => {
           try {
             const bookmarked = await getBookmarkStatusForWebEvent(eventData, eventType);
@@ -195,7 +195,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
   }, []);
 
   const handleToggleBookmark = React.useCallback(async () => {
-    if (!eventData || !eventType) return;
+    if (!eventData || !eventType || eventType === 'eth-denver') return;
     
     const newBookmarkStatus = await toggleBookmarkForWebEvent(eventData, eventType);
     setIsBookmarked(newBookmarkStatus);
@@ -379,7 +379,7 @@ export const EventWebModal: React.FC<EventWebModalProps> = ({
 
         {/* Floating action buttons */}
         <View style={[styles.floatingButtons, eventType === 'meetup' && styles.floatingButtonsMeetup]}>
-          {eventType && eventData && (
+          {eventType && eventData && eventType !== 'eth-denver' && (
             <TouchableOpacity
               onPress={handleToggleBookmark}
               style={[

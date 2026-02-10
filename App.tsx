@@ -45,6 +45,7 @@ import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
+import { TenantProvider } from "./src/context/TenantContext";
 import * as Linking from "expo-linking";
 
 Notifications.setNotificationHandler({
@@ -272,7 +273,8 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor="#121212" />
       <LocalStorageProvider>
-        <AuthProvider>
+        <TenantProvider>
+          <AuthProvider>
           <FarcasterFrameProvider>
             <AudioPlayerProvider>
               <BottomSheetModalProvider>
@@ -287,7 +289,8 @@ export default function App() {
               </BottomSheetModalProvider>
             </AudioPlayerProvider>
           </FarcasterFrameProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </TenantProvider>
       </LocalStorageProvider>
     </GestureHandlerRootView>
   );

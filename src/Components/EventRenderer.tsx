@@ -8,6 +8,7 @@ import { FlyerEventCard } from "./FlyerEventCard";
 import { SportsGameCard } from "./SportsGameCard";
 import { InstagramEventCard } from "./InstagramEventCard";
 import { RenaissanceEventCard } from "./RenaissanceEventCard";
+import { EthDenverEventCard } from "./EthDenverEventCard";
 import {
   DAEvent,
   LumaEvent,
@@ -17,6 +18,7 @@ import {
   RenaissanceEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
+import type { EthDenverEvent } from "../hooks/useEthDenverEvents";
 import { ConnectionBookmarkUser, BookmarkSource } from "../api/bookmarks";
 
 const { width } = Dimensions.get("window");
@@ -30,6 +32,7 @@ export interface EventRendererProps {
   onSelectSportsEvent?: (game: SportsGame) => void;
   onSelectInstagramEvent?: (event: InstagramEvent) => void;
   onSelectRenaissanceEvent?: (event: RenaissanceEvent) => void;
+  onSelectEthDenverEvent?: (event: EthDenverEvent) => void;
   onSelectFlyerEvent?: (event: any) => void;
   containerStyle?: any;
   showFeaturedImage?: boolean; // Whether to show featured image for DA events (default: false)
@@ -54,6 +57,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   onSelectSportsEvent,
   onSelectInstagramEvent,
   onSelectRenaissanceEvent,
+  onSelectEthDenverEvent,
   onSelectFlyerEvent,
   containerStyle = { paddingHorizontal: 16 },
   showFeaturedImage = false,
@@ -90,6 +94,23 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   }, [getConnectionsForEvent, eventType, item]);
   
   const connections = getConnections();
+
+  // ETH Denver event
+  if (eventType === "eth-denver") {
+    const ethDenverEvent = item as EthDenverEvent;
+    return (
+      <View style={containerStyle}>
+        <EthDenverEventCard
+          event={ethDenverEvent}
+          onSelectEvent={() => {
+            if (onSelectEthDenverEvent) {
+              onSelectEthDenverEvent(ethDenverEvent);
+            }
+          }}
+        />
+      </View>
+    );
+  }
 
   // Flyer event
   if (eventType === "flyer") {
