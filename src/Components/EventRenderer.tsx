@@ -19,6 +19,7 @@ import {
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import type { EthDenverEvent } from "../hooks/useEthDenverEvents";
+import type { DenverEvent } from "../hooks/useDenverEvents";
 import { ConnectionBookmarkUser, BookmarkSource } from "../api/bookmarks";
 
 const { width } = Dimensions.get("window");
@@ -33,6 +34,7 @@ export interface EventRendererProps {
   onSelectInstagramEvent?: (event: InstagramEvent) => void;
   onSelectRenaissanceEvent?: (event: RenaissanceEvent) => void;
   onSelectEthDenverEvent?: (event: EthDenverEvent) => void;
+  onSelectDenverEvent?: (event: DenverEvent) => void;
   onSelectFlyerEvent?: (event: any) => void;
   containerStyle?: any;
   showFeaturedImage?: boolean; // Whether to show featured image for DA events (default: false)
@@ -58,6 +60,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   onSelectInstagramEvent,
   onSelectRenaissanceEvent,
   onSelectEthDenverEvent,
+  onSelectDenverEvent,
   onSelectFlyerEvent,
   containerStyle = { paddingHorizontal: 16 },
   showFeaturedImage = false,
@@ -105,6 +108,23 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
           onSelectEvent={() => {
             if (onSelectEthDenverEvent) {
               onSelectEthDenverEvent(ethDenverEvent);
+            }
+          }}
+        />
+      </View>
+    );
+  }
+
+  // Denver tenant event (same card shape as ETH Denver)
+  if (eventType === "denver") {
+    const denverEvent = item as DenverEvent;
+    return (
+      <View style={containerStyle}>
+        <EthDenverEventCard
+          event={denverEvent as EthDenverEvent}
+          onSelectEvent={() => {
+            if (onSelectDenverEvent) {
+              onSelectDenverEvent(denverEvent);
             }
           }}
         />

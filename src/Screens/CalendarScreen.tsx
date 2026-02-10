@@ -44,6 +44,7 @@ import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
 import { useAllEvents } from "../hooks/useAllEvents";
 import { useEthDenverEvents } from "../hooks/useEthDenverEvents";
+import { useDenverEvents } from "../hooks/useDenverEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
@@ -100,6 +101,7 @@ const CalendarScreen = ({ navigation }) => {
     loading: isLoadingEvents,
   } = useAllEvents();
   const { events: ethDenverEvents, loading: ethDenverLoading } = useEthDenverEvents();
+  const { events: denverEvents, loading: denverLoading } = useDenverEvents();
   const { state: authState } = useAuth();
   // Wallet functionality hidden for now
   // const { balance: walletBalance } = useUSDCBalance();
@@ -413,6 +415,34 @@ const CalendarScreen = ({ navigation }) => {
       groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
       return groupsArray;
     }
+
+    // Denver tenant: only show events from Denver events API
+    if (tenantId === "denver") {
+      denverEvents.forEach((event) => {
+        const eventMoment = moment(event.eventDate, "YYYY-MM-DD");
+        if (!eventMoment.isValid()) return;
+        const dateKey = event.eventDate;
+        const sortDate = eventMoment.valueOf();
+        const group = getOrCreateGroup(dateKey, sortDate);
+        group.data.push({ ...event, eventType: "denver" });
+      });
+      const getEventStartTime = (event: any): number => {
+        if (event.eventType === "denver") {
+          const d = moment(event.eventDate, "YYYY-MM-DD");
+          const t = event.startTime && /^\d{1,2}:\d{2}\s*(am|pm)/i.test(event.startTime)
+            ? moment(`${event.eventDate} ${event.startTime}`, "YYYY-MM-DD h:mm a")
+            : null;
+          return (t && t.isValid() ? t : d).valueOf();
+        }
+        return 0;
+      };
+      Object.values(groups).forEach((group: any) => {
+        group.data.sort((a: any, b: any) => getEventStartTime(a) - getEventStartTime(b));
+      });
+      const groupsArray = Object.values(groups);
+      groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
+      return groupsArray;
+    }
     
     // Detroit (default): process all event sources
     // Process existing events
@@ -548,7 +578,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1108,7 +1138,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
   
   // Helper to open modal with batched state update
-  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver' | undefined, eventData: any) => {
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver' | 'denver' | undefined, eventData: any) => {
     // Batch all state updates in a single call for immediate modal appearance
     // The key prop on WebView will ensure proper cleanup/remount when URL changes
     setWebModalState({
@@ -1193,7 +1223,7 @@ const CalendarScreen = ({ navigation }) => {
         ref={sectionListRef}
         eventsGroup={eventsGroup}
         ListHeaderComponent={sectionHeader}
-        loading={tenantId === "eth-denver" ? ethDenverLoading : isLoadingEvents}
+        loading={tenantId === "eth-denver" ? ethDenverLoading : tenantId === "denver" ? denverLoading : isLoadingEvents}
         eventRendererProps={{
           containerStyle: { paddingHorizontal: 16 },
           onSelectDAEvent: openDAModal,
@@ -1223,6 +1253,11 @@ const CalendarScreen = ({ navigation }) => {
           onSelectEthDenverEvent: (event: any) => {
             if (event.registrationUrl) {
               openWebModal(event.registrationUrl, event.eventName, 'eth-denver', event);
+            }
+          },
+          onSelectDenverEvent: (event: any) => {
+            if (event.registrationUrl) {
+              openWebModal(event.registrationUrl, event.eventName, 'denver', event);
             }
           },
           showFeaturedImage: true,

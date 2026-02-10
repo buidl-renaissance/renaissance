@@ -34,6 +34,14 @@ export const TENANTS: Tenant[] = [
     heroSubtitle: "Discover and shape Detroit's living culture.",
   },
   {
+    id: "denver",
+    displayName: "Denver",
+    image: require("../../assets/denver.jpeg"),
+    heroBackground: require("../../assets/denver.jpeg"),
+    heroTitle: "Denver",
+    heroSubtitle: "Discover what's happening in the Mile High City.",
+  },
+  {
     id: "eth-denver",
     displayName: "ETH Denver",
     image: require("../../assets/eth-denver-icon.png"),

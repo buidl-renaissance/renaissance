@@ -33,6 +33,8 @@ export const getEventKey = (
       return `instagram-${(item as InstagramEvent).id}`;
     case "eth-denver":
       return `eth-denver-${(item as any).id}`;
+    case "denver":
+      return `denver-${(item as any).id}`;
     default:
       return `event-${index}`;
   }
