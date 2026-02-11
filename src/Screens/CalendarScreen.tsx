@@ -44,7 +44,7 @@ import { GrantOpportunities } from "../Components/GrantOpportunities";
 import { Button } from "../Components/Button";
 import { useAllEvents } from "../hooks/useAllEvents";
 import { useEthDenverEvents } from "../hooks/useEthDenverEvents";
-import { useDenverEvents } from "../hooks/useDenverEvents";
+import { useDenverEvents, type DenverEvent } from "../hooks/useDenverEvents";
 import { useWeather } from "../hooks/useWeather";
 import { useContact } from "../hooks/useContact";
 import { useFlyers } from "../hooks/useFlyers";
@@ -416,15 +416,79 @@ const CalendarScreen = ({ navigation }) => {
       return groupsArray;
     }
 
-    // Denver tenant: only show events from Denver events API
+    // Denver tenant: only show events from Denver events API; use Meetup/RA cards when eventSource is set
     if (tenantId === "denver") {
-      denverEvents.forEach((event) => {
+      denverEvents.forEach((event: DenverEvent) => {
         const eventMoment = moment(event.eventDate, "YYYY-MM-DD");
         if (!eventMoment.isValid()) return;
         const dateKey = event.eventDate;
         const sortDate = eventMoment.valueOf();
         const group = getOrCreateGroup(dateKey, sortDate);
-        group.data.push({ ...event, eventType: "denver" });
+
+        if (event.eventSource === "meetup") {
+          const startM = moment(`${event.eventDate} ${event.startTime || "12:00 AM"}`, "YYYY-MM-DD h:mm a");
+          const dateTime = startM.isValid() ? startM.toISOString() : moment(event.eventDate).startOf("day").toISOString();
+          let endDateTime: string | undefined;
+          if (event.endTime) {
+            const endM = moment(`${event.eventDate} ${event.endTime}`, "YYYY-MM-DD h:mm a");
+            endDateTime = endM.isValid() ? endM.toISOString() : undefined;
+          }
+          const meetupEvent: MeetupEvent = {
+            id: parseInt(event.id, 10) || 0,
+            eventId: event.id,
+            title: event.eventName,
+            description: event.notes ?? "",
+            dateTime,
+            endDateTime,
+            venue: event.venue
+              ? { name: event.venue, address: "", city: "", state: "", country: "" }
+              : null,
+            group: {
+              id: "",
+              name: event.organizer ?? "Group",
+              urlname: "",
+              timezone: "America/Denver",
+            },
+            eventUrl: event.registrationUrl ?? "",
+            eventData: {
+              rsvps: event.attendeeCount != null ? { totalCount: event.attendeeCount } : undefined,
+              featuredEventPhoto: event.imageUrl
+                ? { baseUrl: event.imageUrl, highResUrl: event.imageUrl, id: "" }
+                : undefined,
+            },
+            featuredEventPhoto: event.imageUrl
+              ? { baseUrl: event.imageUrl, highResUrl: event.imageUrl, id: "" }
+              : undefined,
+            rsvps: event.attendeeCount != null ? { totalCount: event.attendeeCount } : undefined,
+          };
+          group.data.push({ ...meetupEvent, eventType: "meetup" });
+        } else if (event.eventSource === "ra") {
+          const startM = moment(`${event.eventDate} ${event.startTime || "12:00 AM"}`, "YYYY-MM-DD h:mm a");
+          const endM = event.endTime
+            ? moment(`${event.eventDate} ${event.endTime}`, "YYYY-MM-DD h:mm a")
+            : startM.clone().add(2, "hours");
+          const raEvent: RAEvent = {
+            id: event.id,
+            date: event.eventDate,
+            startTime: startM.isValid() ? startM.toISOString() : moment(event.eventDate).startOf("day").toISOString(),
+            endTime: endM.isValid() ? endM.toISOString() : startM.clone().add(2, "hours").toISOString(),
+            title: event.eventName,
+            contentUrl: event.registrationUrl ?? "",
+            flyerFront: event.imageUrl ?? null,
+            isTicketed: null,
+            interestedCount: event.interestedCount ?? null,
+            venue: { id: "", name: event.venue, contentUrl: "" },
+            artists: event.organizer ? [{ id: "", name: event.organizer }] : [],
+            images: event.imageUrl
+              ? [{ id: "", filename: event.imageUrl, alt: null, type: "FLYERFRONT", crop: null, __typename: "Image" }]
+              : [],
+            tickets: [],
+            pick: null,
+          };
+          group.data.push({ ...raEvent, eventType: "ra" });
+        } else {
+          group.data.push({ ...event, eventType: "denver" });
+        }
       });
       const getEventStartTime = (event: any): number => {
         if (event.eventType === "denver") {
@@ -433,6 +497,12 @@ const CalendarScreen = ({ navigation }) => {
             ? moment(`${event.eventDate} ${event.startTime}`, "YYYY-MM-DD h:mm a")
             : null;
           return (t && t.isValid() ? t : d).valueOf();
+        }
+        if (event.eventType === "meetup" && event.dateTime) {
+          return moment(event.dateTime).valueOf();
+        }
+        if (event.eventType === "ra" && event.startTime) {
+          return moment(event.startTime).valueOf();
         }
         return 0;
       };

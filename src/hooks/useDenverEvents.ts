@@ -18,6 +18,12 @@ export interface DenverEvent {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Meetup: number of attendees */
+  attendeeCount?: number | null;
+  /** RA: number interested */
+  interestedCount?: number | null;
+  /** Source for card rendering: use MeetupEventCard when 'meetup', RAEventCard when 'ra' */
+  eventSource?: 'meetup' | 'ra';
 }
 
 interface ApiResponse {

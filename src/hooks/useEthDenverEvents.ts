@@ -11,9 +11,14 @@ export interface EthDenverEvent {
   organizer: string | null;
   venue: string;
   registrationUrl: string;
+  imageUrl?: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Meetup: number of attendees */
+  attendeeCount?: number | null;
+  /** RA: number interested */
+  interestedCount?: number | null;
 }
 
 interface ApiResponse {

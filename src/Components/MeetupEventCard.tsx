@@ -23,7 +23,11 @@ const formatTime = (date: string) => {
 
 const formatTimeRange = (event: MeetupEvent) => {
   const start = formatTime(event.dateTime);
-  // Since we don't have an end time, just show start time
+  // Show end time if available
+  if (event.endDateTime) {
+    const end = formatTime(event.endDateTime);
+    return `${start} - ${end}`;
+  }
   return start;
 };
 
@@ -50,14 +54,14 @@ export const MeetupEventCard: React.FC<MeetupEventCardProps> = ({
 
   React.useEffect(() => {
     const start = moment(event.dateTime);
-    // Since we don't have end time, assume event lasts 2 hours
-    const end = moment(event.dateTime).add(2, 'hours');
+    // Use endDateTime if available, otherwise assume event lasts 2 hours
+    const end = event.endDateTime ? moment(event.endDateTime) : moment(event.dateTime).add(2, 'hours');
     if (start.isBefore() && end.isAfter()) {
       setIsNow(true);
     } else {
       setIsNow(false);
     }
-  }, [event.dateTime]);
+  }, [event.dateTime, event.endDateTime]);
 
   // Load bookmark status (skip if initialBookmarkStatus was provided)
   React.useEffect(() => {

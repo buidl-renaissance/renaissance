@@ -343,6 +343,8 @@ export interface MeetupEvent {
   title: string;
   description: string;
   dateTime: string;
+  /** Optional end time (ISO string) - not all Meetup events have this */
+  endDateTime?: string;
   venue: MeetupVenue | null;
   group: MeetupGroup;
   eventUrl: string;
