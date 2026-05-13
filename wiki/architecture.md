@@ -267,3 +267,80 @@ Expo Updates enables over-the-air updates:
 - Configured in `app.json` under `updates`
 - Auto-reload on app foreground (`checkForUpdates`)
 - Uses EAS Update service
+
+## Event Polling Service
+
+The Renaissance app aggregates events from multiple sources via a background polling service that runs independently from the mobile app.
+
+### Polling Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Event Polling Service (Vercel)                  │
+│                   /polling-service                           │
+├──────────────────┬──────────────────┬──────────────────────┤
+│  Luma Poller     │  RA Poller       │  Meetup Poller       │
+│  (cron: */6h)    │  (cron: */6h)    │  (cron: */6h)        │
+├──────────────────┴──────────────────┴──────────────────────┤
+│                    Orchestrator                             │
+│                    (cron: */4h)                             │
+├─────────────────────────────────────────────────────────────┤
+│  Fetch → Normalize → Deduplicate → Upsert                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                ┌─────────────────────────────┐
+                │   Renaissance Events API     │
+                │   events.builddetroit.xyz    │
+                └─────────────────────────────┘
+                              │
+                              ▼
+         ┌────────────────────────────────────────┐
+         │           Mobile App Hooks              │
+         │  useLumaEvents, useRAEvents, etc.       │
+         └────────────────────────────────────────┘
+```
+
+### Event Flow
+
+1. **Polling**: Vercel cron triggers polling endpoints on schedule
+2. **Fetch**: Each poller fetches from its source API (Luma, RA, Meetup)
+3. **Normalize**: Events are converted to a common `RenaissanceEvent` schema
+4. **Deduplicate**: Events are deduplicated by `sourceId + source`
+5. **Upsert**: Normalized events are upserted to Renaissance Events API
+6. **Serve**: Mobile app hooks fetch cached/processed events
+
+### Normalized Event Schema
+
+All events from different sources are normalized to:
+
+```typescript
+interface RenaissanceEvent {
+  name: string;
+  location: string;
+  startTime: string;        // ISO 8601
+  endTime: string;          // ISO 8601
+  flyerImage?: string;      // Cover image URL
+  metadata?: {
+    description?: string;
+    host?: { name: string; username?: string };
+    venue?: { name: string; address?: string };
+    artists?: string[];
+    ticketPrice?: string;
+  };
+  tags?: string[];
+  eventType: 'in-person' | 'online';
+  source: 'luma' | 'ra' | 'meetup';
+  sourceId: string;         // Original event ID
+  sourceUrl?: string;       // Link to original
+}
+```
+
+### Adding New Event Sources
+
+To add a new event source:
+1. Create poller in `/polling-service/src/lib/pollers/`
+2. Add normalization function in `/polling-service/src/lib/normalize.ts`
+3. Create API route in `/polling-service/src/app/api/poll/{source}/`
+4. Add cron schedule in `/polling-service/vercel.json`
+5. Update orchestrator to include new source

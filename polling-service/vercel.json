@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/poll/all",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/poll/luma",
+      "schedule": "15 */6 * * *"
+    },
+    {
+      "path": "/api/poll/ra",
+      "schedule": "30 */6 * * *"
+    },
+    {
+      "path": "/api/poll/meetup",
+      "schedule": "45 */6 * * *"
+    }
+  ]
+}

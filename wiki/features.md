@@ -12,16 +12,27 @@ The primary screen (`CalendarScreen`) displays events in a comprehensive calenda
 - Infinite scroll for loading more events
 
 ### Event Sources
-Events are aggregated from multiple platforms:
+Events are aggregated from multiple platforms via background polling:
 
-| Source | Description | Card Component |
-|--------|-------------|----------------|
-| **Luma** | Tech and community events | `LumaEventCard.tsx` |
-| **Resident Advisor** | Music and nightlife events | `RAEventCard.tsx` |
-| **Meetup** | Group meetups and activities | `MeetupEventCard.tsx` |
-| **Instagram** | Events extracted from Instagram posts | `InstagramEventCard.tsx` |
-| **Renaissance** | Native Renaissance events | `RenaissanceEventCard.tsx` |
-| **Sports** | Local sports games | `SportsGameCard.tsx` |
+| Source | Description | Card Component | Polling |
+|--------|-------------|----------------|---------|
+| **Luma** | Tech and community events | `LumaEventCard.tsx` | Every 6h |
+| **Resident Advisor** | Music and nightlife events | `RAEventCard.tsx` | Every 6h |
+| **Meetup** | Group meetups and activities | `MeetupEventCard.tsx` | Every 6h |
+| **Instagram** | Events extracted from Instagram posts | `InstagramEventCard.tsx` | Manual |
+| **Renaissance** | Native Renaissance events | `RenaissanceEventCard.tsx` | Real-time |
+| **Sports** | Local sports games | `SportsGameCard.tsx` | External API |
+
+### Background Ingestion
+
+The event feed is kept fresh by the **Event Polling Service** (`/polling-service`):
+- Runs on Vercel with cron-triggered endpoints
+- Polls Luma, RA, and Meetup every 4-6 hours
+- Normalizes events to a common schema
+- Deduplicates by source + sourceId
+- Upserts to Renaissance Events API
+
+See [Architecture: Event Polling Service](./architecture.md#event-polling-service) for details.
 
 ### Event Details
 Each event type has a dedicated detail view showing:

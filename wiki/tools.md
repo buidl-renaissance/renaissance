@@ -218,6 +218,39 @@ The app targets:
 - **iOS**: 13.4+
 - **Android**: API 21+
 
+## Event Polling Service
+
+The Renaissance event feed is powered by a background polling service that ingests events from multiple sources:
+
+### Polling Service (`/polling-service`)
+
+| Technology | Purpose |
+|------------|---------|
+| Next.js 14 | API routes for polling endpoints |
+| Vercel Cron | Scheduled polling triggers |
+| TypeScript | Type-safe event normalization |
+
+### Event Sources
+
+| Source | API | Polling Frequency |
+|--------|-----|-------------------|
+| Luma | `luma-events-inky.vercel.app` | Every 6 hours |
+| Resident Advisor | `ra-events.vercel.app` | Every 6 hours |
+| Meetup | `meetup.builddetroit.xyz` | Every 6 hours |
+| All Sources | Orchestrated poll | Every 4 hours |
+
+### Polling Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/poll/all` | Poll all sources |
+| `/api/poll/luma` | Poll Luma events |
+| `/api/poll/ra` | Poll RA events |
+| `/api/poll/meetup` | Poll Meetup events |
+| `/api/health` | Service health check |
+
+See [`/polling-service/README.md`](../polling-service/README.md) for detailed documentation.
+
 ## Dependency Updates
 
 When updating dependencies:
