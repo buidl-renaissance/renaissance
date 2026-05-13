@@ -6,6 +6,10 @@ Welcome to the developer wiki for the **Renaissance** mobile application. This d
 
 | Document | Description |
 |----------|-------------|
+| [Overview](./overview.md) | What this repo does, key files, architecture summary |
+| [Specification](./spec.md) | What the code is intended to do |
+| [Current State](./current-state.md) | What the code actually does right now |
+| [Changelog](./changelog.md) | Recent significant changes |
 | [Project Overview](./project-overview.md) | What Renaissance is, who it's for, and high-level goals |
 | [Repository Structure](./repo-structure.md) | Annotated tour of the codebase layout |
 | [Local Development Setup](./local-dev-setup.md) | Get the app running on your machine |
