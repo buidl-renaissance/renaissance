@@ -1,0 +1,93 @@
+# EAS Preview OTA Workflow for Renaissance
+#
+# This workflow publishes an EAS Over-The-Air (OTA) update to the `preview` branch
+# every time code is pushed to `main`. OTA updates deliver JavaScript bundle changes
+# instantly to devices without requiring a new native binary build.
+#
+# REQUIREMENTS:
+#   1. A GitHub Environment named "Preview" must exist in this repository
+#   2. The EXPO_TOKEN secret must be configured in that environment
+#      -> Create a token at: https://expo.dev/accounts/johng/settings/access-tokens
+#      -> Add it at: https://github.com/buidl-renaissance/renaissance/settings/environments
+#
+# WHAT THIS DOES:
+#   - Checks out the code on push to main
+#   - Installs dependencies with yarn
+#   - Runs `eas update --branch preview` to publish the JS bundle
+#   - Posts a summary with a link to view the update in Expo dashboard
+#
+# UPDATE DASHBOARD:
+#   https://expo.dev/accounts/johng/projects/renaissance/updates
+
+name: EAS Preview OTA
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  update:
+    name: EAS Update (Preview)
+    runs-on: ubuntu-latest
+    environment: Preview
+
+    steps:
+      - name: Require EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::EXPO_TOKEN is not set."
+            echo ""
+            echo "To fix this:"
+            echo "  1. Go to https://expo.dev/accounts/johng/settings/access-tokens"
+            echo "  2. Create a new access token (or use an existing one)"
+            echo "  3. Go to https://github.com/buidl-renaissance/renaissance/settings/environments"
+            echo "  4. Create an environment named 'Preview' (if it doesn't exist)"
+            echo "  5. Add a secret named 'EXPO_TOKEN' with your Expo access token"
+            exit 1
+          fi
+          echo "EXPO_TOKEN is configured ✓"
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Publish EAS Update
+        id: eas-update
+        run: |
+          eas update --branch preview --message "main ${{ github.sha }}" --non-interactive | tee eas-update-output.txt
+          # Extract the update group ID from the output
+          UPDATE_GROUP_ID=$(grep -oP 'Update group ID:\s*\K[a-f0-9-]+' eas-update-output.txt || echo "")
+          echo "update_group_id=$UPDATE_GROUP_ID" >> $GITHUB_OUTPUT
+
+      - name: Post update summary
+        run: |
+          echo "## 🚀 EAS Preview Update Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** preview" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### View Updates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[📱 View all preview updates](https://expo.dev/accounts/johng/projects/renaissance/updates)" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.eas-update.outputs.update_group_id }}" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "[🔗 View this update group](https://expo.dev/accounts/johng/projects/renaissance/updates/${{ steps.eas-update.outputs.update_group_id }})" >> $GITHUB_STEP_SUMMARY
+          fi
