@@ -1,0 +1,88 @@
+name: EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build for'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+      submit:
+        description: 'Submit to stores after build'
+        required: false
+        default: false
+        type: boolean
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: EAS Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets."
+            echo "Learn more: https://docs.expo.dev/eas-update/github-actions/"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: yarn
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Determine build parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "platform=all" >> $GITHUB_OUTPUT
+            echo "profile=production" >> $GITHUB_OUTPUT
+            echo "submit=true" >> $GITHUB_OUTPUT
+          else
+            echo "platform=${{ github.event.inputs.platform }}" >> $GITHUB_OUTPUT
+            echo "profile=${{ github.event.inputs.profile }}" >> $GITHUB_OUTPUT
+            echo "submit=${{ github.event.inputs.submit }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build app
+        run: |
+          PLATFORM_FLAG=""
+          if [ "${{ steps.params.outputs.platform }}" != "all" ]; then
+            PLATFORM_FLAG="--platform ${{ steps.params.outputs.platform }}"
+          fi
+          
+          SUBMIT_FLAG=""
+          if [ "${{ steps.params.outputs.submit }}" = "true" ]; then
+            SUBMIT_FLAG="--auto-submit"
+          fi
+          
+          eas build --profile ${{ steps.params.outputs.profile }} $PLATFORM_FLAG $SUBMIT_FLAG --non-interactive
