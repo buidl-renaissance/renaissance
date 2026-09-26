@@ -7,6 +7,7 @@ import {
   InstagramEvent,
   RenaissanceEvent,
   RenaissanceEventPublisher,
+  ConcertEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import { getCachedData, setCachedData } from "../utils/eventCache";
@@ -33,6 +34,7 @@ export interface AllEventsResponse {
   sports: { games: SportsGame[] };
   instagram: { success: boolean; data: InstagramEvent[] };
   renaissance: { events: RenaissanceEvent[]; publishers: PublishersMap };
+  concerts: { events: ConcertEvent[]; count: number };
   timestamp: string;
 }
 
@@ -45,6 +47,7 @@ export interface UseAllEventsResult {
   sportsGames: SportsGame[];
   instagramEvents: InstagramEvent[];
   renaissanceEvents: RenaissanceEvent[];
+  concertEvents: ConcertEvent[];
   loading: boolean;
   error: Error | null;
   refresh: () => Promise<void>;
@@ -60,6 +63,7 @@ const EMPTY_MEETUP: MeetupEvent[] = [];
 const EMPTY_SPORTS: SportsGame[] = [];
 const EMPTY_INSTAGRAM: InstagramEvent[] = [];
 const EMPTY_RENAISSANCE: RenaissanceEvent[] = [];
+const EMPTY_CONCERTS: ConcertEvent[] = [];
 
 export function useAllEvents(): UseAllEventsResult {
   const [data, setData] = React.useState<AllEventsResponse | null>(null);
@@ -69,14 +73,6 @@ export function useAllEvents(): UseAllEventsResult {
 
   const updateEvents = React.useCallback(async () => {
     try {
-      setLoading(true);
-      if (!hasFetchedRef.current) {
-        const cached = await getCachedData<AllEventsResponse>(CACHE_KEY);
-        if (cached) {
-          setData(cached);
-        }
-      }
-
       const res = await fetch(EVENTS_ALL_URL);
       if (!res.ok) {
         throw new Error(`Failed to fetch events: ${res.status}`);
@@ -100,9 +96,7 @@ export function useAllEvents(): UseAllEventsResult {
       setError(null);
     } catch (err) {
       console.error("Error fetching all events:", err);
-      if (!data) {
-        setError(err as Error);
-      }
+      setError(err as Error);
     } finally {
       setLoading(false);
     }
@@ -111,9 +105,23 @@ export function useAllEvents(): UseAllEventsResult {
   React.useEffect(() => {
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
-    updateEvents();
+
+    let cancelled = false;
+    (async () => {
+      const cached = await getCachedData<AllEventsResponse>(CACHE_KEY);
+      if (cancelled) return;
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+      }
+      await updateEvents();
+    })();
+
     const interval = setInterval(updateEvents, 30 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [updateEvents]);
 
   return {
@@ -125,6 +133,7 @@ export function useAllEvents(): UseAllEventsResult {
     sportsGames: data?.sports?.games ?? EMPTY_SPORTS,
     instagramEvents: data?.instagram?.data ?? EMPTY_INSTAGRAM,
     renaissanceEvents: data?.renaissance?.events ?? EMPTY_RENAISSANCE,
+    concertEvents: data?.concerts?.events ?? EMPTY_CONCERTS,
     loading,
     error,
     refresh: updateEvents,

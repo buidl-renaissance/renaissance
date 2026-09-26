@@ -485,6 +485,30 @@ export interface SportsGame {
   awayTeam: SportsGameTeam;
 }
 
+export type ConcertSource =
+  | 'ticketmaster'
+  | 'seatgeek'
+  | 'el-club'
+  | 'lager-house'
+  | 'cliff-bells'
+  | 'marble-bar'
+  | 'sharpen-your-skills';
+
+export interface ConcertEvent {
+  id: string;
+  source: ConcertSource;
+  sourceId: string;
+  name: string;
+  startTime: string;
+  endTime: string | null;
+  venue: string;
+  city: string;
+  image: string | null;
+  url: string;
+  price: string | null;
+  artists: string[];
+}
+
 export interface InstagramEvent {
   id: number;
   postCode: string;
