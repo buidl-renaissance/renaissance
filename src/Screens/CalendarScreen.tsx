@@ -69,7 +69,7 @@ import { MiniAppsModal } from "../Components/MiniAppsModal";
 // Wallet functionality hidden for now
 // import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
-import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent } from "../interfaces";
+import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent, ConcertEvent } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
@@ -98,6 +98,7 @@ const CalendarScreen = ({ navigation }) => {
     sportsGames,
     instagramEvents,
     renaissanceEvents,
+    concertEvents,
     loading: isLoadingEvents,
   } = useAllEvents();
   const { events: ethDenverEvents, loading: ethDenverLoading } = useEthDenverEvents();
@@ -150,7 +151,7 @@ const CalendarScreen = ({ navigation }) => {
     visible: boolean;
     url: string | null;
     title: string;
-    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | undefined;
+    eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'concert' | undefined;
     eventData: any;
   }>({
     visible: false,
@@ -623,6 +624,16 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    concertEvents.forEach((event: ConcertEvent) => {
+      const start = moment(event.startTime);
+      const end = event.endTime ? moment(event.endTime) : moment(event.startTime).add(3, "hours");
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "concert" });
+      }
+    });
+
     // Sort events within each group by start time - optimized
     const getEventStartTime = (event: any): number => {
       if (event.eventType === "luma") return moment(event.startAt).valueOf();
@@ -631,6 +642,7 @@ const CalendarScreen = ({ navigation }) => {
       if (event.eventType === "sports") return moment(event.startTime).valueOf();
       if (event.eventType === "instagram") return moment(event.startDatetime).valueOf();
       if (event.eventType === "renaissance") return moment(event.startTime).valueOf();
+      if (event.eventType === "concert") return moment(event.startTime).valueOf();
       return moment(event.start_date).valueOf();
     };
     
@@ -648,7 +660,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, isFeatured]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, isFeatured]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1208,7 +1220,7 @@ const CalendarScreen = ({ navigation }) => {
   }, []);
   
   // Helper to open modal with batched state update
-  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver' | 'denver' | undefined, eventData: any) => {
+  const openWebModal = React.useCallback((url: string, title: string, eventType: 'ra' | 'luma' | 'da' | 'meetup' | 'sports' | 'instagram' | 'renaissance' | 'eth-denver' | 'denver' | 'concert' | undefined, eventData: any) => {
     // Batch all state updates in a single call for immediate modal appearance
     // The key prop on WebView will ensure proper cleanup/remount when URL changes
     setWebModalState({
@@ -1314,6 +1326,11 @@ const CalendarScreen = ({ navigation }) => {
                 'sports',
                 game
               );
+            }
+          },
+          onSelectConcertEvent: (event: ConcertEvent) => {
+            if (event.url) {
+              openWebModal(event.url, event.name, 'concert', event);
             }
           },
           onSelectInstagramEvent: openInstagramModal,
