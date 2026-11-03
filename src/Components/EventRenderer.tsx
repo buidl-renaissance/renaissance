@@ -252,9 +252,9 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
       <View style={containerStyle}>
         <ConcertEventCard
           event={concert}
-          onSelectEvent={() => {
+          onSelectEvent={(url) => {
             if (onSelectConcertEvent) {
-              onSelectConcertEvent(concert);
+              onSelectConcertEvent(url ? { ...concert, url } : concert);
             }
           }}
         />

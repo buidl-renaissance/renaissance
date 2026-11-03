@@ -486,12 +486,14 @@ export interface SportsGame {
 }
 
 export type ConcertSource =
+  | 'dice'
   | 'ticketmaster'
   | 'seatgeek'
   | 'el-club'
   | 'lager-house'
   | 'cliff-bells'
   | 'marble-bar'
+  | 'russell'
   | 'sharpen-your-skills';
 
 export interface ConcertEvent {
@@ -507,6 +509,14 @@ export interface ConcertEvent {
   url: string;
   price: string | null;
   artists: string[];
+  offers?: ConcertOffer[];
+  status?: 'canceled' | 'postponed' | 'rescheduled';
+}
+
+export interface ConcertOffer {
+  source: ConcertSource;
+  url: string;
+  price: string | null;
 }
 
 export interface InstagramEvent {
