@@ -8,6 +8,7 @@ import {
   RenaissanceEvent,
   RenaissanceEventPublisher,
   ConcertEvent,
+  CultureEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import { getCachedData, setCachedData } from "../utils/eventCache";
@@ -35,6 +36,7 @@ export interface AllEventsResponse {
   instagram: { success: boolean; data: InstagramEvent[] };
   renaissance: { events: RenaissanceEvent[]; publishers: PublishersMap };
   concerts: { events: ConcertEvent[]; count: number };
+  culture: { events: CultureEvent[]; count: number };
   timestamp: string;
 }
 
@@ -48,6 +50,7 @@ export interface UseAllEventsResult {
   instagramEvents: InstagramEvent[];
   renaissanceEvents: RenaissanceEvent[];
   concertEvents: ConcertEvent[];
+  cultureEvents: CultureEvent[];
   loading: boolean;
   error: Error | null;
   refresh: () => Promise<void>;
@@ -64,6 +67,7 @@ const EMPTY_SPORTS: SportsGame[] = [];
 const EMPTY_INSTAGRAM: InstagramEvent[] = [];
 const EMPTY_RENAISSANCE: RenaissanceEvent[] = [];
 const EMPTY_CONCERTS: ConcertEvent[] = [];
+const EMPTY_CULTURE: CultureEvent[] = [];
 
 export function useAllEvents(): UseAllEventsResult {
   const [data, setData] = React.useState<AllEventsResponse | null>(null);
@@ -134,6 +138,7 @@ export function useAllEvents(): UseAllEventsResult {
     instagramEvents: data?.instagram?.data ?? EMPTY_INSTAGRAM,
     renaissanceEvents: data?.renaissance?.events ?? EMPTY_RENAISSANCE,
     concertEvents: data?.concerts?.events ?? EMPTY_CONCERTS,
+    cultureEvents: data?.culture?.events ?? EMPTY_CULTURE,
     loading,
     error,
     refresh: updateEvents,

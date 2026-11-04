@@ -496,6 +496,23 @@ export type ConcertSource =
   | 'russell'
   | 'sharpen-your-skills';
 
+export type CultureCategory = 'art' | 'comedy';
+
+export interface CultureEvent {
+  id: string;
+  name: string;
+  category: CultureCategory;
+  venue: string;
+  city: string;
+  startTime: string;
+  endTime: string | null;
+  url: string;
+  price: string | null;
+  image: string | null;
+  source: string;
+  summary: string | null;
+}
+
 export interface ConcertEvent {
   id: string;
   source: ConcertSource;

@@ -7,6 +7,7 @@ import { MeetupEventCard } from "./MeetupEventCard";
 import { FlyerEventCard } from "./FlyerEventCard";
 import { SportsGameCard } from "./SportsGameCard";
 import { ConcertEventCard } from "./ConcertEventCard";
+import { CultureEventCard } from "./CultureEventCard";
 import { InstagramEventCard } from "./InstagramEventCard";
 import { RenaissanceEventCard } from "./RenaissanceEventCard";
 import { EthDenverEventCard } from "./EthDenverEventCard";
@@ -18,6 +19,7 @@ import {
   InstagramEvent,
   RenaissanceEvent,
   ConcertEvent,
+  CultureEvent,
 } from "../interfaces";
 import { SportsGame } from "../api/sports-games";
 import type { EthDenverEvent } from "../hooks/useEthDenverEvents";
@@ -34,6 +36,7 @@ export interface EventRendererProps {
   onSelectMeetupEvent?: (event: MeetupEvent) => void;
   onSelectSportsEvent?: (game: SportsGame) => void;
   onSelectConcertEvent?: (event: ConcertEvent) => void;
+  onSelectCultureEvent?: (event: CultureEvent) => void;
   onSelectInstagramEvent?: (event: InstagramEvent) => void;
   onSelectRenaissanceEvent?: (event: RenaissanceEvent) => void;
   onSelectEthDenverEvent?: (event: EthDenverEvent) => void;
@@ -61,6 +64,7 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
   onSelectMeetupEvent,
   onSelectSportsEvent,
   onSelectConcertEvent,
+  onSelectCultureEvent,
   onSelectInstagramEvent,
   onSelectRenaissanceEvent,
   onSelectEthDenverEvent,
@@ -241,6 +245,18 @@ export const EventRenderer: React.FC<EventRendererProps> = ({
               onSelectSportsEvent(sportsGame);
             }
           }}
+        />
+      </View>
+    );
+  }
+
+  if (eventType === "culture") {
+    const cultureEvent = item as CultureEvent;
+    return (
+      <View style={containerStyle}>
+        <CultureEventCard
+          event={cultureEvent}
+          onSelectEvent={() => onSelectCultureEvent?.(cultureEvent)}
         />
       </View>
     );

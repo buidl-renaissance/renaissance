@@ -28,6 +28,7 @@ import MapScreen from "../Screens/MapScreen";
 import BrowseMap from "../Screens/BrowseMapScreen";
 // import HomeScreen from '../Screens/HomeScreen';
 import ChatScreen from "../Screens/ChatScreen";
+import TasteOnboardingScreen from "../Screens/TasteOnboardingScreen";
 import EventScreen from "../Screens/EventScreen";
 import SearchScreen from "../Screens/SearchScreen";
 import ContentUploadScreen from "../Screens/ContentUploadScreen";
@@ -72,6 +73,7 @@ type HomeNavigationStackParamList = {
   Camera: undefined;
   ContentUpload: undefined;
   Chat: undefined;
+  TasteOnboarding: undefined;
   Collect: undefined;
   CreateProposal: undefined;
   CreateFlyer: undefined;
@@ -189,6 +191,17 @@ const HomeNavigationStack = () => {
         component={ChatScreen}
         name="Chat"
         options={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+        }}
+      />
+      <Stack.Screen
+        component={TasteOnboardingScreen}
+        name="TasteOnboarding"
+        options={{
+          title: "For you",
           headerStyle: {
             backgroundColor: theme.background,
           },

@@ -73,6 +73,8 @@ export const darkTheme = {
   eventInstagram: '#E4405F',
   eventSports: '#10b981',
   eventConcert: '#e11d48',
+  eventArt: '#0d9488',
+  eventComedy: '#eab308',
   eventRenaissance: '#8B5CF6',
 };
 
@@ -148,6 +150,8 @@ export const lightTheme = {
   eventInstagram: '#E4405F',
   eventSports: '#10b981',
   eventConcert: '#e11d48',
+  eventArt: '#0d9488',
+  eventComedy: '#eab308',
   eventRenaissance: '#8B5CF6',
 };
 

@@ -32,6 +32,7 @@ import { EventForecast } from "../Components/EventForecast";
 import { getBookmarkStatusForWebEvent, getBookmarks } from "../utils/bookmarks";
 import { getGoingStatusForWebEvent, getGoingEvents } from "../utils/rsvp";
 import { EventRegister } from "react-native-event-listeners";
+import { useFocusEffect } from "@react-navigation/native";
 
 import moment, { weekdays } from "moment";
 import EventPopup from "../Components/EventPopup";
@@ -69,7 +70,17 @@ import { MiniAppsModal } from "../Components/MiniAppsModal";
 // Wallet functionality hidden for now
 // import { WalletModal } from "../Components/WalletModal";
 import { CreateFlyerModal } from "../Components/CreateFlyerModal";
-import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent, ConcertEvent } from "../interfaces";
+import { LumaEvent, RAEvent, MeetupEvent, InstagramEvent, ConcertEvent, CultureEvent } from "../interfaces";
+import { TasteFilterBar } from "../Components/TasteFilterBar";
+import {
+  Interest,
+  TasteProfile,
+  interestsFromDaCategories,
+  interestsFromText,
+  loadTasteProfile,
+  matchesTaste,
+  saveTasteProfile,
+} from "../utils/tasteProfile";
 import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
@@ -99,6 +110,7 @@ const CalendarScreen = ({ navigation }) => {
     instagramEvents,
     renaissanceEvents,
     concertEvents,
+    cultureEvents,
     loading: isLoadingEvents,
   } = useAllEvents();
   const { events: ethDenverEvents, loading: ethDenverLoading } = useEthDenverEvents();
@@ -145,6 +157,44 @@ const CalendarScreen = ({ navigation }) => {
   const [time, setTime] = React.useState<string>("");
 
   const [filter, setFilter] = React.useState<string>("all");
+  const [tasteProfile, setTasteProfile] = React.useState<TasteProfile | null>(null);
+  const promptedTaste = React.useRef(false);
+
+  const reloadTaste = React.useCallback(async () => {
+    const stored = await loadTasteProfile();
+    setTasteProfile(stored);
+    return stored;
+  }, []);
+
+  useFocusEffect(React.useCallback(() => {
+    let cancelled = false;
+    reloadTaste().then((stored) => {
+      if (cancelled || stored || promptedTaste.current) return;
+      promptedTaste.current = true;
+      navigation.navigate("TasteOnboarding");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigation, reloadTaste]));
+
+  const updateTasteInterests = React.useCallback(async (interests: Interest[]) => {
+    const next: TasteProfile = {
+      ...(tasteProfile ?? {
+        interests: [],
+        areas: ["anywhere"],
+        when: "either",
+        price: "either",
+        notes: [],
+        answered: ["interests", "areas", "when", "price"],
+        completed: true,
+      }),
+      interests,
+      completed: true,
+    };
+    setTasteProfile(next);
+    await saveTasteProfile(next);
+  }, [tasteProfile]);
   
   // State for web modal - batched for better performance
   const [webModalState, setWebModalState] = React.useState<{
@@ -518,6 +568,11 @@ const CalendarScreen = ({ navigation }) => {
     // Detroit (default): process all event sources
     // Process existing events
     filteredEvents.forEach((event: DAEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: interestsFromDaCategories(event.categories),
+        city: event.venue?.city,
+        start: event.start_date,
+      })) return;
       const start = moment(event.start_date);
       const end = moment(event.end_date);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -547,6 +602,12 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Luma events
     lumaEvents.forEach((event: LumaEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["tech"],
+        city: event.city || event.cityState,
+        start: event.startAt,
+        isFree: event.isFree,
+      })) return;
       const start = moment(event.startAt);
       const end = moment(event.endAt);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -565,6 +626,10 @@ const CalendarScreen = ({ navigation }) => {
     });
     
     raEvents.forEach((event: RAEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["music"],
+        start: event.startTime,
+      })) return;
       const start = moment(event.startTime);
       const end = moment(event.endTime);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -580,6 +645,11 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Meetup events
     meetupEvents.forEach((event: MeetupEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["tech"],
+        city: event.venue?.city,
+        start: event.dateTime,
+      })) return;
       const start = moment(event.dateTime);
       // Since we don't have an end time, assume event lasts 2 hours
       const end = moment(event.dateTime).add(2, 'hours');
@@ -592,6 +662,11 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Sports games
     sportsGames.forEach((game: SportsGame) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["sports"],
+        city: game.venueCity,
+        start: game.startTime,
+      })) return;
       const start = moment(game.startTime);
       // Assume games last 3 hours
       const end = moment(game.startTime).add(3, 'hours');
@@ -604,6 +679,12 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Instagram events
     instagramEvents.forEach((event: InstagramEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["music"],
+        city: event.location,
+        start: event.startDatetime,
+        price: event.metadata?.price,
+      })) return;
       const start = moment(event.startDatetime);
       const end = event.endDatetime ? moment(event.endDatetime) : moment(event.startDatetime).add(4, 'hours');
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -615,6 +696,11 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Renaissance events
     renaissanceEvents.forEach((event: RenaissanceEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: interestsFromText(`${event.name} ${event.eventType} ${(event.tags || []).join(" ")} ${event.location}`),
+        city: event.location,
+        start: event.startTime,
+      })) return;
       const start = moment(event.startTime);
       const end = moment(event.endTime);
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -624,7 +710,29 @@ const CalendarScreen = ({ navigation }) => {
       }
     });
 
+    cultureEvents.forEach((event: CultureEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: [event.category],
+        city: event.city,
+        start: event.startTime,
+        price: event.price,
+      })) return;
+      const start = moment(event.startTime);
+      const end = event.endTime ? moment(event.endTime) : moment(event.startTime).add(2, "hours");
+      if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
+        const dateKey = start.format("YYYY-MM-DD");
+        const group = getOrCreateGroup(dateKey, start.valueOf());
+        group.data.push({ ...event, eventType: "culture" });
+      }
+    });
+
     concertEvents.forEach((event: ConcertEvent) => {
+      if (!matchesTaste(tasteProfile, {
+        interests: ["music"],
+        city: event.city,
+        start: event.startTime,
+        price: event.price,
+      })) return;
       const start = moment(event.startTime);
       const end = event.endTime ? moment(event.endTime) : moment(event.startTime).add(3, "hours");
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
@@ -643,6 +751,7 @@ const CalendarScreen = ({ navigation }) => {
       if (event.eventType === "instagram") return moment(event.startDatetime).valueOf();
       if (event.eventType === "renaissance") return moment(event.startTime).valueOf();
       if (event.eventType === "concert") return moment(event.startTime).valueOf();
+      if (event.eventType === "culture") return moment(event.startTime).valueOf();
       return moment(event.start_date).valueOf();
     };
     
@@ -660,7 +769,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, isFeatured]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1062,6 +1171,11 @@ const CalendarScreen = ({ navigation }) => {
           {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
           {/* {username && pub && sig && } */}
         </HeroBanner>
+        <TasteFilterBar
+          profile={tasteProfile}
+          onChange={updateTasteInterests}
+          onTune={() => navigation.navigate("TasteOnboarding")}
+        />
 
         {/* <GrantOpportunities />
         <View style={{ paddingHorizontal: 16 }}>
@@ -1206,7 +1320,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation]);
+  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, tasteProfile, updateTasteInterests]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1326,6 +1440,11 @@ const CalendarScreen = ({ navigation }) => {
                 'sports',
                 game
               );
+            }
+          },
+          onSelectCultureEvent: (event: CultureEvent) => {
+            if (event.url) {
+              openWebModal(event.url, event.name, 'culture', event);
             }
           },
           onSelectConcertEvent: (event: ConcertEvent) => {
