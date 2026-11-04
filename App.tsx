@@ -45,6 +45,7 @@ import { AudioPlayerProvider } from "./src/context/AudioPlayer";
 import { LocalStorageProvider } from "./src/context/LocalStorage";
 import { FarcasterFrameProvider } from "./src/context/FarcasterFrame";
 import { AuthProvider } from "./src/context/Auth";
+import { FollowedArtistsProvider } from "./src/context/FollowedArtists";
 import { TenantProvider } from "./src/context/TenantContext";
 import * as Linking from "expo-linking";
 
@@ -275,6 +276,7 @@ export default function App() {
       <LocalStorageProvider>
         <TenantProvider>
           <AuthProvider>
+          <FollowedArtistsProvider>
           <FarcasterFrameProvider>
             <AudioPlayerProvider>
               <BottomSheetModalProvider>
@@ -289,6 +291,7 @@ export default function App() {
               </BottomSheetModalProvider>
             </AudioPlayerProvider>
           </FarcasterFrameProvider>
+          </FollowedArtistsProvider>
           </AuthProvider>
         </TenantProvider>
       </LocalStorageProvider>

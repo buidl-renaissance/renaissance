@@ -3,6 +3,8 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import moment from "moment";
 import { ConcertEvent } from "../interfaces";
 import { theme } from "../colors";
+import { ArtistNames } from "./ArtistNames";
+import { collectArtists } from "../utils/artists";
 
 const SOURCE_LABELS: Record<ConcertEvent["source"], string> = {
   dice: "Dice",
@@ -59,6 +61,7 @@ export const ConcertEventCard: React.FC<ConcertEventCardProps> = ({
                 {event.venue}{event.city ? `, ${event.city}` : ""}
               </Text>
             </TouchableOpacity>
+            <ArtistNames artists={collectArtists({ title, artists: event.artists, source: event.source })} />
             {offers.map((offer) => (
               <TouchableOpacity
                 key={offer.source}

@@ -9,6 +9,8 @@ import { EventRegister } from "react-native-event-listeners";
 import { theme } from "../colors";
 import { ConnectionBookmarkUser } from "../api/bookmarks";
 import { ConnectionAvatars } from "./ConnectionAvatars";
+import { ArtistNames } from "./ArtistNames";
+import { collectArtists } from "../utils/artists";
 
 export interface RAEventCardOptions {
   showDate?: boolean;
@@ -91,12 +93,8 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
     });
   }, [event]);
 
-  const artistsText = event.artists
-    ?.slice(0, 3)
-    .map((artist) => artist.name)
-    .join(", ");
-
   const flyerImage = event.images?.find((img) => img.type === "FLYERFRONT");
+  const artists = collectArtists({ title: event.title, artists: event.artists });
 
   return (
     <View style={styles.container}>
@@ -259,12 +257,7 @@ export const RAEventCard: React.FC<RAEventCardProps> = ({
                 {event.venue && options?.showVenue && (
                   <Text style={styles.subtitle}>{event.venue.name}</Text>
                 )}
-                {artistsText && options?.showArtists && (
-                  <Text style={[styles.subtitle, { fontSize: 11, color: theme.text }]}>
-                    {artistsText}
-                    {event.artists.length > 3 && ` +${event.artists.length - 3} more`}
-                  </Text>
-                )}
+                {options?.showArtists && <ArtistNames artists={artists} />}
                 {event.interestedCount !== null && event.interestedCount > 0 && (
                   <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {event.interestedCount} interested

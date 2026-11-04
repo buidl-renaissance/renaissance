@@ -9,6 +9,8 @@ import { EventRegister } from "react-native-event-listeners";
 import { theme } from "../colors";
 import { ConnectionBookmarkUser } from "../api/bookmarks";
 import { ConnectionAvatars } from "./ConnectionAvatars";
+import { ArtistNames } from "./ArtistNames";
+import { collectArtists } from "../utils/artists";
 
 export interface InstagramEventCardOptions {
   showDate?: boolean;
@@ -93,9 +95,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
     });
   }, [event]);
 
-  const artistsText = event.artistNames
-    ?.slice(0, 3)
-    .join(", ");
+  const artists = collectArtists({ title: event.name, artists: event.artistNames });
 
   return (
     <View style={styles.container}>
@@ -223,12 +223,7 @@ export const InstagramEventCard: React.FC<InstagramEventCardProps> = ({
                     {event.location}
                   </Text>
                 )}
-                {artistsText && options?.showArtists && (
-                  <Text style={[styles.subtitle, { fontSize: 11, color: theme.text }]}>
-                    {artistsText}
-                    {event.artistNames.length > 3 && ` +${event.artistNames.length - 3} more`}
-                  </Text>
-                )}
+                {options?.showArtists && <ArtistNames artists={artists} />}
                 {event.metadata?.additionalInfo && (
                   <Text style={[styles.subtitle, { fontSize: 10, color: theme.textTertiary }]}>
                     {event.metadata.additionalInfo}

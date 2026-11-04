@@ -3,6 +3,8 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import moment from "moment";
 import { CultureEvent } from "../interfaces";
 import { theme } from "../colors";
+import { ArtistNames } from "./ArtistNames";
+import { collectArtists } from "../utils/artists";
 
 const SOURCE_LABELS: Record<string, string> = {
   "comedy-castle": "Comedy Castle",
@@ -49,6 +51,7 @@ export const CultureEventCard: React.FC<CultureEventCardProps> = ({
               {SOURCE_LABELS[event.source] || event.source}
               {event.price ? ` · ${event.price}` : ""}
             </Text>
+            <ArtistNames artists={collectArtists({ title: event.name, source: event.source })} />
             {event.summary ? (
               <Text style={styles.summary} numberOfLines={2}>{event.summary}</Text>
             ) : null}

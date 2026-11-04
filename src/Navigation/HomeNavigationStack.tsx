@@ -68,7 +68,7 @@ type HomeNavigationStackParamList = {
   AddContent: undefined;
   Bookmarks: undefined;
   BrowseMap: undefined;
-  Calendar: undefined;
+  Calendar: { showForYou?: boolean } | undefined;
   CalendarView: { selectedDate?: string; eventsGroup?: any[] } | undefined;
   Camera: undefined;
   ContentUpload: undefined;

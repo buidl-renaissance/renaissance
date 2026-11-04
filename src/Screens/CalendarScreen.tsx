@@ -79,8 +79,11 @@ import {
   interestsFromText,
   loadTasteProfile,
   matchesTaste,
-  saveTasteProfile,
+  mergeInterests,
 } from "../utils/tasteProfile";
+import { collectArtists } from "../utils/artists";
+import { useFollowedArtists } from "../context/FollowedArtists";
+import { FollowedArtistsBar } from "../Components/ArtistNames";
 import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
@@ -98,7 +101,7 @@ const BORDER_RADIUS = 20;
 const CURRENT_ITEM_TRANSLATE_Y = 0;
 
 
-const CalendarScreen = ({ navigation }) => {
+const CalendarScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const { tenantId } = useTenant();
   const {
@@ -158,44 +161,48 @@ const CalendarScreen = ({ navigation }) => {
 
   const [filter, setFilter] = React.useState<string>("all");
   const [tasteProfile, setTasteProfile] = React.useState<TasteProfile | null>(null);
-  const promptedTaste = React.useRef(false);
-
-  const reloadTaste = React.useCallback(async () => {
-    const stored = await loadTasteProfile();
-    setTasteProfile(stored);
-    return stored;
-  }, []);
+  const [forYou, setForYou] = React.useState(false);
+  const [chipInterests, setChipInterests] = React.useState<Interest[]>([]);
 
   useFocusEffect(React.useCallback(() => {
     let cancelled = false;
-    reloadTaste().then((stored) => {
-      if (cancelled || stored || promptedTaste.current) return;
-      promptedTaste.current = true;
-      navigation.navigate("TasteOnboarding");
+    loadTasteProfile().then((stored) => {
+      if (!cancelled) setTasteProfile(stored);
     });
     return () => {
       cancelled = true;
     };
-  }, [navigation, reloadTaste]));
+  }, []));
 
-  const updateTasteInterests = React.useCallback(async (interests: Interest[]) => {
-    const next: TasteProfile = {
-      ...(tasteProfile ?? {
-        interests: [],
-        areas: ["anywhere"],
-        when: "either",
-        price: "either",
-        notes: [],
-        answered: ["interests", "areas", "when", "price"],
-        completed: true,
-      }),
-      interests,
-      completed: true,
-    };
-    setTasteProfile(next);
-    await saveTasteProfile(next);
-  }, [tasteProfile]);
-  
+  React.useEffect(() => {
+    if (!route?.params?.showForYou) return;
+    setForYou(true);
+    setChipInterests([]);
+    navigation.setParams({ showForYou: false });
+  }, [navigation, route?.params?.showForYou]);
+
+  const { artists: followedArtists } = useFollowedArtists();
+  const [followingOnly, setFollowingOnly] = React.useState(false);
+  React.useEffect(() => {
+    if (!followedArtists.length) setFollowingOnly(false);
+  }, [followedArtists.length]);
+
+  const openTasteSetup = React.useCallback(() => {
+    navigation.navigate("TasteOnboarding");
+  }, [navigation]);
+
+  const showAllEvents = React.useCallback(() => {
+    setForYou(false);
+    setChipInterests([]);
+  }, []);
+
+  const toggleChip = React.useCallback((interest: Interest) => {
+    setForYou(false);
+    setChipInterests((current) => (
+      current.includes(interest) ? current.filter((item) => item !== interest) : [...current, interest]
+    ));
+  }, []);
+
   // State for web modal - batched for better performance
   const [webModalState, setWebModalState] = React.useState<{
     visible: boolean;
@@ -566,10 +573,18 @@ const CalendarScreen = ({ navigation }) => {
     }
     
     // Detroit (default): process all event sources
+    const followedKeys = new Set(followedArtists.map((artist) => artist.key));
+    const allow = (names: { key: string }[], taste: Parameters<typeof matchesTaste>[1]) => {
+      if (followingOnly) return names.some((artist) => followedKeys.has(artist.key));
+      if (forYou) return matchesTaste(tasteProfile, taste);
+      if (chipInterests.length) return taste.interests.some((interest) => chipInterests.includes(interest));
+      return true;
+    };
+
     // Process existing events
     filteredEvents.forEach((event: DAEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: interestsFromDaCategories(event.categories),
+      if (!allow([], {
+        interests: mergeInterests(interestsFromDaCategories(event.categories), `${event.title} ${event.excerpt}`),
         city: event.venue?.city,
         start: event.start_date,
       })) return;
@@ -602,8 +617,8 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Luma events
     lumaEvents.forEach((event: LumaEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: ["tech"],
+      if (!allow([], {
+        interests: mergeInterests(["tech"], event.name),
         city: event.city || event.cityState,
         start: event.startAt,
         isFree: event.isFree,
@@ -626,8 +641,9 @@ const CalendarScreen = ({ navigation }) => {
     });
     
     raEvents.forEach((event: RAEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: ["music"],
+      const names = collectArtists({ title: event.title, artists: event.artists });
+      if (!allow(names, {
+        interests: mergeInterests(["music", "nightlife"], event.title),
         start: event.startTime,
       })) return;
       const start = moment(event.startTime);
@@ -645,8 +661,8 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Meetup events
     meetupEvents.forEach((event: MeetupEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: ["tech"],
+      if (!allow([], {
+        interests: mergeInterests(["tech"], event.title),
         city: event.venue?.city,
         start: event.dateTime,
       })) return;
@@ -662,7 +678,7 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Sports games
     sportsGames.forEach((game: SportsGame) => {
-      if (!matchesTaste(tasteProfile, {
+      if (!allow([], {
         interests: ["sports"],
         city: game.venueCity,
         start: game.startTime,
@@ -679,8 +695,9 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Instagram events
     instagramEvents.forEach((event: InstagramEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: ["music"],
+      const names = collectArtists({ title: event.name, artists: event.artistNames });
+      if (!allow(names, {
+        interests: mergeInterests(["music", "nightlife"], event.name),
         city: event.location,
         start: event.startDatetime,
         price: event.metadata?.price,
@@ -696,7 +713,8 @@ const CalendarScreen = ({ navigation }) => {
 
     // Process Renaissance events
     renaissanceEvents.forEach((event: RenaissanceEvent) => {
-      if (!matchesTaste(tasteProfile, {
+      const names = collectArtists({ title: event.name, artists: event.metadata?.host?.name ? [event.metadata.host.name] : [] });
+      if (!allow(names, {
         interests: interestsFromText(`${event.name} ${event.eventType} ${(event.tags || []).join(" ")} ${event.location}`),
         city: event.location,
         start: event.startTime,
@@ -711,8 +729,9 @@ const CalendarScreen = ({ navigation }) => {
     });
 
     cultureEvents.forEach((event: CultureEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: [event.category],
+      const names = collectArtists({ title: event.name, source: event.source });
+      if (!allow(names, {
+        interests: mergeInterests([event.category], `${event.name} ${event.summary || ""}`),
         city: event.city,
         start: event.startTime,
         price: event.price,
@@ -727,8 +746,9 @@ const CalendarScreen = ({ navigation }) => {
     });
 
     concertEvents.forEach((event: ConcertEvent) => {
-      if (!matchesTaste(tasteProfile, {
-        interests: ["music"],
+      const names = collectArtists({ title: event.name, artists: event.artists, source: event.source });
+      if (!allow(names, {
+        interests: mergeInterests(["music", "nightlife"], event.name),
         city: event.city,
         start: event.startTime,
         price: event.price,
@@ -769,7 +789,7 @@ const CalendarScreen = ({ navigation }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile, followedArtists, followingOnly, forYou, chipInterests]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1173,9 +1193,14 @@ const CalendarScreen = ({ navigation }) => {
         </HeroBanner>
         <TasteFilterBar
           profile={tasteProfile}
-          onChange={updateTasteInterests}
-          onTune={() => navigation.navigate("TasteOnboarding")}
+          forYou={forYou}
+          chips={chipInterests}
+          onForYou={openTasteSetup}
+          onAll={showAllEvents}
+          onToggleChip={toggleChip}
+          onEdit={openTasteSetup}
         />
+        <FollowedArtistsBar active={followingOnly} onToggle={() => setFollowingOnly((current) => !current)} />
 
         {/* <GrantOpportunities />
         <View style={{ paddingHorizontal: 16 }}>
@@ -1320,7 +1345,7 @@ const CalendarScreen = ({ navigation }) => {
         )}
       </View>
     );
-  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, tasteProfile, updateTasteInterests]);
+  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, tasteProfile, forYou, chipInterests, showAllEvents, toggleChip, openTasteSetup, followingOnly]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
