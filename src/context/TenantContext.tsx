@@ -33,22 +33,6 @@ export const TENANTS: Tenant[] = [
     heroTitle: "Welcome to the Renaissance City",
     heroSubtitle: "Discover and shape Detroit's living culture.",
   },
-  {
-    id: "denver",
-    displayName: "Denver",
-    image: require("../../assets/denver.jpeg"),
-    heroBackground: require("../../assets/denver.jpeg"),
-    heroTitle: "Denver",
-    heroSubtitle: "Discover what's happening in the Mile High City.",
-  },
-  {
-    id: "eth-denver",
-    displayName: "ETH Denver",
-    image: require("../../assets/eth-denver-icon.png"),
-    heroBackground: require("../../assets/eth-denver-header.png"),
-    heroHideText: true,
-    heroHideOverlay: true,
-  },
 ];
 
 interface TenantContextValue {
@@ -65,12 +49,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(TENANT_STORAGE_KEY).then((stored) => {
-      if (stored) {
-        const match = TENANTS.find((t) => t.id === stored);
-        if (match) {
-          setTenantIdState(match.id);
-        }
+      if (!stored) return;
+      const match = TENANTS.find((t) => t.id === stored);
+      if (match) {
+        setTenantIdState(match.id);
+        return;
       }
+      void AsyncStorage.setItem(TENANT_STORAGE_KEY, DEFAULT_TENANT_ID);
     });
   }, []);
 

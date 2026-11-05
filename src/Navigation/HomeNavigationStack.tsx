@@ -606,7 +606,8 @@ const HomeNavigationStack = () => {
             backgroundColor: theme.background,
           },
           headerTintColor: theme.text,
-          title: "Select location",
+          title: "Start your city",
+          headerBackTitle: "Home",
         }}
       />
     </Stack.Navigator>

@@ -743,7 +743,10 @@ const CalendarScreen = ({ navigation, route }) => {
     cultureEvents.forEach((event: CultureEvent) => {
       const names = collectArtists({ title: event.name, source: event.source });
       if (!allow(names, {
-        interests: mergeInterests([event.category], `${event.name} ${event.summary || ""}`),
+        interests: mergeInterests(
+          event.category === "comedy" || event.category === "art" ? [event.category] : [],
+          `${event.name} ${event.summary || ""}`,
+        ),
         city: event.city,
         start: event.startTime,
         price: event.price,

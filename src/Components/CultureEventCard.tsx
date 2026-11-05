@@ -14,6 +14,7 @@ const SOURCE_LABELS: Record<string, string> = {
   "detroit-artists-market": "Detroit Artists Market",
   wasserman: "Wasserman Projects",
   dia: "Detroit Institute of Arts",
+  "detroit-i-love": "The Detroit I Love",
 };
 
 interface CultureEventCardProps {
@@ -25,7 +26,12 @@ export const CultureEventCard: React.FC<CultureEventCardProps> = ({
   event,
   onSelectEvent,
 }) => {
-  const accent = event.category === "comedy" ? theme.eventComedy : theme.eventArt;
+  const accent = event.category === "comedy"
+    ? theme.eventComedy
+    : event.category === "list"
+      ? theme.primary
+      : theme.eventArt;
+  const tag = event.category === "comedy" ? "Comedy" : event.category === "list" ? "List" : "Art";
   const isNow = moment(event.startTime).isBefore()
     && moment(event.endTime || event.startTime).add(event.endTime ? 0 : 2, "hours").isAfter();
 
@@ -40,7 +46,7 @@ export const CultureEventCard: React.FC<CultureEventCardProps> = ({
                 {isNow ? "  NOW" : ""}
               </Text>
               <Text style={[styles.tag, { backgroundColor: accent }]}>
-                {event.category === "comedy" ? "Comedy" : "Art"}
+                {tag}
               </Text>
             </View>
             <Text style={styles.title} numberOfLines={2}>{event.name}</Text>

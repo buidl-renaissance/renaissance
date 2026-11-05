@@ -200,14 +200,14 @@ export function interestsFromText(text: string | undefined | null): Interest[] {
   const found = new Set<Interest>();
   if (/\bcomedy\b|\bimprov\b/i.test(value)) found.add("comedy");
   if (/\bart\b|\bgallery\b|\bexhibition\b|\bmuseum\b/i.test(value)) found.add("art");
-  if (/\bmusic\b|\bconcert\b|\bdj\b|\bjazz\b/i.test(value)) found.add("music");
+  if (/\bmusic\b|\bconcert\b|\bdj\b|\bjazz\b|\btechno\b|\brave\b|\bkaraoke\b|\bopen mic\b/i.test(value)) found.add("music");
   if (/\bsports?\b/i.test(value)) found.add("sports");
   if (/\btech\b|\bhackathon\b|\bmeetup\b/i.test(value)) found.add("tech");
   if (/\bfood\b|\bdrink\b|\bdinner\b|\btasting\b|\bchef\b/i.test(value)) found.add("food");
   if (/\bfilm\b|\bmovie\b|\bcinema\b|\bscreening\b/i.test(value)) found.add("film");
   if (/\boutdoor\b|\bpark\b|\bhike\b/i.test(value)) found.add("outdoors");
   if (/\bfamily\b|\bkids\b|\bchildren\b|\ball-ages\b/i.test(value)) found.add("family");
-  if (/\bnightlife\b|\bnight club\b|\bafter hours\b/i.test(value)) found.add("nightlife");
+  if (/\bnightlife\b|\bnight club\b|\bafter hours\b|\btechno\b|\brave\b|\bkaraoke\b/i.test(value)) found.add("nightlife");
   return [...found];
 }
 

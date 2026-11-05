@@ -496,7 +496,7 @@ export type ConcertSource =
   | 'russell'
   | 'sharpen-your-skills';
 
-export type CultureCategory = 'art' | 'comedy';
+export type CultureCategory = 'art' | 'comedy' | 'list';
 
 export interface CultureEvent {
   id: string;
