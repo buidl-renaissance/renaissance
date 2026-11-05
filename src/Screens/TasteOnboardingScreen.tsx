@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { CommonActions } from "@react-navigation/native";
 import { theme } from "../colors";
 import {
   DISTANCES,
@@ -32,18 +32,59 @@ function toggle<T>(values: T[], value: T): T[] {
   return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
 }
 
+function storedProfile(profile: TasteProfile): TasteProfile {
+  return { ...profile, note: profile.note.trim(), completed: true };
+}
+
 const TasteOnboardingScreen = ({ navigation }) => {
   const [draft, setDraft] = React.useState<TasteProfile>(emptyTasteProfile());
+  const [ready, setReady] = React.useState(false);
+  const draftRef = React.useRef(draft);
+  const readyRef = React.useRef(false);
+  const skipNextSave = React.useRef(true);
+  draftRef.current = draft;
+  readyRef.current = ready;
 
   React.useEffect(() => {
     let cancelled = false;
     loadTasteProfile().then((stored) => {
-      if (!cancelled && stored) setDraft(stored);
+      if (cancelled) return;
+      if (stored) setDraft(stored);
+      setReady(true);
     });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!ready) return;
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
+    void saveTasteProfile(storedProfile(draft));
+  }, [draft, ready]);
+
+  React.useEffect(() => {
+    const leaving = { current: false };
+    return navigation.addListener("beforeRemove", (event) => {
+      if (!readyRef.current || leaving.current) return;
+      event.preventDefault();
+      leaving.current = true;
+      const action = event.data.action;
+      void saveTasteProfile(storedProfile(draftRef.current)).finally(() => {
+        const calendar = navigation.getState()?.routes?.find((route) => route.name === "Calendar");
+        if (calendar?.key) {
+          navigation.dispatch({
+            ...CommonActions.setParams({ showForYou: true }),
+            source: calendar.key,
+          });
+        }
+        navigation.dispatch(action);
+      });
+    });
+  }, [navigation]);
 
   const reset = React.useCallback(() => setDraft(emptyTasteProfile()), []);
 
@@ -58,12 +99,6 @@ const TasteOnboardingScreen = ({ navigation }) => {
       ),
     });
   }, [navigation, reset]);
-
-  const save = async () => {
-    const next: TasteProfile = { ...draft, note: draft.note.trim(), completed: true };
-    await saveTasteProfile(next);
-    navigation.navigate("Calendar", { showForYou: true });
-  };
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -107,7 +142,6 @@ const TasteOnboardingScreen = ({ navigation }) => {
                 key={distance}
                 label={DISTANCE_LABELS[distance]}
                 selected={draft.distance === distance}
-                inverse
                 onPress={() => setDraft((current) => ({
                   ...current,
                   distance: current.distance === distance ? null : distance,
@@ -146,13 +180,6 @@ const TasteOnboardingScreen = ({ navigation }) => {
           <Text style={styles.previewLabel}>YOUR FOR YOU TAB WILL LEAN TOWARD</Text>
           <Text style={styles.previewValue}>{summarizeTaste(draft)}</Text>
         </View>
-
-        <TouchableOpacity style={styles.save} onPress={save} accessibilityRole="button">
-          <Text style={styles.saveLabel}>Save and show For you</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.later} accessibilityRole="button">
-          <Text style={styles.laterLabel}>Not now</Text>
-        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -174,28 +201,23 @@ function Choice({
   label,
   hint,
   selected,
-  inverse,
   onPress,
 }: {
   label: string;
   hint?: string;
   selected: boolean;
-  inverse?: boolean;
   onPress: () => void;
 }) {
-  const filled = selected && !inverse;
-  const light = selected && inverse;
   return (
     <TouchableOpacity
-      style={[styles.choice, filled && styles.choiceOn, light && styles.choiceLight]}
+      style={[styles.choice, selected && styles.choiceOn]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      {filled ? <Ionicons name="checkmark" size={14} color="#fff" /> : null}
-      <Text style={[styles.choiceLabel, light && styles.choiceLabelDark]}>
+      <Text style={[styles.choiceLabel, selected && styles.choiceLabelOn]}>
         {label}
-        {hint ? <Text style={[styles.choiceHint, light && styles.choiceLabelDark, filled && styles.choiceHintOn]}>  {hint}</Text> : null}
+        {hint ? <Text style={[styles.choiceHint, selected && styles.choiceHintOn]}>  {hint}</Text> : null}
       </Text>
     </TouchableOpacity>
   );
@@ -256,9 +278,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   choice: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
     borderWidth: 1,
     borderColor: theme.borderLight,
     borderRadius: 22,
@@ -270,17 +289,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.primary,
     borderColor: theme.primary,
   },
-  choiceLight: {
-    backgroundColor: "#fff",
-    borderColor: "#fff",
-  },
   choiceLabel: {
     color: theme.text,
     fontSize: 15,
     fontWeight: "600",
   },
-  choiceLabelDark: {
-    color: "#111",
+  choiceLabelOn: {
+    color: "#fff",
   },
   choiceHint: {
     color: theme.textSecondary,
@@ -320,26 +335,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     marginTop: 6,
-  },
-  save: {
-    marginTop: 18,
-    backgroundColor: theme.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  saveLabel: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  later: {
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  laterLabel: {
-    color: theme.textSecondary,
-    fontSize: 16,
+    marginBottom: 12,
   },
 });
 
