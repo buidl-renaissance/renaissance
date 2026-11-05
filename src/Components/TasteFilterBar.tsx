@@ -1,34 +1,62 @@
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../colors";
 import { Interest, INTEREST_LABELS, INTERESTS } from "../utils/tasteProfile";
 
 interface TasteFilterBarProps {
-  chips: Interest[];
+  forYou: boolean;
+  selected: Interest | null;
+  onForYou: () => void;
+  onEditFilters: () => void;
   onAll: () => void;
-  onToggleChip: (interest: Interest) => void;
+  onSelect: (interest: Interest) => void;
 }
 
 export const TasteFilterBar = ({
-  chips,
+  forYou,
+  selected,
+  onForYou,
+  onEditFilters,
   onAll,
-  onToggleChip,
+  onSelect,
 }: TasteFilterBarProps) => {
+  const allOn = !forYou && selected === null;
+
   return (
     <View style={styles.wrap}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+        <View style={[styles.forYou, forYou && styles.forYouOn]}>
+          <TouchableOpacity
+            style={styles.forYouMain}
+            onPress={onForYou}
+            accessibilityRole="button"
+            accessibilityState={{ selected: forYou }}
+          >
+            <Text style={[styles.forYouLabel, forYou && styles.labelOn]}>For you</Text>
+          </TouchableOpacity>
+          <View style={[styles.divider, forYou && styles.dividerOn]} />
+          <TouchableOpacity
+            style={styles.forYouFilter}
+            onPress={onEditFilters}
+            accessibilityRole="button"
+            accessibilityLabel="Edit For you filters"
+          >
+            <Ionicons name="filter" size={15} color={forYou ? "#fff" : theme.text} />
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
-          style={[styles.chip, chips.length === 0 && styles.chipOn]}
+          style={[styles.chip, allOn && styles.chipOn]}
           onPress={onAll}
         >
-          <Text style={[styles.chipLabel, chips.length === 0 && styles.chipLabelOn]}>All</Text>
+          <Text style={[styles.chipLabel, allOn && styles.labelOn]}>All</Text>
         </TouchableOpacity>
         {INTERESTS.map((interest) => {
-          const on = chips.includes(interest);
+          const on = !forYou && selected === interest;
           const label = interest === "tech" ? "Tech" : interest === "food" ? "Food" : INTEREST_LABELS[interest];
           return (
-            <TouchableOpacity key={interest} style={[styles.chip, on && styles.chipOn]} onPress={() => onToggleChip(interest)}>
-              <Text style={[styles.chipLabel, on && styles.chipLabelOn]}>{label}</Text>
+            <TouchableOpacity key={interest} style={[styles.chip, on && styles.chipOn]} onPress={() => onSelect(interest)}>
+              <Text style={[styles.chipLabel, on && styles.labelOn]}>{label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -47,6 +75,42 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center",
   },
+  forYou: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.borderLight,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "transparent",
+  },
+  forYouOn: {
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
+  },
+  forYouMain: {
+    paddingLeft: 14,
+    paddingRight: 10,
+    paddingVertical: 8,
+  },
+  forYouFilter: {
+    paddingLeft: 8,
+    paddingRight: 12,
+    paddingVertical: 8,
+  },
+  divider: {
+    width: 1,
+    alignSelf: "stretch",
+    backgroundColor: theme.borderLight,
+  },
+  dividerOn: {
+    backgroundColor: "rgba(255,255,255,0.45)",
+  },
+  forYouLabel: {
+    color: theme.text,
+    fontSize: 15,
+    fontWeight: "700",
+  },
   chip: {
     borderWidth: 1,
     borderColor: theme.borderLight,
@@ -64,7 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
-  chipLabelOn: {
+  labelOn: {
     color: "#fff",
   },
 });

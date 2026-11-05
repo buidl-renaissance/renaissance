@@ -23,6 +23,7 @@ export interface EventsSectionListProps {
   updateCellsBatchingPeriod?: number;
   initialNumToRender?: number;
   windowSize?: number;
+  onScrollToIndexFailed?: (info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => void;
   /** When true, hides the "no events" empty state (useful while loading) */
   loading?: boolean;
 }
@@ -48,6 +49,7 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
   updateCellsBatchingPeriod,
   initialNumToRender,
   windowSize,
+  onScrollToIndexFailed,
   loading = false,
 }, ref) => {
   const defaultRenderItem = React.useCallback(
@@ -76,12 +78,8 @@ export const EventsSectionList = React.forwardRef<SectionList, EventsSectionList
   );
 
   const handleScrollToIndexFailed = React.useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
-    // Wait a bit and try again, or just handle the failure gracefully
-    setTimeout(() => {
-      // Optionally retry scrolling, but for now we'll just silently handle the failure
-      // as the user can manually scroll if needed
-    }, 100);
-  }, []);
+    onScrollToIndexFailed?.(info);
+  }, [onScrollToIndexFailed]);
 
   return (
     <View style={[styles.container, containerStyle]}>

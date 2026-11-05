@@ -42,6 +42,8 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
     <View style={styles.container}>
       <ScrollView
         horizontal
+        nestedScrollEnabled
+        directionalLockEnabled
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -89,16 +91,12 @@ export const EventForecast: React.FC<EventForecastProps> = ({ days, onDayPress }
                 </View>
               )}
             </View>
-            {day.bookmarkedCount > 0 && (
-              <Text style={styles.eventCount}>
-                {`${day.bookmarkedCount} ${day.bookmarkedCount === 1 ? "event" : "events"}`}
-              </Text>
-            )}
-            {day.bookmarkedCount === 0 && (day.connectionBookmarkCount || 0) > 0 && (
-              <Text style={styles.connectionCount}>
-                {`${day.connectionBookmarkCount} interested`}
-              </Text>
-            )}
+            <Text
+              style={[styles.eventCount, day.eventCount === 0 && styles.eventCountEmpty]}
+              numberOfLines={1}
+            >
+              {day.eventCount === 1 ? "1 event" : `${day.eventCount} events`}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -175,9 +173,14 @@ const styles = StyleSheet.create({
     color: theme.textOnPrimary,
   },
   eventCount: {
-    fontSize: 9,
+    fontSize: 10,
+    fontWeight: "600",
     color: theme.textSecondary,
     textAlign: "center",
+  },
+  eventCountEmpty: {
+    color: theme.textTertiary,
+    fontWeight: "500",
   },
   connectionCount: {
     fontSize: 9,

@@ -140,6 +140,8 @@ const CalendarScreen = ({ navigation, route }) => {
   );
 
   const sectionListRef = React.useRef<SectionList>(null);
+  const pendingSectionIndex = React.useRef<number | null>(null);
+  const scrollAttempts = React.useRef(0);
 
   // Mock flyer event for demonstration (hidden)
   // const mockFlyerEvent = React.useMemo(() => ({
@@ -161,7 +163,7 @@ const CalendarScreen = ({ navigation, route }) => {
   const [filter, setFilter] = React.useState<string>("all");
   const [tasteProfile, setTasteProfile] = React.useState<TasteProfile | null>(null);
   const [forYou, setForYou] = React.useState(false);
-  const [chipInterests, setChipInterests] = React.useState<Interest[]>([]);
+  const [selectedInterest, setSelectedInterest] = React.useState<Interest | null>(null);
 
   useFocusEffect(React.useCallback(() => {
     let cancelled = false;
@@ -176,7 +178,7 @@ const CalendarScreen = ({ navigation, route }) => {
   React.useEffect(() => {
     if (!route?.params?.showForYou) return;
     setForYou(true);
-    setChipInterests([]);
+    setSelectedInterest(null);
     navigation.setParams({ showForYou: false });
   }, [navigation, route?.params?.showForYou]);
 
@@ -188,15 +190,26 @@ const CalendarScreen = ({ navigation, route }) => {
 
   const showAllEvents = React.useCallback(() => {
     setForYou(false);
-    setChipInterests([]);
+    setSelectedInterest(null);
   }, []);
 
-  const toggleChip = React.useCallback((interest: Interest) => {
+  const selectInterest = React.useCallback((interest: Interest) => {
     setForYou(false);
-    setChipInterests((current) => (
-      current.includes(interest) ? current.filter((item) => item !== interest) : [...current, interest]
-    ));
+    setSelectedInterest(interest);
   }, []);
+
+  const showForYou = React.useCallback(() => {
+    if (!tasteProfile) {
+      navigation.navigate("TasteOnboarding");
+      return;
+    }
+    setForYou(true);
+    setSelectedInterest(null);
+  }, [navigation, tasteProfile]);
+
+  const openTasteSetup = React.useCallback(() => {
+    navigation.navigate("TasteOnboarding");
+  }, [navigation]);
 
   // State for web modal - batched for better performance
   const [webModalState, setWebModalState] = React.useState<{
@@ -570,10 +583,11 @@ const CalendarScreen = ({ navigation, route }) => {
     // Detroit (default): process all event sources
     const followedKeys = new Set(followedArtists.map((artist) => artist.key));
     let tasteInterests: Interest[] = [];
+    let forYouMatch = true;
     const allow = (names: { key: string }[], taste: Parameters<typeof matchesTaste>[1]) => {
       tasteInterests = taste.interests;
+      forYouMatch = matchesTaste(tasteProfile, taste);
       if (followingOnly) return names.some((artist) => followedKeys.has(artist.key));
-      if (forYou) return matchesTaste(tasteProfile, taste);
       return true;
     };
 
@@ -589,7 +603,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "da", tasteInterests });
+        group.data.push({ ...event, eventType: "da", tasteInterests, forYouMatch });
       }
     });
 
@@ -624,7 +638,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "luma", tasteInterests });
+        group.data.push({ ...event, eventType: "luma", tasteInterests, forYouMatch });
       }
     });
 
@@ -652,6 +666,7 @@ const CalendarScreen = ({ navigation, route }) => {
           eventType: "ra",
           isFeatured: featuredIds.has(event.id),
           tasteInterests,
+          forYouMatch,
         });
       }
     });
@@ -669,7 +684,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "meetup", tasteInterests });
+        group.data.push({ ...event, eventType: "meetup", tasteInterests, forYouMatch });
       }
     });
 
@@ -686,7 +701,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...game, eventType: "sports", tasteInterests });
+        group.data.push({ ...game, eventType: "sports", tasteInterests, forYouMatch });
       }
     });
 
@@ -704,7 +719,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "instagram", tasteInterests });
+        group.data.push({ ...event, eventType: "instagram", tasteInterests, forYouMatch });
       }
     });
 
@@ -721,7 +736,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "renaissance", tasteInterests });
+        group.data.push({ ...event, eventType: "renaissance", tasteInterests, forYouMatch });
       }
     });
 
@@ -738,7 +753,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "culture", tasteInterests });
+        group.data.push({ ...event, eventType: "culture", tasteInterests, forYouMatch });
       }
     });
 
@@ -755,7 +770,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "concert", tasteInterests });
+        group.data.push({ ...event, eventType: "concert", tasteInterests, forYouMatch });
       }
     });
 
@@ -786,20 +801,42 @@ const CalendarScreen = ({ navigation, route }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile, followedArtists, followingOnly, forYou]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile, followedArtists, followingOnly]);
 
   const visibleEventsGroup = React.useMemo(() => {
-    if (chipInterests.length === 0) return eventsGroup;
-    const selected = new Set(chipInterests);
+    if (!forYou && !selectedInterest) return eventsGroup;
     const groups = [];
     for (const group of eventsGroup) {
-      const data = group.data.filter((event) =>
-        event.tasteInterests?.some((interest: Interest) => selected.has(interest))
-      );
+      const data = group.data.filter((event) => {
+        if (forYou) return event.forYouMatch !== false;
+        return event.tasteInterests?.includes(selectedInterest);
+      });
       if (data.length) groups.push({ ...group, data });
     }
     return groups;
-  }, [eventsGroup, chipInterests]);
+  }, [eventsGroup, forYou, selectedInterest]);
+
+  const dayForecast = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const group of visibleEventsGroup) {
+      const dateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
+      counts.set(dateKey, group.data.length);
+    }
+    const today = moment().startOf("day");
+    return Array.from({ length: 28 }, (_, index) => {
+      const date = today.clone().add(index, "days");
+      const dateKey = date.format("YYYY-MM-DD");
+      return {
+        date,
+        dateKey,
+        eventCount: counts.get(dateKey) || 0,
+        isToday: index === 0,
+        bookmarkedCount: 0,
+        goingCount: 0,
+        connectionBookmarkCount: 0,
+      };
+    });
+  }, [visibleEventsGroup]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -1047,56 +1084,38 @@ const CalendarScreen = ({ navigation, route }) => {
     return sectionIndex;
   }, [visibleEventsGroup]);
 
+  const scrollToSection = React.useCallback((sectionIndex: number) => {
+    pendingSectionIndex.current = sectionIndex;
+    sectionListRef.current?.scrollToLocation({
+      sectionIndex,
+      itemIndex: 0,
+      animated: true,
+      viewOffset: 80,
+      viewPosition: 0,
+    });
+  }, []);
+
+  const handleScrollToIndexFailed = React.useCallback((info: { index: number; averageItemLength: number }) => {
+    const sectionIndex = pendingSectionIndex.current;
+    if (sectionIndex == null || !sectionListRef.current || scrollAttempts.current >= 4) return;
+    scrollAttempts.current += 1;
+    const responder = (sectionListRef.current as SectionList & {
+      getScrollResponder?: () => { scrollTo: (options: { y: number; animated: boolean }) => void } | null;
+    }).getScrollResponder?.();
+    responder?.scrollTo({ y: Math.max(0, info.averageItemLength * info.index), animated: false });
+    setTimeout(() => scrollToSection(sectionIndex), 80);
+  }, [scrollToSection]);
+
   // Handle scrolling to a specific day's events
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
-      if (!sectionListRef.current || visibleEventsGroup.length === 0) {
-        return;
-      }
-
-      const targetDate = moment(dateKey);
-      const sectionIndex = findNearestSectionIndex(targetDate);
-
-      // Calculate status bar offset to prevent header from being covered
-      const statusBarHeight = Platform.select({
-        ios: 108,
-        android: StatusBar.currentHeight || 24,
-        default: 0,
-      });
-
-      // If we found a valid section, try scrolling to it
-      if (sectionIndex >= 0) {
-        // Retry mechanism with increasing delays for sections that may not be rendered yet
-        const scrollWithRetry = (attempt: number = 0) => {
-          const delays = [100, 300, 500, 800]; // Increasing delays for retries
-          const delay = delays[Math.min(attempt, delays.length - 1)];
-          
-          setTimeout(() => {
-            try {
-              sectionListRef.current?.scrollToLocation({
-                sectionIndex,
-                itemIndex: 0,
-                animated: true,
-                viewOffset: statusBarHeight,
-              });
-            } catch (error) {
-              // Retry if we haven't exhausted attempts
-              if (attempt < delays.length - 1) {
-                scrollWithRetry(attempt + 1);
-              } else {
-                console.error("Error scrolling to location after retries:", error);
-              }
-            }
-          }, delay);
-        };
-        
-        // Start the scroll attempt
-        requestAnimationFrame(() => {
-          scrollWithRetry(0);
-        });
-      }
+      if (!sectionListRef.current || visibleEventsGroup.length === 0) return;
+      const sectionIndex = findNearestSectionIndex(moment(dateKey));
+      if (sectionIndex < 0) return;
+      scrollAttempts.current = 0;
+      scrollToSection(sectionIndex);
     },
-    [visibleEventsGroup, findNearestSectionIndex]
+    [visibleEventsGroup, findNearestSectionIndex, scrollToSection]
   );
 
   // Memoize mini apps configuration
@@ -1337,8 +1356,8 @@ const CalendarScreen = ({ navigation, route }) => {
   const calendarFooter = React.useMemo(() => {
     return (
       <>
-        {get7DayForecast.length > 0 && (
-          <EventForecast days={get7DayForecast} onDayPress={handleDayPress} />
+        {dayForecast.length > 0 && (
+          <EventForecast days={dayForecast} onDayPress={handleDayPress} />
         )}
         {isLoadingEvents && eventsGroup.length === 0 && (
           <View style={styles.loadingContainer}>
@@ -1348,21 +1367,24 @@ const CalendarScreen = ({ navigation, route }) => {
         )}
       </>
     );
-  }, [get7DayForecast, handleDayPress, isLoadingEvents, eventsGroup.length]);
+  }, [dayForecast, handleDayPress, isLoadingEvents, eventsGroup.length]);
 
   const sectionHeader = React.useMemo(() => {
     return (
       <View>
         {calendarPreface}
         <TasteFilterBar
-          chips={chipInterests}
+          forYou={forYou}
+          selected={selectedInterest}
+          onForYou={showForYou}
+          onEditFilters={openTasteSetup}
           onAll={showAllEvents}
-          onToggleChip={toggleChip}
+          onSelect={selectInterest}
         />
         {calendarFooter}
       </View>
     );
-  }, [calendarPreface, calendarFooter, chipInterests, showAllEvents, toggleChip]);
+  }, [calendarPreface, calendarFooter, forYou, selectedInterest, showForYou, openTasteSetup, showAllEvents, selectInterest]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1514,6 +1536,7 @@ const CalendarScreen = ({ navigation, route }) => {
         updateCellsBatchingPeriod={16}
         initialNumToRender={8}
         windowSize={5}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
       />
       {/* Add event button hidden for now */}
       {/* {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />} */}
