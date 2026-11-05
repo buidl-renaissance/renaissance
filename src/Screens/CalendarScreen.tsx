@@ -83,7 +83,6 @@ import {
 } from "../utils/tasteProfile";
 import { collectArtists } from "../utils/artists";
 import { useFollowedArtists } from "../context/FollowedArtists";
-import { FollowedArtistsBar } from "../Components/ArtistNames";
 import { SportsGame } from "../api/sports-games";
 import { Connection } from "../utils/connections";
 import { useConnectionBookmarks } from "../hooks/useConnectionBookmarks";
@@ -186,10 +185,6 @@ const CalendarScreen = ({ navigation, route }) => {
   React.useEffect(() => {
     if (!followedArtists.length) setFollowingOnly(false);
   }, [followedArtists.length]);
-
-  const openTasteSetup = React.useCallback(() => {
-    navigation.navigate("TasteOnboarding");
-  }, [navigation]);
 
   const showAllEvents = React.useCallback(() => {
     setForYou(false);
@@ -1191,16 +1186,6 @@ const CalendarScreen = ({ navigation, route }) => {
           {/* {username && pub && sig && <QRCode value={`://dpop:pub:${pub}:sig:${sig}:${username}`} />} */}
           {/* {username && pub && sig && } */}
         </HeroBanner>
-        <TasteFilterBar
-          profile={tasteProfile}
-          forYou={forYou}
-          chips={chipInterests}
-          onForYou={openTasteSetup}
-          onAll={showAllEvents}
-          onToggleChip={toggleChip}
-          onEdit={openTasteSetup}
-        />
-        <FollowedArtistsBar active={followingOnly} onToggle={() => setFollowingOnly((current) => !current)} />
 
         {/* <GrantOpportunities />
         <View style={{ paddingHorizontal: 16 }}>
@@ -1331,6 +1316,12 @@ const CalendarScreen = ({ navigation, route }) => {
           </TouchableOpacity> */}
         </View>
 
+        <TasteFilterBar
+          chips={chipInterests}
+          onAll={showAllEvents}
+          onToggleChip={toggleChip}
+        />
+
         {/* 7-Day Event Forecast */}
         {get7DayForecast.length > 0 && (
           <EventForecast days={get7DayForecast} onDayPress={handleDayPress} />
@@ -1345,7 +1336,7 @@ const CalendarScreen = ({ navigation, route }) => {
         )}
       </View>
     );
-  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, tasteProfile, forYou, chipInterests, showAllEvents, toggleChip, openTasteSetup, followingOnly]);
+  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, chipInterests, showAllEvents, toggleChip]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update

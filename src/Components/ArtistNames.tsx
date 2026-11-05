@@ -1,30 +1,18 @@
 import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { theme } from "../colors";
 import { useFollowedArtists } from "../context/FollowedArtists";
 import { FollowedArtist } from "../utils/artists";
 
 export function ArtistNames({ artists }: { artists: FollowedArtist[] }) {
-  const { isFollowed, toggle } = useFollowedArtists();
   if (!artists.length) return null;
+  const shown = artists.slice(0, 3);
+  const extra = artists.length - shown.length;
   return (
-    <View style={styles.names}>
-      {artists.slice(0, 4).map((artist) => {
-        const followed = isFollowed(artist.name);
-        return (
-          <TouchableOpacity
-            key={artist.key}
-            style={[styles.name, followed && styles.nameOn]}
-            onPress={() => toggle(artist.name)}
-            hitSlop={{ top: 6, bottom: 6, left: 2, right: 2 }}
-          >
-            <Text style={[styles.nameLabel, followed && styles.nameLabelOn]}>
-              {artist.name}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+    <Text style={styles.label}>
+      {shown.map((artist) => artist.name).join(", ")}
+      {extra > 0 ? ` +${extra} more` : ""}
+    </Text>
   );
 }
 
@@ -52,11 +40,10 @@ export function FollowedArtistsBar({
 }
 
 const styles = StyleSheet.create({
-  names: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 4,
+  label: {
+    color: theme.text,
+    fontSize: 11,
+    marginTop: 2,
   },
   bar: {
     paddingHorizontal: 16,
