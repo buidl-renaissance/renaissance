@@ -569,10 +569,11 @@ const CalendarScreen = ({ navigation, route }) => {
     
     // Detroit (default): process all event sources
     const followedKeys = new Set(followedArtists.map((artist) => artist.key));
+    let tasteInterests: Interest[] = [];
     const allow = (names: { key: string }[], taste: Parameters<typeof matchesTaste>[1]) => {
+      tasteInterests = taste.interests;
       if (followingOnly) return names.some((artist) => followedKeys.has(artist.key));
       if (forYou) return matchesTaste(tasteProfile, taste);
-      if (chipInterests.length) return taste.interests.some((interest) => chipInterests.includes(interest));
       return true;
     };
 
@@ -588,7 +589,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "da" });
+        group.data.push({ ...event, eventType: "da", tasteInterests });
       }
     });
 
@@ -623,7 +624,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "luma" });
+        group.data.push({ ...event, eventType: "luma", tasteInterests });
       }
     });
 
@@ -649,7 +650,8 @@ const CalendarScreen = ({ navigation, route }) => {
         group.data.push({ 
           ...event, 
           eventType: "ra",
-          isFeatured: featuredIds.has(event.id)
+          isFeatured: featuredIds.has(event.id),
+          tasteInterests,
         });
       }
     });
@@ -667,7 +669,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "meetup" });
+        group.data.push({ ...event, eventType: "meetup", tasteInterests });
       }
     });
 
@@ -684,7 +686,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...game, eventType: "sports" });
+        group.data.push({ ...game, eventType: "sports", tasteInterests });
       }
     });
 
@@ -702,7 +704,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "instagram" });
+        group.data.push({ ...event, eventType: "instagram", tasteInterests });
       }
     });
 
@@ -719,7 +721,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "renaissance" });
+        group.data.push({ ...event, eventType: "renaissance", tasteInterests });
       }
     });
 
@@ -736,7 +738,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "culture" });
+        group.data.push({ ...event, eventType: "culture", tasteInterests });
       }
     });
 
@@ -753,7 +755,7 @@ const CalendarScreen = ({ navigation, route }) => {
       if (end.isAfter() && moment(start).add(24, "hour").isAfter()) {
         const dateKey = start.format("YYYY-MM-DD");
         const group = getOrCreateGroup(dateKey, start.valueOf());
-        group.data.push({ ...event, eventType: "concert" });
+        group.data.push({ ...event, eventType: "concert", tasteInterests });
       }
     });
 
@@ -784,7 +786,20 @@ const CalendarScreen = ({ navigation, route }) => {
     groupsArray.sort((a: any, b: any) => a.sortDate - b.sortDate);
     
     return groupsArray;
-  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile, followedArtists, followingOnly, forYou, chipInterests]);
+  }, [tenantId, ethDenverEvents, denverEvents, filteredEvents, lumaEvents, raEvents, meetupEvents, sportsGames, instagramEvents, renaissanceEvents, concertEvents, cultureEvents, isFeatured, tasteProfile, followedArtists, followingOnly, forYou]);
+
+  const visibleEventsGroup = React.useMemo(() => {
+    if (chipInterests.length === 0) return eventsGroup;
+    const selected = new Set(chipInterests);
+    const groups = [];
+    for (const group of eventsGroup) {
+      const data = group.data.filter((event) =>
+        event.tasteInterests?.some((interest: Interest) => selected.has(interest))
+      );
+      if (data.length) groups.push({ ...group, data });
+    }
+    return groups;
+  }, [eventsGroup, chipInterests]);
 
   const handlePressEvent = React.useCallback((event) => {
     navigation.push("Event", {
@@ -995,14 +1010,14 @@ const CalendarScreen = ({ navigation, route }) => {
   // Helper function to find the nearest section index for a given date
   const findNearestSectionIndex = React.useCallback((targetDate: moment.Moment) => {
     // First, try to find an exact match for the date
-    let sectionIndex = eventsGroup.findIndex((group: any) => {
+    let sectionIndex = visibleEventsGroup.findIndex((group: any) => {
       const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
       return groupDateKey === targetDate.format("YYYY-MM-DD");
     });
 
     // If no exact match, find the next section with events (closest future date)
     if (sectionIndex < 0) {
-      sectionIndex = eventsGroup.findIndex((group: any) => {
+      sectionIndex = visibleEventsGroup.findIndex((group: any) => {
         const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
         const groupDate = moment(groupDateKey);
         return groupDate.isSame(targetDate, 'day') || groupDate.isAfter(targetDate, 'day');
@@ -1014,7 +1029,7 @@ const CalendarScreen = ({ navigation, route }) => {
       let closestIndex = -1;
       let closestDate: moment.Moment | null = null;
       
-      eventsGroup.forEach((group: any, index: number) => {
+      visibleEventsGroup.forEach((group: any, index: number) => {
         const groupDateKey = group.dateKey || moment(group.sortDate).format("YYYY-MM-DD");
         const groupDate = moment(groupDateKey);
         
@@ -1030,12 +1045,12 @@ const CalendarScreen = ({ navigation, route }) => {
     }
 
     return sectionIndex;
-  }, [eventsGroup]);
+  }, [visibleEventsGroup]);
 
   // Handle scrolling to a specific day's events
   const handleDayPress = React.useCallback(
     (dateKey: string) => {
-      if (!sectionListRef.current || eventsGroup.length === 0) {
+      if (!sectionListRef.current || visibleEventsGroup.length === 0) {
         return;
       }
 
@@ -1081,7 +1096,7 @@ const CalendarScreen = ({ navigation, route }) => {
         });
       }
     },
-    [eventsGroup, findNearestSectionIndex]
+    [visibleEventsGroup, findNearestSectionIndex]
   );
 
   // Memoize mini apps configuration
@@ -1168,8 +1183,8 @@ const CalendarScreen = ({ navigation, route }) => {
     return apps;
   }, []);
 
-  // Memoize section header to avoid recreation on every render
-  const sectionHeader = React.useMemo(() => {
+  // Memoize the header above the filters so a category change does not rebuild it
+  const calendarPreface = React.useMemo(() => {
     return (
       <View>
         <HeroBanner>
@@ -1315,28 +1330,39 @@ const CalendarScreen = ({ navigation, route }) => {
             />
           </TouchableOpacity> */}
         </View>
+      </View>
+    );
+  }, [tenantId, weather, flyers, handleCreateFlyer, handlePressEvent, miniApps, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation]);
 
-        <TasteFilterBar
-          chips={chipInterests}
-          onAll={showAllEvents}
-          onToggleChip={toggleChip}
-        />
-
-        {/* 7-Day Event Forecast */}
+  const calendarFooter = React.useMemo(() => {
+    return (
+      <>
         {get7DayForecast.length > 0 && (
           <EventForecast days={get7DayForecast} onDayPress={handleDayPress} />
         )}
-
-        {/* Loading indicator while events are loading */}
         {isLoadingEvents && eventsGroup.length === 0 && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.primary} />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         )}
+      </>
+    );
+  }, [get7DayForecast, handleDayPress, isLoadingEvents, eventsGroup.length]);
+
+  const sectionHeader = React.useMemo(() => {
+    return (
+      <View>
+        {calendarPreface}
+        <TasteFilterBar
+          chips={chipInterests}
+          onAll={showAllEvents}
+          onToggleChip={toggleChip}
+        />
+        {calendarFooter}
       </View>
     );
-  }, [tenantId, weather, flyers, handleCreateFlyer, get7DayForecast, handleDayPress, handlePressEvent, miniApps, isLoadingEvents, eventsGroup.length, authState.isLoading, authState.isAuthenticated, handleCreateAccount, renaissanceEvents, navigation, chipInterests, showAllEvents, toggleChip]);
+  }, [calendarPreface, calendarFooter, chipInterests, showAllEvents, toggleChip]);
 
   const handleCloseWebModal = React.useCallback(() => {
     // Close modal immediately with batched state update
@@ -1403,6 +1429,52 @@ const CalendarScreen = ({ navigation, route }) => {
     // No need to force update
   }, [toggleFeatured]);
 
+  const eventRendererProps = React.useMemo(() => ({
+    containerStyle: { paddingHorizontal: 16 },
+    onSelectDAEvent: openDAModal,
+    onSelectLumaEvent: (event: LumaEvent) => {
+      openWebModal(`https://lu.ma/${event.url}`, event.name, "luma", event);
+    },
+    onSelectRAEvent: (event: RAEvent) => {
+      openWebModal(`https://ra.co${event.contentUrl}`, event.title, "ra", event);
+    },
+    onSelectMeetupEvent: (event: MeetupEvent) => {
+      openWebModal(event.eventUrl, event.title, "meetup", event);
+    },
+    onSelectSportsEvent: (game: SportsGame) => {
+      if (game.link) {
+        openWebModal(
+          game.link,
+          `${game.awayTeam.shortDisplayName} @ ${game.homeTeam.shortDisplayName}`,
+          "sports",
+          game
+        );
+      }
+    },
+    onSelectCultureEvent: (event: CultureEvent) => {
+      if (event.url) openWebModal(event.url, event.name, "culture", event);
+    },
+    onSelectConcertEvent: (event: ConcertEvent) => {
+      if (event.url) openWebModal(event.url, event.name, "concert", event);
+    },
+    onSelectInstagramEvent: openInstagramModal,
+    onSelectRenaissanceEvent: (event: RenaissanceEvent) => {
+      navigation.push("RenaissanceEvent", { event });
+    },
+    onSelectEthDenverEvent: (event: any) => {
+      if (event.registrationUrl) {
+        openWebModal(event.registrationUrl, event.eventName, "eth-denver", event);
+      }
+    },
+    onSelectDenverEvent: (event: any) => {
+      if (event.registrationUrl) {
+        openWebModal(event.registrationUrl, event.eventName, "denver", event);
+      }
+    },
+    showFeaturedImage: true,
+    getConnectionsForEvent,
+  }), [openDAModal, openWebModal, openInstagramModal, navigation, getConnectionsForEvent]);
+
   return (
     <View style={styles.container}>
       {/* Tenant badge - top left, same height as FloatingProfileButton (top: 60) */}
@@ -1433,63 +1505,15 @@ const CalendarScreen = ({ navigation, route }) => {
       </View>
       <EventsSectionList
         ref={sectionListRef}
-        eventsGroup={eventsGroup}
+        eventsGroup={visibleEventsGroup}
         ListHeaderComponent={sectionHeader}
         loading={tenantId === "eth-denver" ? ethDenverLoading : tenantId === "denver" ? denverLoading : isLoadingEvents}
-        eventRendererProps={{
-          containerStyle: { paddingHorizontal: 16 },
-          onSelectDAEvent: openDAModal,
-          onSelectLumaEvent: (event: LumaEvent) => {
-            openWebModal(`https://lu.ma/${event.url}`, event.name, 'luma', event);
-          },
-          onSelectRAEvent: (event: RAEvent) => {
-            openWebModal(`https://ra.co${event.contentUrl}`, event.title, 'ra', event);
-          },
-          onSelectMeetupEvent: (event: MeetupEvent) => {
-            openWebModal(event.eventUrl, event.title, 'meetup', event);
-          },
-          onSelectSportsEvent: (game: SportsGame) => {
-            if (game.link) {
-              openWebModal(
-                game.link,
-                `${game.awayTeam.shortDisplayName} @ ${game.homeTeam.shortDisplayName}`,
-                'sports',
-                game
-              );
-            }
-          },
-          onSelectCultureEvent: (event: CultureEvent) => {
-            if (event.url) {
-              openWebModal(event.url, event.name, 'culture', event);
-            }
-          },
-          onSelectConcertEvent: (event: ConcertEvent) => {
-            if (event.url) {
-              openWebModal(event.url, event.name, 'concert', event);
-            }
-          },
-          onSelectInstagramEvent: openInstagramModal,
-          onSelectRenaissanceEvent: (event: RenaissanceEvent) => {
-            navigation.push("RenaissanceEvent", { event });
-          },
-          onSelectEthDenverEvent: (event: any) => {
-            if (event.registrationUrl) {
-              openWebModal(event.registrationUrl, event.eventName, 'eth-denver', event);
-            }
-          },
-          onSelectDenverEvent: (event: any) => {
-            if (event.registrationUrl) {
-              openWebModal(event.registrationUrl, event.eventName, 'denver', event);
-            }
-          },
-          showFeaturedImage: true,
-          getConnectionsForEvent: getConnectionsForEvent,
-        }}
+        eventRendererProps={eventRendererProps}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={10}
-        updateCellsBatchingPeriod={50}
-        initialNumToRender={Platform.OS === "android" ? 10 : 1000}
-        windowSize={10}
+        maxToRenderPerBatch={8}
+        updateCellsBatchingPeriod={16}
+        initialNumToRender={8}
+        windowSize={5}
       />
       {/* Add event button hidden for now */}
       {/* {contact?.id && <FloatingButton onPress={handleAddEvent} icon="mic" />} */}
